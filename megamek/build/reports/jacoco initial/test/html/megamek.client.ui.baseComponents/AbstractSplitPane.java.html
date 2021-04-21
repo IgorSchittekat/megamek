@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractSplitPane.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.baseComponents</a> &gt; <span class="el_source">AbstractSplitPane.java</span></div><h1>AbstractSplitPane.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.baseComponents;
+
+import megamek.MegaMek;
+import megamek.common.util.EncodeControl;
+import megamek.client.ui.preferences.JSplitPanePreference;
+import megamek.client.ui.preferences.PreferencesNode;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.ResourceBundle;
+
+/**
+ * This is the default SplitPane. It handles preferences, resources, the frame, and setup.
+ *
+ * Inheriting classes must call initialize() in their constructor and override createLeftComponent()
+ * and createRightComponent()
+ *
+ * This is directly tied to MekHQ's AbstractMHQSplitPane, and any changes here MUST be verified there.
+ */
+public abstract class AbstractSplitPane extends JSplitPane {
+    //region Variable Declarations
+    private JFrame frame;
+
+    protected final ResourceBundle resources;
+    //endregion Variable Declarations
+
+    //region Constructors
+    /**
+     * This creates an AbstractSplitPane using the default resource bundle. This is the normal
+     * constructor to use for an AbstractSplitPane.
+     */
+    protected AbstractSplitPane(final JFrame frame, final String name) {
+<span class="nc" id="L53">        this(frame, ResourceBundle.getBundle(&quot;megamek.client.messages&quot;, new EncodeControl()), name);</span>
+<span class="nc" id="L54">    }</span>
+
+    /**
+     * This creates an AbstractSplitPane using the specified resource bundle. This is not recommended
+     * by default.
+     */
+    protected AbstractSplitPane(final JFrame frame, final ResourceBundle resources, final String name) {
+<span class="nc" id="L61">        super(JSplitPane.HORIZONTAL_SPLIT);</span>
+<span class="nc" id="L62">        setName(name);</span>
+<span class="nc" id="L63">        setFrame(frame);</span>
+<span class="nc" id="L64">        this.resources = resources;</span>
+<span class="nc" id="L65">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public JFrame getFrame() {
+<span class="nc" id="L70">        return frame;</span>
+    }
+
+    public void setFrame(final JFrame frame) {
+<span class="nc" id="L74">        this.frame = frame;</span>
+<span class="nc" id="L75">    }</span>
+    //endregion Getters/Setters
+
+    //region Initialization
+    /**
+     * This initializes the Split Pane. It must be called by inheriting classes during their constructors
+     */
+    protected void initialize() {
+<span class="nc" id="L83">        setLeftComponent(createLeftComponent());</span>
+<span class="nc" id="L84">        setRightComponent(createRightComponent());</span>
+<span class="nc" id="L85">        finalizeInitialization();</span>
+<span class="nc" id="L86">    }</span>
+
+    /**
+     * @return the created left component
+     */
+    protected abstract Component createLeftComponent();
+
+    /**
+     * @return the created right component
+     */
+    protected abstract Component createRightComponent();
+
+    /**
+     * This MUST be called at the end of initialization to finalize it. This is the key method for
+     * this being the abstract basis for all other split panes
+     */
+    protected void finalizeInitialization() {
+<span class="nc" id="L103">        setOneTouchExpandable(true);</span>
+<span class="nc" id="L104">        setPreferences();</span>
+<span class="nc" id="L105">    }</span>
+
+    /**
+     * This is used to set preferences based on the preference node for this class. It is overridden
+     * for MekHQ usage
+     */
+    protected void setPreferences() {
+<span class="nc" id="L112">        setPreferences(MegaMek.getPreferences().forClass(getClass()));</span>
+<span class="nc" id="L113">    }</span>
+
+    /**
+     * This sets the base preferences for this class, and calls the custom preferences method
+     */
+    protected void setPreferences(final PreferencesNode preferences) {
+<span class="nc" id="L119">        preferences.manage(new JSplitPanePreference(this));</span>
+<span class="nc" id="L120">        setCustomPreferences(preferences);</span>
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * Adds custom preferences to the child pane.
+     *
+     * By default, this pane will track preferences related to the location of the split
+     * Other preferences can be added by overriding this method.
+     * @param preferences the preference node for this pane
+     */
+    protected void setCustomPreferences(final PreferencesNode preferences) {
+
+<span class="nc" id="L132">    }</span>
+    //endregion Initialization
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

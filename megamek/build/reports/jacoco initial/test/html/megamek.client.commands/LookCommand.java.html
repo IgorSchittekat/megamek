@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LookCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.commands</a> &gt; <span class="el_source">LookCommand.java</span></div><h1>LookCommand.java</h1><pre class="source lang-java linenums">package megamek.client.commands;
+
+import megamek.client.Client;
+import megamek.common.Coords;
+import megamek.common.IHex;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class LookCommand extends ClientCommand {
+<span class="fc" id="L11">    private final static List&lt;String&gt; directions = new ArrayList&lt;&gt;();</span>
+    {
+<span class="fc" id="L13">        directions.add(&quot;N&quot;);</span>
+<span class="fc" id="L14">        directions.add(&quot;NE&quot;);</span>
+<span class="fc" id="L15">        directions.add(&quot;SE&quot;);</span>
+<span class="fc" id="L16">        directions.add(&quot;S&quot;);</span>
+<span class="fc" id="L17">        directions.add(&quot;SW&quot;);</span>
+<span class="fc" id="L18">        directions.add(&quot;NW&quot;);</span>
+    }
+
+    public LookCommand(Client client) {
+<span class="fc" id="L22">        super(client, &quot;look&quot;, &quot;Look around the current hex.&quot;);</span>
+<span class="fc" id="L23">    }</span>
+
+    @Override
+    public String run(String[] args) {
+<span class="nc" id="L27">        Coords pos = client.getCurrentHex();</span>
+<span class="nc" id="L28">        IHex hex = getClient().getGame().getBoard().getHex(pos);</span>
+        String str;
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (hex != null) {</span>
+<span class="nc" id="L31">            str = &quot;Looking around hex (&quot; + (pos.getX() + 1) + &quot;, &quot;</span>
+<span class="nc" id="L32">                    + (pos.getY() + 1) + &quot;)\n&quot;;</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">            for (String dir : directions) {</span>
+<span class="nc" id="L34">                Coords coord = pos.translated(dir);</span>
+<span class="nc" id="L35">                str += &quot;To the &quot; + dir  + &quot; (&quot; + (coord.getX() + 1) + &quot;, &quot;</span>
+<span class="nc" id="L36">                        + (coord.getY() + 1) + &quot;): &quot;;</span>
+<span class="nc" id="L37">                hex = getClient().getGame().getBoard().getHex(coord);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">                if (hex != null) {</span>
+<span class="nc" id="L39">                    str += hex.toString();</span>
+                } else {
+<span class="nc" id="L41">                    str += &quot;off map.\n&quot;;</span>
+                }
+<span class="nc" id="L43">            }</span>
+        } else {
+<span class="nc" id="L45">            str = &quot;No current hex, or current hex offboard.&quot;;</span>
+        }
+<span class="nc" id="L47">        return str;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

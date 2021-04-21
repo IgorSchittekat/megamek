@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchlightAttackAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.actions</a> &gt; <span class="el_source">SearchlightAttackAction.java</span></div><h1>SearchlightAttackAction.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2005 Ben Mazur (bmazur@sev.org)
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.common.actions;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import megamek.common.Compute;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.IGame;
+import megamek.common.LosEffects;
+import megamek.common.Report;
+import megamek.common.Tank;
+import megamek.common.Targetable;
+
+/**
+ * Used for aiming a searchlight at a target.
+ */
+public class SearchlightAttackAction extends AbstractAttackAction {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 6699459935811592434L;
+
+    // default to attacking an entity
+    public SearchlightAttackAction(int entityId, int targetId) {
+<span class="nc" id="L42">        super(entityId, targetId);</span>
+<span class="nc" id="L43">    }</span>
+
+    public SearchlightAttackAction(int entityId, int targetType, int targetId) {
+<span class="nc" id="L46">        super(entityId, targetType, targetId);</span>
+<span class="nc" id="L47">    }</span>
+
+    public boolean isPossible(IGame game) {
+<span class="nc" id="L50">        return SearchlightAttackAction.isPossible(game, getEntityId(), game</span>
+<span class="nc" id="L51">                .getTarget(getTargetType(), getTargetId()), this);</span>
+    }
+
+    public static boolean isPossible(IGame game, int attackerId,
+            Targetable target, SearchlightAttackAction exempt) {
+<span class="nc" id="L56">        final Entity attacker = game.getEntity(attackerId);</span>
+        
+        // can't light up if either you or the target don't exist, or you don't have your light on
+<span class="nc bnc" id="L59" title="All 6 branches missed.">        if ((attacker == null) || !attacker.isUsingSpotlight() || (target == null)) {</span>
+<span class="nc" id="L60">            return false;</span>
+        }
+        
+        // can't light up if you're stunned
+<span class="nc bnc" id="L64" title="All 4 branches missed.">        if ((attacker instanceof Tank) &amp;&amp; (((Tank)attacker).getStunnedTurns() &gt; 0)) {</span>
+<span class="nc" id="L65">            return false;</span>
+        }
+        
+        // can't searchlight if target is outside of the front firing arc
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (!Compute.isInArc(attacker.getPosition(), attacker</span>
+<span class="nc" id="L70">                .getSecondaryFacing(), target,</span>
+<span class="nc" id="L71">                attacker.getForwardArc())) {</span>
+<span class="nc" id="L72">            return false;</span>
+        }
+        
+        // can't light up more than once per round
+<span class="nc" id="L76">        for (Enumeration&lt;EntityAction&gt; actions = game.getActions(); actions</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                .hasMoreElements();) {</span>
+<span class="nc" id="L78">            EntityAction action = actions.nextElement();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">            if (action instanceof SearchlightAttackAction) {</span>
+<span class="nc" id="L80">                SearchlightAttackAction act = (SearchlightAttackAction) action;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                if (act == exempt)</span>
+                 {
+<span class="nc" id="L83">                    break; // 1st in list is OK</span>
+                }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                if (act.getEntityId() == attackerId)</span>
+                 {
+<span class="nc" id="L87">                    return false; // can only declare searchlight once!</span>
+                }
+            }
+<span class="nc" id="L90">        }</span>
+        
+        // per TacOps, integrated searchlights have max range of 30 hexes
+        // hand-held ones have a max range of 10 hexes, but are not implemented
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (attacker.getPosition().distance(target.getPosition()) &gt; 30) {</span>
+<span class="nc" id="L95">            return false;</span>
+        }
+        
+        // can't light up if out of LOS. Most expensive calculation, so keep it last        
+<span class="nc" id="L99">        LosEffects los = LosEffects.calculateLos(game, attackerId, target);</span>
+<span class="nc" id="L100">        return los.canSee();</span>
+    }
+
+    /**
+     * illuminate an entity and all entities that are between us and the hex
+     */
+    public Vector&lt;Report&gt; resolveAction(IGame game) {
+<span class="nc" id="L107">        Vector&lt;Report&gt; reports = new Vector&lt;Report&gt;();</span>
+        Report r;
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (!isPossible(game)) {</span>
+<span class="nc" id="L110">            r = new Report(3445);</span>
+<span class="nc" id="L111">            r.subject = getEntityId();</span>
+<span class="nc" id="L112">            r.newlines = 1;</span>
+<span class="nc" id="L113">            reports.addElement(r);</span>
+<span class="nc" id="L114">            return reports;</span>
+        }
+<span class="nc" id="L116">        final Entity attacker = getEntity(game);</span>
+<span class="nc" id="L117">        final Coords apos = attacker.getPosition();</span>
+<span class="nc" id="L118">        final Targetable target = getTarget(game);</span>
+<span class="nc" id="L119">        final Coords tpos = target.getPosition();</span>
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (attacker.usedSearchlight()) {</span>
+<span class="nc" id="L122">            r = new Report(3450);</span>
+<span class="nc" id="L123">            r.subject = getEntityId();</span>
+<span class="nc" id="L124">            r.add(attacker.getDisplayName());</span>
+<span class="nc" id="L125">            r.newlines = 1;</span>
+<span class="nc" id="L126">            reports.addElement(r);</span>
+<span class="nc" id="L127">            return reports;</span>
+        }
+<span class="nc" id="L129">        attacker.setUsedSearchlight(true);</span>
+
+<span class="nc" id="L131">        ArrayList&lt;Coords&gt; in = Coords.intervening(apos, tpos); // nb includes</span>
+                                                                // attacker &amp;
+                                                                // target
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        for (Coords c : in) {</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            for (Entity en : game.getEntitiesVector(c)) {</span>
+<span class="nc" id="L136">                LosEffects los = LosEffects.calculateLos(game, getEntityId(),</span>
+                        en);
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                if (los.canSee()) {</span>
+<span class="nc" id="L139">                    en.setIlluminated(true);</span>
+<span class="nc" id="L140">                    r = new Report(3455);</span>
+<span class="nc" id="L141">                    r.subject = getEntityId();</span>
+<span class="nc" id="L142">                    r.newlines = 1;</span>
+<span class="nc" id="L143">                    r.add(en.getDisplayName());</span>
+<span class="nc" id="L144">                    r.add(attacker.getDisplayName());</span>
+<span class="nc" id="L145">                    reports.addElement(r);</span>
+                }
+<span class="nc" id="L147">            }</span>
+<span class="nc" id="L148">        }</span>
+<span class="nc" id="L149">        return reports;</span>
+    }
+    
+    /**
+     * Updates the supplied Game's list of hexes illuminated.
+     * 
+     * @param game      The game to update
+     * @return          True if new hexes were added, else false.
+     */
+    public boolean setHexesIlluminated(IGame game) {
+<span class="nc" id="L159">        boolean hexesAdded = false;</span>
+        
+<span class="nc" id="L161">        final Entity attacker = getEntity(game);</span>
+<span class="nc" id="L162">        final Coords apos = attacker.getPosition();</span>
+<span class="nc" id="L163">        final Targetable target = getTarget(game);</span>
+<span class="nc" id="L164">        final Coords tpos = target.getPosition();</span>
+
+<span class="nc" id="L166">        ArrayList&lt;Coords&gt; intervening = Coords.intervening(apos, tpos);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        for (Coords c : intervening) {</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">            if (game.getBoard().contains(c)){</span>
+<span class="nc" id="L169">                hexesAdded |= game.addIlluminatedPosition(c);</span>
+            }
+<span class="nc" id="L171">        }</span>
+<span class="nc" id="L172">        return hexesAdded;</span>
+    }
+
+    public boolean willIlluminate(IGame game, Entity who) {
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (!isPossible(game)) {</span>
+<span class="nc" id="L177">            return false;</span>
+        }
+<span class="nc" id="L179">        final Entity attacker = getEntity(game);</span>
+<span class="nc" id="L180">        final Coords apos = attacker.getPosition();</span>
+<span class="nc" id="L181">        final Targetable target = getTarget(game);</span>
+<span class="nc" id="L182">        final Coords tpos = target.getPosition();</span>
+
+<span class="nc" id="L184">        ArrayList&lt;Coords&gt; in = Coords.intervening(apos, tpos); // nb includes</span>
+                                                                // attacker &amp;
+                                                                // target
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        for (Coords c : in) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            for (Entity en : game.getEntitiesVector(c)) {</span>
+<span class="nc" id="L189">                LosEffects los = LosEffects.calculateLos(game, getEntityId(),</span>
+                        en);
+<span class="nc bnc" id="L191" title="All 4 branches missed.">                if (los.canSee() &amp;&amp; en.equals(who)) {</span>
+<span class="nc" id="L192">                    return true;</span>
+                }
+<span class="nc" id="L194">            }</span>
+<span class="nc" id="L195">        }</span>
+<span class="nc" id="L196">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

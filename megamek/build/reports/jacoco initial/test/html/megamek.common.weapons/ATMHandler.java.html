@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ATMHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons</a> &gt; <span class="el_source">ATMHandler.java</span></div><h1>ATMHandler.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2005 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+package megamek.common.weapons;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import megamek.common.AmmoType;
+import megamek.common.BattleArmor;
+import megamek.common.Compute;
+import megamek.common.ComputeECM;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.IGame;
+import megamek.common.Infantry;
+import megamek.common.Mech;
+import megamek.common.Minefield;
+import megamek.common.MiscType;
+import megamek.common.Mounted;
+import megamek.common.RangeType;
+import megamek.common.Report;
+import megamek.common.Tank;
+import megamek.common.Targetable;
+import megamek.common.ToHitData;
+import megamek.common.WeaponType;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.common.options.OptionsConstants;
+import megamek.server.Server;
+
+/**
+ * @author Sebastian Brocks
+ */
+public class ATMHandler extends MissileWeaponHandler {
+    private static final long serialVersionUID = -2536312899803153911L;
+
+    /**
+     * @param t
+     * @param w
+     * @param g
+     * @param s
+     */
+    public ATMHandler(ToHitData t, WeaponAttackAction w, IGame g, Server s) {
+<span class="nc" id="L55">        super(t, w, g, s);</span>
+<span class="nc" id="L56">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.weapons.WeaponHandler#calcDamagePerHit()
+     */
+    @Override
+    protected int calcDamagePerHit() {
+        double toReturn;
+<span class="nc" id="L66">        AmmoType atype = (AmmoType) ammo.getType();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (atype.getMunitionType() == AmmoType.M_HIGH_EXPLOSIVE) {</span>
+<span class="nc" id="L68">            sSalvoType = &quot; high-explosive missile(s) &quot;;</span>
+<span class="nc" id="L69">            toReturn = 3;</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        } else if (atype.getMunitionType() == AmmoType.M_EXTENDED_RANGE) {</span>
+<span class="nc" id="L71">            sSalvoType = &quot; extended-range missile(s) &quot;;</span>
+<span class="nc" id="L72">            toReturn = 1;</span>
+        } else {
+<span class="nc" id="L74">            toReturn = 2;</span>
+        }
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc" id="L77">            toReturn = Compute.directBlowInfantryDamage(</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                    wtype.getRackSize(), bDirect ? toHit.getMoS() / 3 : 0,</span>
+<span class="nc" id="L79">                    wtype.getInfantryDamageClass(),</span>
+<span class="nc" id="L80">                    ((Infantry) target).isMechanized(),</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                    toHit.getThruBldg() != null, ae.getId(), calcDmgPerHitReport);</span>
+<span class="nc" id="L82">            toReturn = applyGlancingBlowModifier(toReturn, true);</span>
+        }
+
+<span class="nc" id="L85">        return (int) toReturn;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.weapons.WeaponHandler#calcnCluster()
+     */
+    @Override
+    protected int calcnCluster() {
+<span class="nc" id="L95">        return 5;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.weapons.WeaponHandler#calcHits(java.util.Vector)
+     */
+    @Override
+    protected int calcHits(Vector&lt;Report&gt; vPhaseReport) {
+        // conventional infantry gets hit in one lump
+        // don't need to check for BAs, because BA can't mount ATMs
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc" id="L108">            return 1;</span>
+        }
+        int hits;
+<span class="nc" id="L111">        AmmoType atype = (AmmoType) ammo.getType();</span>
+        // TacOPs p.84 Cluster Hit Penalites will only effect ATM HE
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (atype.getMunitionType() == AmmoType.M_HIGH_EXPLOSIVE) {</span>
+<span class="nc" id="L114">            hits = super.calcHits(vPhaseReport);</span>
+        } else {
+<span class="nc" id="L116">            hits = calcStandardAndExtendedAmmoHits(vPhaseReport);</span>
+        }
+        // change to 5 damage clusters here, after AMS has been done
+<span class="nc" id="L119">        hits = nDamPerHit * hits;</span>
+<span class="nc" id="L120">        nDamPerHit = 1;</span>
+<span class="nc" id="L121">        return hits;</span>
+    }
+
+    /**
+     * Calculate the attack value based on range
+     *
+     * @return an &lt;code&gt;int&lt;/code&gt; representing the attack value at that range.
+     */
+    @Override
+    protected int calcAttackValue() {
+<span class="nc" id="L131">        int av = 0;</span>
+<span class="nc" id="L132">        int counterAV = 0;</span>
+<span class="nc" id="L133">        int range = RangeType.rangeBracket(nRange, wtype.getATRanges(), true, false);</span>
+<span class="nc" id="L134">        AmmoType atype = (AmmoType) ammo.getType();</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (atype.getMunitionType() == AmmoType.M_HIGH_EXPLOSIVE) {</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            if (range == WeaponType.RANGE_SHORT) {</span>
+<span class="nc" id="L137">                av = wtype.getRoundShortAV();</span>
+<span class="nc" id="L138">                av = av + (av / 2);</span>
+            }
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        } else if (atype.getMunitionType() == AmmoType.M_EXTENDED_RANGE) {</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            if (range == WeaponType.RANGE_SHORT) {</span>
+<span class="nc" id="L142">                av = wtype.getRoundShortAV();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_MED) {</span>
+<span class="nc" id="L144">                av = wtype.getRoundMedAV();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_LONG) {</span>
+<span class="nc" id="L146">                av = wtype.getRoundLongAV();</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_EXT) {</span>
+<span class="nc" id="L148">                av = wtype.getRoundLongAV();</span>
+            }
+<span class="nc" id="L150">            av = av / 2;</span>
+        } else {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">            if (range == WeaponType.RANGE_SHORT) {</span>
+<span class="nc" id="L153">                av = wtype.getRoundShortAV();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_MED) {</span>
+<span class="nc" id="L155">                av = wtype.getRoundMedAV();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_LONG) {</span>
+<span class="nc" id="L157">                av = wtype.getRoundLongAV();</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            } else if (range == WeaponType.RANGE_EXT) {</span>
+<span class="nc" id="L159">                av = wtype.getRoundExtAV();</span>
+            }
+        }
+        
+        //Point Defenses engage the missiles still aimed at us
+<span class="nc" id="L164">        counterAV = calcCounterAV();</span>
+<span class="nc" id="L165">        av = av - counterAV;</span>
+        
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (bDirect) {</span>
+<span class="nc" id="L168">            av = Math.min(av + (toHit.getMoS() / 3), av * 2);</span>
+        }
+<span class="nc" id="L170">        av = applyGlancingBlowModifier(av, false);</span>
+<span class="nc" id="L171">        av = (int) Math.floor(getBracketingMultiplier() * av);</span>
+<span class="nc" id="L172">        return av;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.weapons.WeaponHandler#calcHits(java.util.Vector)
+     */
+    protected int calcStandardAndExtendedAmmoHits(Vector&lt;Report&gt; vPhaseReport) {
+        // conventional infantry gets hit in one lump
+        // BAs do one lump of damage per BA suit
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            if (ae instanceof BattleArmor) {</span>
+<span class="nc" id="L185">                bSalvo = true;</span>
+<span class="nc" id="L186">                Report r = new Report(3325);</span>
+<span class="nc" id="L187">                r.subject = subjectId;</span>
+<span class="nc" id="L188">                r.add(wtype.getRackSize()</span>
+<span class="nc" id="L189">                        * ((BattleArmor) ae).getShootingStrength());</span>
+<span class="nc" id="L190">                r.add(sSalvoType);</span>
+<span class="nc" id="L191">                r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L192">                vPhaseReport.add(r);</span>
+<span class="nc" id="L193">                return ((BattleArmor) ae).getShootingStrength();</span>
+            }
+<span class="nc" id="L195">            Report r = new Report(3325);</span>
+<span class="nc" id="L196">            r.subject = subjectId;</span>
+<span class="nc" id="L197">            r.add(wtype.getRackSize());</span>
+<span class="nc" id="L198">            r.add(sSalvoType);</span>
+<span class="nc" id="L199">            r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L200">            vPhaseReport.add(r);</span>
+<span class="nc" id="L201">            return 1;</span>
+        }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        Entity entityTarget = (target.getTargetType() == Targetable.TYPE_ENTITY) ? (Entity) target</span>
+<span class="nc" id="L204">                : null;</span>
+        int missilesHit;
+
+<span class="nc" id="L207">        boolean bMekTankStealthActive = false;</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">        if ((ae instanceof Mech) || (ae instanceof Tank)) {</span>
+<span class="nc" id="L209">            bMekTankStealthActive = ae.isStealthActive();</span>
+        }
+<span class="nc" id="L211">        Mounted mLinker = weapon.getLinkedBy();</span>
+<span class="nc" id="L212">        AmmoType atype = (AmmoType) ammo.getType();</span>
+
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        int nMissilesModifier = getClusterModifiers(atype.getMunitionType() == AmmoType.M_HIGH_EXPLOSIVE);</span>
+
+        // is any hex in the flight path of the missile ECM affected?
+<span class="nc" id="L217">        boolean bECMAffected = false;</span>
+        // if the attacker is affected by ECM or the target is protected by ECM
+        // then act as if affected.
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (ComputeECM.isAffectedByECM(ae, ae.getPosition(), target.getPosition())) {</span>
+<span class="nc" id="L221">            bECMAffected = true;</span>
+        }
+
+<span class="nc bnc" id="L224" title="All 4 branches missed.">        if (((mLinker != null) &amp;&amp; (mLinker.getType() instanceof MiscType)</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">                &amp;&amp; !mLinker.isDestroyed() &amp;&amp; !mLinker.isMissing()</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">                &amp;&amp; !mLinker.isBreached() &amp;&amp; mLinker.getType().hasFlag(</span>
+                MiscType.F_ARTEMIS))
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                &amp;&amp; (atype.getMunitionType() == AmmoType.M_ARTEMIS_CAPABLE)) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            if (bECMAffected) {</span>
+                // ECM prevents bonus
+<span class="nc" id="L231">                Report r = new Report(3330);</span>
+<span class="nc" id="L232">                r.subject = subjectId;</span>
+<span class="nc" id="L233">                r.newlines = 0;</span>
+<span class="nc" id="L234">                vPhaseReport.addElement(r);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            } else if (bMekTankStealthActive) {</span>
+                // stealth prevents bonus
+<span class="nc" id="L237">                Report r = new Report(3335);</span>
+<span class="nc" id="L238">                r.subject = subjectId;</span>
+<span class="nc" id="L239">                r.newlines = 0;</span>
+<span class="nc" id="L240">                vPhaseReport.addElement(r);</span>
+<span class="nc" id="L241">            } else {</span>
+<span class="nc" id="L242">                nMissilesModifier += 2;</span>
+            }
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        } else if (atype.getAmmoType() == AmmoType.T_ATM) {</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (bECMAffected) {</span>
+                // ECM prevents bonus
+<span class="nc" id="L247">                Report r = new Report(3330);</span>
+<span class="nc" id="L248">                r.subject = subjectId;</span>
+<span class="nc" id="L249">                r.newlines = 0;</span>
+<span class="nc" id="L250">                vPhaseReport.addElement(r);</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">            } else if (bMekTankStealthActive) {</span>
+                // stealth prevents bonus
+<span class="nc" id="L253">                Report r = new Report(3335);</span>
+<span class="nc" id="L254">                r.subject = subjectId;</span>
+<span class="nc" id="L255">                r.newlines = 0;</span>
+<span class="nc" id="L256">                vPhaseReport.addElement(r);</span>
+<span class="nc" id="L257">            } else {</span>
+<span class="nc" id="L258">                nMissilesModifier += 2;</span>
+            }
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        } else if ((entityTarget != null)</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">                &amp;&amp; (entityTarget.isNarcedBy(ae.getOwner().getTeam()) || entityTarget</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                        .isINarcedBy(ae.getOwner().getTeam()))) {</span>
+            // only apply Narc bonus if we're not suffering ECM effect
+            // and we are using narc ammo, and we're not firing indirectly.
+            // narc capable missiles are only affected if the narc pod, which
+            // sits on the target, is ECM affected
+<span class="nc" id="L267">            boolean bTargetECMAffected = false;</span>
+<span class="nc" id="L268">            bTargetECMAffected = ComputeECM.isAffectedByECM(ae,</span>
+<span class="nc" id="L269">                    target.getPosition(), target.getPosition());</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            if (((atype.getAmmoType() == AmmoType.T_LRM) || (atype</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">                    .getAmmoType() == AmmoType.T_SRM))</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">                    || ((atype.getAmmoType() == AmmoType.T_MML)</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">                            &amp;&amp; (atype.getMunitionType() == AmmoType.M_NARC_CAPABLE) &amp;&amp; ((weapon</span>
+<span class="nc bnc" id="L274" title="All 4 branches missed.">                            .curMode() == null) || !weapon.curMode().equals(</span>
+                            &quot;Indirect&quot;)))) {
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                if (bTargetECMAffected) {</span>
+                    // ECM prevents bonus
+<span class="nc" id="L278">                    Report r = new Report(3330);</span>
+<span class="nc" id="L279">                    r.subject = subjectId;</span>
+<span class="nc" id="L280">                    r.newlines = 0;</span>
+<span class="nc" id="L281">                    vPhaseReport.addElement(r);</span>
+<span class="nc" id="L282">                } else {</span>
+<span class="nc" id="L283">                    nMissilesModifier += 2;</span>
+                }
+            }
+        }
+
+        // add AMS mods
+<span class="nc" id="L289">        nMissilesModifier += getAMSHitsMod(vPhaseReport);</span>
+        
+<span class="nc bnc" id="L291" title="All 4 branches missed.">        if (game.getOptions().booleanOption(OptionsConstants.ADVAERORULES_AERO_SANITY)</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                &amp;&amp; entityTarget != null &amp;&amp; entityTarget.isLargeCraft()) {</span>
+<span class="nc" id="L293">            nMissilesModifier -= getAeroSanityAMSHitsMod();</span>
+        }
+
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        if (allShotsHit()) {</span>
+            // We want buildings and large craft to be able to affect this number with AMS
+            // treat as a Streak launcher (cluster roll 11) to make this happen
+<span class="nc" id="L299">            missilesHit = Compute.missilesHit(wtype.getRackSize(),</span>
+<span class="nc" id="L300">                    nMissilesModifier, weapon.isHotLoaded(), true,</span>
+<span class="nc" id="L301">                    isAdvancedAMS());</span>
+        } else {
+<span class="nc bnc" id="L303" title="All 2 branches missed.">            if (ae instanceof BattleArmor) {</span>
+<span class="nc" id="L304">                missilesHit = Compute.missilesHit(wtype.getRackSize()</span>
+<span class="nc" id="L305">                        * ((BattleArmor) ae).getShootingStrength(),</span>
+<span class="nc" id="L306">                        nMissilesModifier, weapon.isHotLoaded(), false,</span>
+<span class="nc" id="L307">                        isAdvancedAMS());</span>
+            } else {
+<span class="nc" id="L309">                missilesHit = Compute.missilesHit(wtype.getRackSize(),</span>
+<span class="nc" id="L310">                        nMissilesModifier, weapon.isHotLoaded(), false,</span>
+<span class="nc" id="L311">                        isAdvancedAMS());</span>
+            }
+        }
+
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (missilesHit &gt; 0) {</span>
+<span class="nc" id="L316">            Report r = new Report(3325);</span>
+<span class="nc" id="L317">            r.subject = subjectId;</span>
+<span class="nc" id="L318">            r.add(missilesHit);</span>
+<span class="nc" id="L319">            r.add(sSalvoType);</span>
+<span class="nc" id="L320">            r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L321">            r.newlines = 0;</span>
+<span class="nc" id="L322">            vPhaseReport.addElement(r);</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">            if (nMissilesModifier != 0) {</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">                if (nMissilesModifier &gt; 0) {</span>
+<span class="nc" id="L325">                    r = new Report(3340);</span>
+                } else {
+<span class="nc" id="L327">                    r = new Report(3341);</span>
+                }
+<span class="nc" id="L329">                r.subject = subjectId;</span>
+<span class="nc" id="L330">                r.add(nMissilesModifier);</span>
+<span class="nc" id="L331">                r.newlines = 0;</span>
+<span class="nc" id="L332">                vPhaseReport.addElement(r);</span>
+            }
+        }
+<span class="nc" id="L335">        Report r = new Report(3345);</span>
+<span class="nc" id="L336">        r.subject = subjectId;</span>
+<span class="nc" id="L337">        vPhaseReport.addElement(r);</span>
+<span class="nc" id="L338">        bSalvo = true;</span>
+<span class="nc" id="L339">        return missilesHit;</span>
+    }
+
+    @Override
+    protected boolean specialResolution(Vector&lt;Report&gt; vPhaseReport,
+            Entity entityTarget) {
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        if (!bMissed</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">                &amp;&amp; (target.getTargetType() == Targetable.TYPE_MINEFIELD_CLEAR)) {</span>
+<span class="nc" id="L347">            Report r = new Report(3255);</span>
+<span class="nc" id="L348">            r.indent(1);</span>
+<span class="nc" id="L349">            r.subject = subjectId;</span>
+<span class="nc" id="L350">            vPhaseReport.addElement(r);</span>
+<span class="nc" id="L351">            Coords coords = target.getPosition();</span>
+
+<span class="nc" id="L353">            Enumeration&lt;Minefield&gt; minefields = game.getMinefields(coords)</span>
+<span class="nc" id="L354">                    .elements();</span>
+<span class="nc" id="L355">            ArrayList&lt;Minefield&gt; mfRemoved = new ArrayList&lt;Minefield&gt;();</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">            while (minefields.hasMoreElements()) {</span>
+<span class="nc" id="L357">                Minefield mf = minefields.nextElement();</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">                if (server.clearMinefield(mf, ae,</span>
+                        Minefield.CLEAR_NUMBER_WEAPON, vPhaseReport)) {
+<span class="nc" id="L360">                    mfRemoved.add(mf);</span>
+                }
+<span class="nc" id="L362">            }</span>
+            // we have to do it this way to avoid a concurrent error problem
+<span class="nc bnc" id="L364" title="All 2 branches missed.">            for (Minefield mf : mfRemoved) {</span>
+<span class="nc" id="L365">                server.removeMinefield(mf);</span>
+<span class="nc" id="L366">            }</span>
+<span class="nc" id="L367">            return true;</span>
+        }
+<span class="nc" id="L369">        return false;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

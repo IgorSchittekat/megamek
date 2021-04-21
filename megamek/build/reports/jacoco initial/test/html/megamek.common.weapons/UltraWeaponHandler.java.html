@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UltraWeaponHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons</a> &gt; <span class="el_source">UltraWeaponHandler.java</span></div><h1>UltraWeaponHandler.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2004 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+package megamek.common.weapons;
+
+import java.util.Vector;
+
+import megamek.common.AmmoType;
+import megamek.common.Compute;
+import megamek.common.Entity;
+import megamek.common.IGame;
+import megamek.common.Infantry;
+import megamek.common.RangeType;
+import megamek.common.Report;
+import megamek.common.ToHitData;
+import megamek.common.WeaponType;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.common.options.OptionsConstants;
+import megamek.server.Server;
+
+/**
+ * @author Andrew Hunter
+ * Created on Sep 29, 2004
+ */
+public class UltraWeaponHandler extends AmmoWeaponHandler {
+    private static final long serialVersionUID = 7551194199079004134L;
+    int howManyShots;
+    private final boolean twoRollsUltra; // Tracks whether or not this is an
+
+    // ultra AC using the unofficial &quot;two rolls&quot; rule. Can be final because
+    // this isn't really going to change over the course of a game.
+
+    /**
+     * @param t
+     * @param w
+     * @param g
+     */
+    public UltraWeaponHandler(ToHitData t, WeaponAttackAction w, IGame g,
+            Server s) {
+<span class="nc" id="L50">        super(t, w, g, s);</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        twoRollsUltra = game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_UAC_TWOROLLS)</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">                &amp;&amp; ((wtype.getAmmoType() == AmmoType.T_AC_ULTRA) || (wtype</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">                        .getAmmoType() == AmmoType.T_AC_ULTRA_THB));</span>
+<span class="nc" id="L54">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#addHeatUseAmmo()
+     */
+    @Override
+    protected void useAmmo() {
+<span class="nc" id="L63">        setDone();</span>
+<span class="nc" id="L64">        checkAmmo();</span>
+<span class="nc" id="L65">        int total = ae.getTotalAmmoOfType(ammo.getType());</span>
+<span class="nc bnc" id="L66" title="All 4 branches missed.">        if ((total &gt; 1) &amp;&amp; !weapon.curMode().equals(Weapon.MODE_AC_SINGLE)) {</span>
+<span class="nc" id="L67">            howManyShots = 2;</span>
+        } else {
+<span class="nc" id="L69">            howManyShots = 1;</span>
+        }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (total == 0) {</span>
+            // can't happen?
+
+        }
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (ammo.getUsableShotsLeft() == 0) {</span>
+<span class="nc" id="L76">            ae.loadWeapon(weapon);</span>
+<span class="nc" id="L77">            ammo = weapon.getLinked();</span>
+            // there will be some ammo somewhere, otherwise shot will not have
+            // been fired.
+        }
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (ammo.getUsableShotsLeft() == 1) {</span>
+<span class="nc" id="L82">            ammo.setShotsLeft(0);</span>
+<span class="nc" id="L83">            ae.loadWeapon(weapon);</span>
+<span class="nc" id="L84">            ammo = weapon.getLinked();</span>
+            // that fired one, do we need to fire another?
+<span class="nc" id="L86">            ammo.setShotsLeft(ammo.getBaseShotsLeft()</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                    - ((howManyShots == 2) ? 1 : 0));</span>
+        } else {
+<span class="nc" id="L89">            ammo.setShotsLeft(ammo.getBaseShotsLeft() - howManyShots);</span>
+        }
+
+<span class="nc" id="L92">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcHits(java.util.Vector)
+     */
+    @Override
+    protected int calcHits(Vector&lt;Report&gt; vPhaseReport) {
+        // conventional infantry gets hit in one lump
+        // BAs can't mount UACS/RACs
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc" id="L104">            return 1;</span>
+        }
+
+<span class="nc" id="L107">        bSalvo = true;</span>
+
+<span class="nc bnc" id="L109" title="All 4 branches missed.">        if (howManyShots == 1 || twoRollsUltra) {</span>
+<span class="nc" id="L110">            return 1;</span>
+        }
+
+        int shotsHit;
+<span class="nc" id="L114">        int nMod = getClusterModifiers(true);</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        shotsHit = allShotsHit() ? howManyShots : Compute.missilesHit(</span>
+                howManyShots, nMod);
+
+        // report number of shots that hit only when weapon doesn't jam
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (!weapon.isJammed()) {</span>
+<span class="nc" id="L121">            Report r = new Report(3325);</span>
+<span class="nc" id="L122">            r.subject = subjectId;</span>
+<span class="nc" id="L123">            r.add(shotsHit);</span>
+<span class="nc" id="L124">            r.add(sSalvoType);</span>
+<span class="nc" id="L125">            r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L126">            r.newlines = 0;</span>
+<span class="nc" id="L127">            vPhaseReport.addElement(r);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if (nMod != 0) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                if (nMod &gt; 0) {</span>
+<span class="nc" id="L130">                    r = new Report(3340);</span>
+                } else {
+<span class="nc" id="L132">                    r = new Report(3341);</span>
+                }
+<span class="nc" id="L134">                r.subject = subjectId;</span>
+<span class="nc" id="L135">                r.add(nMod);</span>
+<span class="nc" id="L136">                r.newlines = 0;</span>
+<span class="nc" id="L137">                vPhaseReport.addElement(r);</span>
+            }
+<span class="nc" id="L139">            r = new Report(3345);</span>
+<span class="nc" id="L140">            r.subject = subjectId;</span>
+<span class="nc" id="L141">            vPhaseReport.addElement(r);</span>
+        }
+<span class="nc" id="L143">        return shotsHit;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#doChecks(java.util.Vector)
+     */
+    @Override
+    protected boolean doChecks(Vector&lt;Report&gt; vPhaseReport) {
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (super.doChecks(vPhaseReport)) {</span>
+<span class="nc" id="L154">            return true;</span>
+        }
+        
+<span class="nc bnc" id="L157" title="All 6 branches missed.">        if ((roll == 2) &amp;&amp; (howManyShots == 2) &amp;&amp; !(ae instanceof Infantry)) {</span>
+<span class="nc" id="L158">            Report r = new Report();</span>
+<span class="nc" id="L159">            r.subject = subjectId;</span>
+<span class="nc" id="L160">            weapon.setJammed(true);</span>
+<span class="nc" id="L161">            isJammed = true;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if ((wtype.getAmmoType() == AmmoType.T_AC_ULTRA)</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                    || (wtype.getAmmoType() == AmmoType.T_AC_ULTRA_THB)) {</span>
+<span class="nc" id="L164">                r.messageId = 3160;</span>
+            } else {
+<span class="nc" id="L166">                r.messageId = 3170;</span>
+            }
+<span class="nc" id="L168">            vPhaseReport.addElement(r);</span>
+        }
+<span class="nc" id="L170">        return false;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcDamagePerHit()
+     */
+    @Override
+    protected int calcDamagePerHit() {
+<span class="nc" id="L180">        double toReturn = wtype.getDamage();</span>
+        // infantry get hit by all shots
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">            if (howManyShots &gt; 1) { // Is this a cluser attack?</span>
+                // Compute maximum damage potential for cluster weapons
+<span class="nc" id="L185">                toReturn = howManyShots * wtype.getDamage();</span>
+<span class="nc" id="L186">                toReturn = Compute.directBlowInfantryDamage(toReturn,</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                        bDirect ? toHit.getMoS() / 3 : 0,</span>
+                        WeaponType.WEAPON_CLUSTER_BALLISTIC, // treat as cluster
+<span class="nc" id="L189">                        ((Infantry) target).isMechanized(),</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                        toHit.getThruBldg() != null, ae.getId(),</span>
+                        calcDmgPerHitReport);
+            } else { // No - only one shot fired
+<span class="nc" id="L193">                toReturn = Compute.directBlowInfantryDamage(wtype.getDamage(),</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                        bDirect ? toHit.getMoS() / 3 : 0,</span>
+<span class="nc" id="L195">                        wtype.getInfantryDamageClass(),</span>
+<span class="nc" id="L196">                        ((Infantry) target).isMechanized(),</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">                        toHit.getThruBldg() != null, ae.getId(),</span>
+                        calcDmgPerHitReport);
+            }
+        // Cluster bonuses or penalties can't apply to &quot;two rolls&quot; UACs, so
+        // if we have one, modify the damage per hit directly.
+<span class="nc bnc" id="L202" title="All 6 branches missed.">        } else if (bDirect &amp;&amp; (howManyShots == 1 || twoRollsUltra)) {</span>
+<span class="nc" id="L203">            toReturn = Math.min(toReturn + (toHit.getMoS() / 3), toReturn * 2);</span>
+        }
+
+<span class="nc bnc" id="L206" title="All 4 branches missed.">        if (howManyShots == 1 || twoRollsUltra) {</span>
+<span class="nc" id="L207">            toReturn = applyGlancingBlowModifier(toReturn, false);</span>
+        }
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_RANGE)</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">                &amp;&amp; (nRange &gt; wtype.getRanges(weapon)[RangeType.RANGE_LONG])) {</span>
+<span class="nc" id="L212">            toReturn = (int) Math.floor(toReturn * .75);</span>
+        }
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        if (game.getOptions().booleanOption(</span>
+                OptionsConstants.ADVCOMBAT_TACOPS_LOS_RANGE)
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                &amp;&amp; (nRange &gt; wtype.getRanges(weapon)[RangeType.RANGE_EXTREME])) {</span>
+<span class="nc" id="L217">            toReturn = (int) Math.floor(toReturn * .5);</span>
+        }
+<span class="nc" id="L219">        return (int) toReturn;</span>
+    }
+
+    @Override
+    protected boolean usesClusterTable() {
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        return !game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_UAC_TWOROLLS);</span>
+    }
+
+    @Override
+    protected int calcnClusterAero(Entity entityTarget) {
+<span class="nc bnc" id="L229" title="All 6 branches missed.">        if (usesClusterTable() &amp;&amp; !ae.isCapitalFighter()</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">                &amp;&amp; (entityTarget != null) &amp;&amp; !entityTarget.isCapitalScale()) {</span>
+<span class="nc" id="L231">            return (int) Math.ceil(attackValue / 2.0);</span>
+        } else {
+<span class="nc" id="L233">            return 1;</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

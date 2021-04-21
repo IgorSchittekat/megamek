@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractHelpDialog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.dialogs.helpDialogs</a> &gt; <span class="el_source">AbstractHelpDialog.java</span></div><h1>AbstractHelpDialog.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.dialogs.helpDialogs;
+
+import megamek.MegaMek;
+import megamek.client.ui.Messages;
+import megamek.client.ui.baseComponents.AbstractDialog;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+
+/**
+ * This class ensures that every Help dialog in MegaMek has an identical look-and-feel.
+ */
+public abstract class AbstractHelpDialog extends AbstractDialog {
+    //region Variable Declarations
+    private String helpFilePath;
+    //endregion Variable Declarations
+
+    //region Constructors
+    protected AbstractHelpDialog(final JFrame frame, final String name, final String helpFilePath) {
+<span class="nc" id="L39">        super(frame, name, &quot;AbstractHelpDialog.helpFile&quot;);</span>
+<span class="nc" id="L40">        setHelpFilePath(helpFilePath);</span>
+<span class="nc" id="L41">        initialize();</span>
+<span class="nc" id="L42">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public String getHelpFilePath() {
+<span class="nc" id="L47">        return helpFilePath;</span>
+    }
+
+    public void setHelpFilePath(final String helpFilePath) {
+<span class="nc" id="L51">        this.helpFilePath = helpFilePath;</span>
+<span class="nc" id="L52">    }</span>
+    //endregion Getters/Setters
+
+    @Override
+    protected Container createCenterPane() {
+<span class="nc" id="L57">        final JEditorPane pane = new JEditorPane();</span>
+<span class="nc" id="L58">        pane.setName(&quot;helpPane&quot;);</span>
+<span class="nc" id="L59">        pane.setEditable(false);</span>
+
+<span class="nc" id="L61">        final File helpFile = new File(getHelpFilePath());</span>
+
+        // Get the help content file if possible
+        try {
+<span class="nc" id="L65">            setTitle(getTitle() + helpFile.getName());</span>
+<span class="nc" id="L66">            pane.setPage(helpFile.toURI().toURL());</span>
+<span class="nc" id="L67">        } catch (Exception e) {</span>
+<span class="nc" id="L68">            setTitle(Messages.getString(&quot;AbstractHelpDialog.noHelp.title&quot;));</span>
+<span class="nc" id="L69">            pane.setText(Messages.getString(&quot;AbstractHelpDialog.errorReading&quot;) + e.getMessage());</span>
+<span class="nc" id="L70">            MegaMek.getLogger().error(e);</span>
+<span class="nc" id="L71">        }</span>
+<span class="nc" id="L72">        return new JScrollPane(pane);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

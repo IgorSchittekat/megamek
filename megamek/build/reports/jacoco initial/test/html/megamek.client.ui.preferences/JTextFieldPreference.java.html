@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JTextFieldPreference.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.preferences</a> &gt; <span class="el_source">JTextFieldPreference.java</span></div><h1>JTextFieldPreference.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.preferences;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.lang.ref.WeakReference;
+
+/**
+ * JTextFieldPreference monitors the text value of a JTextField. It sets the saved value when a
+ * dialog is loaded and changes it as it changes.
+ *
+ * Call preferences.manage(new JTextFieldPreference(JTextField)) to use this preference, on a
+ * JTextField that has called setName
+ */
+public class JTextFieldPreference extends PreferenceElement implements DocumentListener {
+    //region Variable Declarations
+    private final WeakReference&lt;JTextField&gt; weakReference;
+    private String text;
+    //endregion Variable Declarations
+
+    //region Constructors
+    public JTextFieldPreference(final JTextField textField) {
+<span class="nc" id="L41">        super(textField.getName());</span>
+<span class="nc" id="L42">        setText(textField.getText());</span>
+<span class="nc" id="L43">        weakReference = new WeakReference&lt;&gt;(textField);</span>
+<span class="nc" id="L44">        textField.getDocument().addDocumentListener(this);</span>
+<span class="nc" id="L45">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public WeakReference&lt;JTextField&gt; getWeakReference() {
+<span class="nc" id="L50">        return weakReference;</span>
+    }
+
+    public String getText() {
+<span class="nc" id="L54">        return text;</span>
+    }
+
+    public void setText(final String text) {
+<span class="nc" id="L58">        this.text = text;</span>
+<span class="nc" id="L59">    }</span>
+    //endregion Getters/Setters
+
+    //region PreferenceElement
+    @Override
+    protected String getValue() {
+<span class="nc" id="L65">        return getText();</span>
+    }
+
+    @Override
+    protected void initialize(final String value) {
+<span class="nc" id="L70">        final JTextField element = getWeakReference().get();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L72">            element.setText(value);</span>
+        }
+<span class="nc" id="L74">    }</span>
+
+    @Override
+    protected void dispose() {
+<span class="nc" id="L78">        final JTextField element = getWeakReference().get();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L80">            element.getDocument().removeDocumentListener(this);</span>
+<span class="nc" id="L81">            getWeakReference().clear();</span>
+        }
+<span class="nc" id="L83">    }</span>
+    //endregion PreferenceElement
+
+    //region DocumentListener
+    @Override
+    public void insertUpdate(final DocumentEvent evt) {
+<span class="nc" id="L89">        final JTextField element = getWeakReference().get();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L91">            setText(element.getText());</span>
+        }
+<span class="nc" id="L93">    }</span>
+
+    @Override
+    public void removeUpdate(final DocumentEvent evt) {
+<span class="nc" id="L97">        final JTextField element = getWeakReference().get();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L99">            setText(element.getText());</span>
+        }
+<span class="nc" id="L101">    }</span>
+
+    @Override
+    public void changedUpdate(final DocumentEvent evt) {
+<span class="nc" id="L105">        final JTextField element = getWeakReference().get();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L107">            setText(element.getText());</span>
+        }
+<span class="nc" id="L109">    }</span>
+    //endregion DocumentListener
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

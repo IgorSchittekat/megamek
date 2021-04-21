@@ -1,0 +1,3668 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Game.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common</a> &gt; <span class="el_source">Game.java</span></div><h1>Game.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek -
+ * Copyright (C) 2000,2001,2002,2003,2004,2005 Ben Mazur (bmazur@sev.org)
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.common;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import megamek.MegaMek;
+import megamek.common.GameTurn.SpecificEntityTurn;
+import megamek.common.actions.ArtilleryAttackAction;
+import megamek.common.actions.AttackAction;
+import megamek.common.actions.EntityAction;
+import megamek.common.annotations.Nullable;
+import megamek.common.event.GameBoardChangeEvent;
+import megamek.common.event.GameBoardNewEvent;
+import megamek.common.event.GameEndEvent;
+import megamek.common.event.GameEntityChangeEvent;
+import megamek.common.event.GameEntityNewEvent;
+import megamek.common.event.GameEntityNewOffboardEvent;
+import megamek.common.event.GameEntityRemoveEvent;
+import megamek.common.event.GameEvent;
+import megamek.common.event.GameListener;
+import megamek.common.event.GameNewActionEvent;
+import megamek.common.event.GamePhaseChangeEvent;
+import megamek.common.event.GamePlayerChangeEvent;
+import megamek.common.event.GameSettingsChangeEvent;
+import megamek.common.event.GameTurnChangeEvent;
+import megamek.common.options.GameOptions;
+import megamek.common.options.OptionsConstants;
+import megamek.common.weapons.AttackHandler;
+import megamek.server.SmokeCloud;
+import megamek.server.victory.Victory;
+
+/**
+ * The game class is the root of all data about the game in progress. Both the
+ * Client and the Server should have one of these objects and it is their job to
+ * keep it synched.
+ */
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">public class Game implements Serializable, IGame {</span>
+    /**
+     *
+     */
+    private static final long serialVersionUID = 8376320092671792532L;
+
+    /**
+     * A UUID to identify this game instance.
+     */
+<span class="fc" id="L73">    public UUID uuid = UUID.randomUUID();</span>
+
+    /**
+     * Stores the version of MM, so that it can be serialized in saved games.
+     */
+<span class="fc" id="L78">    public String mmVersion = MegaMek.VERSION;</span>
+
+    /**
+     * Define constants to describe the condition a unit was in when it wass
+     * removed from the game.
+     */
+
+<span class="fc" id="L85">    private GameOptions options = new GameOptions();</span>
+
+<span class="fc" id="L87">    public IBoard board = new Board();</span>
+
+<span class="fc" id="L89">    private final List&lt;Entity&gt; entities = new CopyOnWriteArrayList&lt;&gt;();</span>
+<span class="fc" id="L90">    private Hashtable&lt;Integer, Entity&gt; entityIds = new Hashtable&lt;Integer, Entity&gt;();</span>
+
+    /**
+     * Track entities removed from the game (probably by death)
+     */
+<span class="fc" id="L95">    Vector&lt;Entity&gt; vOutOfGame = new Vector&lt;Entity&gt;();</span>
+
+<span class="fc" id="L97">    private Vector&lt;IPlayer&gt; players = new Vector&lt;IPlayer&gt;();</span>
+<span class="fc" id="L98">    private Vector&lt;Team&gt; teams = new Vector&lt;Team&gt;(); // DES</span>
+
+<span class="fc" id="L100">    private Hashtable&lt;Integer, IPlayer&gt; playerIds = new Hashtable&lt;Integer, IPlayer&gt;();</span>
+
+<span class="fc" id="L102">    private final Map&lt;Coords, HashSet&lt;Integer&gt;&gt; entityPosLookup = new HashMap&lt;&gt;();</span>
+
+    /**
+     * have the entities been deployed?
+     */
+<span class="fc" id="L107">    private boolean deploymentComplete = false;</span>
+
+    /**
+     * how's the weather?
+     */
+<span class="fc" id="L112">    private PlanetaryConditions planetaryConditions = new PlanetaryConditions();</span>
+
+    /**
+     * what round is it?
+     */
+<span class="fc" id="L117">    private int roundCount = 0;</span>
+
+    /**
+     * The current turn list
+     */
+<span class="fc" id="L122">    private Vector&lt;GameTurn&gt; turnVector = new Vector&lt;GameTurn&gt;();</span>
+<span class="fc" id="L123">    private int turnIndex = 0;</span>
+
+    /**
+     * The present phase
+     */
+<span class="fc" id="L128">    private Phase phase = Phase.PHASE_UNKNOWN;</span>
+
+    /**
+     * The past phase
+     */
+<span class="fc" id="L133">    private Phase lastPhase = Phase.PHASE_UNKNOWN;</span>
+
+    // phase state
+<span class="fc" id="L136">    private Vector&lt;EntityAction&gt; actions = new Vector&lt;EntityAction&gt;();</span>
+<span class="fc" id="L137">    private Vector&lt;AttackAction&gt; pendingCharges = new Vector&lt;AttackAction&gt;();</span>
+<span class="fc" id="L138">    private Vector&lt;AttackAction&gt; pendingRams = new Vector&lt;AttackAction&gt;();</span>
+<span class="fc" id="L139">    private Vector&lt;AttackAction&gt; pendingTeleMissileAttacks = new Vector&lt;AttackAction&gt;();</span>
+<span class="fc" id="L140">    private Vector&lt;PilotingRollData&gt; pilotRolls = new Vector&lt;PilotingRollData&gt;();</span>
+<span class="fc" id="L141">    private Vector&lt;PilotingRollData&gt; extremeGravityRolls = new Vector&lt;PilotingRollData&gt;();</span>
+<span class="fc" id="L142">    private Vector&lt;PilotingRollData&gt; controlRolls = new Vector&lt;PilotingRollData&gt;();</span>
+<span class="fc" id="L143">    private Vector&lt;Team&gt; initiativeRerollRequests = new Vector&lt;Team&gt;();</span>
+
+    // reports
+<span class="fc" id="L146">    private GameReports gameReports = new GameReports();</span>
+
+<span class="fc" id="L148">    private boolean forceVictory = false;</span>
+<span class="fc" id="L149">    private int victoryPlayerId = Player.PLAYER_NONE;</span>
+<span class="fc" id="L150">    private int victoryTeam = Player.TEAM_NONE;</span>
+
+<span class="fc" id="L152">    private Hashtable&lt;Integer, Vector&lt;Entity&gt;&gt; deploymentTable = new Hashtable&lt;Integer, Vector&lt;Entity&gt;&gt;();</span>
+<span class="fc" id="L153">    private int lastDeploymentRound = 0;</span>
+
+<span class="fc" id="L155">    private Hashtable&lt;Coords, Vector&lt;Minefield&gt;&gt; minefields = new Hashtable&lt;Coords, Vector&lt;Minefield&gt;&gt;();</span>
+<span class="fc" id="L156">    private Vector&lt;Minefield&gt; vibrabombs = new Vector&lt;Minefield&gt;();</span>
+<span class="fc" id="L157">    private Vector&lt;AttackHandler&gt; attacks = new Vector&lt;AttackHandler&gt;();</span>
+<span class="fc" id="L158">    private Vector&lt;ArtilleryAttackAction&gt; offboardArtilleryAttacks = new Vector&lt;ArtilleryAttackAction&gt;();</span>
+
+    private int lastEntityId;
+
+<span class="fc" id="L162">    private Vector&lt;TagInfo&gt; tagInfoForTurn = new Vector&lt;TagInfo&gt;();</span>
+<span class="fc" id="L163">    private Vector&lt;Flare&gt; flares = new Vector&lt;Flare&gt;();</span>
+<span class="fc" id="L164">    private HashSet&lt;Coords&gt; illuminatedPositions =</span>
+            new HashSet&lt;Coords&gt;();
+
+<span class="fc" id="L167">    private HashMap&lt;String, Object&gt; victoryContext = null;</span>
+
+    // internal integer value for an external game id link
+<span class="fc" id="L170">    private int externalGameId = 0;</span>
+
+    // victory condition related stuff
+<span class="fc" id="L173">    private Victory victory = null;</span>
+
+    // smoke clouds
+<span class="fc" id="L176">    private List&lt;SmokeCloud&gt; smokeCloudList = new CopyOnWriteArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L178">    transient private Vector&lt;GameListener&gt; gameListeners = new Vector&lt;GameListener&gt;();</span>
+
+    /**
+     * Constructor
+     */
+<span class="fc" id="L183">    public Game() {</span>
+        // empty
+<span class="fc" id="L185">    }</span>
+
+    // Added public accessors for external game id
+    public int getExternalGameId() {
+<span class="nc" id="L189">        return externalGameId;</span>
+    }
+
+    public void setExternalGameId(int value) {
+<span class="nc" id="L193">        externalGameId = value;</span>
+<span class="nc" id="L194">    }</span>
+
+    public IBoard getBoard() {
+<span class="nc" id="L197">        return board;</span>
+    }
+
+    public void setBoard(IBoard board) {
+<span class="nc" id="L201">        IBoard oldBoard = this.board;</span>
+<span class="nc" id="L202">        this.board = board;</span>
+<span class="nc" id="L203">        processGameEvent(new GameBoardNewEvent(this, oldBoard, board));</span>
+<span class="nc" id="L204">    }</span>
+
+    public boolean containsMinefield(Coords coords) {
+<span class="nc" id="L207">        return minefields.containsKey(coords);</span>
+    }
+
+    public Vector&lt;Minefield&gt; getMinefields(Coords coords) {
+<span class="nc" id="L211">        Vector&lt;Minefield&gt; mfs = minefields.get(coords);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (mfs == null) {</span>
+<span class="nc" id="L213">            return new Vector&lt;Minefield&gt;();</span>
+        }
+<span class="nc" id="L215">        return mfs;</span>
+    }
+
+    public int getNbrMinefields(Coords coords) {
+<span class="nc" id="L219">        Vector&lt;Minefield&gt; mfs = minefields.get(coords);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (mfs == null) {</span>
+<span class="nc" id="L221">            return 0;</span>
+        }
+
+<span class="nc" id="L224">        return mfs.size();</span>
+    }
+
+    /**
+     * Get the coordinates of all mined hexes in the game.
+     *
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of the &lt;code&gt;Coords&lt;/code&gt; containing
+     * minefields. This will not be &lt;code&gt;null&lt;/code&gt;.
+     */
+    public Enumeration&lt;Coords&gt; getMinedCoords() {
+<span class="nc" id="L234">        return minefields.keys();</span>
+    }
+
+    public void addMinefield(Minefield mf) {
+<span class="nc" id="L238">        addMinefieldHelper(mf);</span>
+<span class="nc" id="L239">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L240">    }</span>
+
+    public void addMinefields(Vector&lt;Minefield&gt; mines) {
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        for (int i = 0; i &lt; mines.size(); i++) {</span>
+<span class="nc" id="L244">            Minefield mf = mines.elementAt(i);</span>
+<span class="nc" id="L245">            addMinefieldHelper(mf);</span>
+        }
+<span class="nc" id="L247">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L248">    }</span>
+
+    public void setMinefields(Vector&lt;Minefield&gt; minefields) {
+<span class="nc" id="L251">        clearMinefieldsHelper();</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        for (int i = 0; i &lt; minefields.size(); i++) {</span>
+<span class="nc" id="L253">            Minefield mf = minefields.elementAt(i);</span>
+<span class="nc" id="L254">            addMinefieldHelper(mf);</span>
+        }
+<span class="nc" id="L256">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L257">    }</span>
+
+    public void resetMinefieldDensity(Vector&lt;Minefield&gt; newMinefields) {
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (newMinefields.size() &lt; 1) {</span>
+<span class="nc" id="L261">            return;</span>
+        }
+<span class="nc" id="L263">        Vector&lt;Minefield&gt; mfs = minefields.get(newMinefields.firstElement()</span>
+<span class="nc" id="L264">                                                            .getCoords());</span>
+<span class="nc" id="L265">        mfs.clear();</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        for (int i = 0; i &lt; newMinefields.size(); i++) {</span>
+<span class="nc" id="L267">            Minefield mf = newMinefields.elementAt(i);</span>
+<span class="nc" id="L268">            addMinefieldHelper(mf);</span>
+        }
+<span class="nc" id="L270">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L271">    }</span>
+
+    protected void addMinefieldHelper(Minefield mf) {
+<span class="nc" id="L274">        Vector&lt;Minefield&gt; mfs = minefields.get(mf.getCoords());</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (mfs == null) {</span>
+<span class="nc" id="L276">            mfs = new Vector&lt;Minefield&gt;();</span>
+<span class="nc" id="L277">            mfs.addElement(mf);</span>
+<span class="nc" id="L278">            minefields.put(mf.getCoords(), mfs);</span>
+<span class="nc" id="L279">            return;</span>
+        }
+<span class="nc" id="L281">        mfs.addElement(mf);</span>
+<span class="nc" id="L282">    }</span>
+
+    public void removeMinefield(Minefield mf) {
+<span class="nc" id="L285">        removeMinefieldHelper(mf);</span>
+<span class="nc" id="L286">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L287">    }</span>
+
+    public void removeMinefieldHelper(Minefield mf) {
+<span class="nc" id="L290">        Vector&lt;Minefield&gt; mfs = minefields.get(mf.getCoords());</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (mfs == null) {</span>
+<span class="nc" id="L292">            return;</span>
+        }
+
+<span class="nc" id="L295">        Enumeration&lt;Minefield&gt; e = mfs.elements();</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        while (e.hasMoreElements()) {</span>
+<span class="nc" id="L297">            Minefield mftemp = e.nextElement();</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">            if (mftemp.equals(mf)) {</span>
+<span class="nc" id="L299">                mfs.removeElement(mftemp);</span>
+<span class="nc" id="L300">                break;</span>
+            }
+<span class="nc" id="L302">        }</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        if (mfs.isEmpty()) {</span>
+<span class="nc" id="L304">            minefields.remove(mf.getCoords());</span>
+        }
+<span class="nc" id="L306">    }</span>
+
+    public void clearMinefields() {
+<span class="nc" id="L309">        clearMinefieldsHelper();</span>
+<span class="nc" id="L310">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L311">    }</span>
+
+    protected void clearMinefieldsHelper() {
+<span class="nc" id="L314">        minefields.clear();</span>
+<span class="nc" id="L315">        vibrabombs.removeAllElements();</span>
+
+<span class="nc" id="L317">        Enumeration&lt;IPlayer&gt; iter = getPlayers();</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        while (iter.hasMoreElements()) {</span>
+<span class="nc" id="L319">            IPlayer player = iter.nextElement();</span>
+<span class="nc" id="L320">            player.removeMinefields();</span>
+<span class="nc" id="L321">        }</span>
+<span class="nc" id="L322">    }</span>
+
+    public Vector&lt;Minefield&gt; getVibrabombs() {
+<span class="nc" id="L325">        return vibrabombs;</span>
+    }
+
+    public void addVibrabomb(Minefield mf) {
+<span class="nc" id="L329">        vibrabombs.addElement(mf);</span>
+<span class="nc" id="L330">    }</span>
+
+    public void removeVibrabomb(Minefield mf) {
+<span class="nc" id="L333">        vibrabombs.removeElement(mf);</span>
+<span class="nc" id="L334">    }</span>
+
+    public boolean containsVibrabomb(Minefield mf) {
+<span class="nc" id="L337">        return vibrabombs.contains(mf);</span>
+    }
+
+    @Override
+    public GameOptions getOptions() {
+<span class="nc" id="L342">        return options;</span>
+    }
+
+    @Override
+    public void setOptions(final @Nullable GameOptions options) {
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (options == null) {</span>
+<span class="nc" id="L348">            MegaMek.getLogger().error(&quot;Can't set the game options to null!&quot;);</span>
+        } else {
+<span class="nc" id="L350">            this.options = options;</span>
+<span class="nc" id="L351">            processGameEvent(new GameSettingsChangeEvent(this));</span>
+        }
+<span class="nc" id="L353">    }</span>
+
+    /**
+     * Return an enumeration of teams in the game
+     */
+    public Enumeration&lt;Team&gt; getTeams() {
+<span class="nc" id="L359">        return teams.elements();</span>
+    }
+
+    /**
+     * Return the current number of teams in the game.
+     */
+    public int getNoOfTeams() {
+<span class="nc" id="L366">        return teams.size();</span>
+    }
+
+    /**
+     * This returns a clone of the vector of teams. Each element is one of the
+     * teams in the game.
+     */
+    public List&lt;Team&gt; getTeamsVector() {
+<span class="nc" id="L374">        return Collections.unmodifiableList(teams);</span>
+    }
+
+    /**
+     * Return a players team Note: may return null if player has no team
+     */
+    public Team getTeamForPlayer(IPlayer p) {
+<span class="nc bnc" id="L381" title="All 2 branches missed.">        for (Team team : teams) {</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">            for (Enumeration&lt;IPlayer&gt; j = team.getPlayers(); j.hasMoreElements(); ) {</span>
+<span class="nc" id="L383">                final IPlayer player = j.nextElement();</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">                if (p == player) {</span>
+<span class="nc" id="L385">                    return team;</span>
+                }
+<span class="nc" id="L387">            }</span>
+<span class="nc" id="L388">        }</span>
+<span class="nc" id="L389">        return null;</span>
+    }
+
+    /**
+     * Set up the teams vector. Each player on a team (Team 1 .. Team X) is
+     * placed in the appropriate vector. Any player on 'No Team', is placed in
+     * their own object
+     */
+    public void setupTeams() {
+<span class="nc" id="L398">        Vector&lt;Team&gt; initTeams = new Vector&lt;Team&gt;();</span>
+<span class="nc" id="L399">        boolean useTeamInit = getOptions().getOption(OptionsConstants.BASE_TEAM_INITIATIVE)</span>
+<span class="nc" id="L400">                                          .booleanValue();</span>
+
+        // Get all NO_TEAM players. If team_initiative is false, all
+        // players are on their own teams for initiative purposes.
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        for (Enumeration&lt;IPlayer&gt; i = getPlayers(); i.hasMoreElements(); ) {</span>
+<span class="nc" id="L405">            final IPlayer player = i.nextElement();</span>
+            // Ignore players not on a team
+<span class="nc bnc" id="L407" title="All 2 branches missed.">            if (player.getTeam() == IPlayer.TEAM_UNASSIGNED) {</span>
+<span class="nc" id="L408">                continue;</span>
+            }
+<span class="nc bnc" id="L410" title="All 4 branches missed.">            if (!useTeamInit || (player.getTeam() == IPlayer.TEAM_NONE)) {</span>
+<span class="nc" id="L411">                Team new_team = new Team(IPlayer.TEAM_NONE);</span>
+<span class="nc" id="L412">                new_team.addPlayer(player);</span>
+<span class="nc" id="L413">                initTeams.addElement(new_team);</span>
+            }
+<span class="nc" id="L415">        }</span>
+
+<span class="nc bnc" id="L417" title="All 2 branches missed.">        if (useTeamInit) {</span>
+            // Now, go through all the teams, and add the appropriate player
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            for (int t = IPlayer.TEAM_NONE + 1; t &lt; IPlayer.MAX_TEAMS; t++) {</span>
+<span class="nc" id="L420">                Team new_team = null;</span>
+<span class="nc bnc" id="L421" title="All 2 branches missed.">                for (Enumeration&lt;IPlayer&gt; i = getPlayers(); i.hasMoreElements(); ) {</span>
+<span class="nc" id="L422">                    final IPlayer player = i.nextElement();</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">                    if (player.getTeam() == t) {</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">                        if (new_team == null) {</span>
+<span class="nc" id="L425">                            new_team = new Team(t);</span>
+                        }
+<span class="nc" id="L427">                        new_team.addPlayer(player);</span>
+                    }
+<span class="nc" id="L429">                }</span>
+
+<span class="nc bnc" id="L431" title="All 2 branches missed.">                if (new_team != null) {</span>
+<span class="nc" id="L432">                    initTeams.addElement(new_team);</span>
+                }
+            }
+        }
+
+        // May need to copy state over from previous teams, such as initiative
+<span class="nc bnc" id="L438" title="All 4 branches missed.">        if ((teams != null) &amp;&amp; (getPhase() != Phase.PHASE_LOUNGE)) {</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">            for (Team newTeam : initTeams) {</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">                for (Team oldTeam : teams) {</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">                    if (newTeam.equals(oldTeam)) {</span>
+<span class="nc" id="L442">                        newTeam.setInitiative(oldTeam.getInitiative());</span>
+                    }
+<span class="nc" id="L444">                }</span>
+<span class="nc" id="L445">            }</span>
+        }
+<span class="nc" id="L447">        teams = initTeams;</span>
+<span class="nc" id="L448">    }</span>
+
+    /**
+     * Return an enumeration of player in the game
+     */
+    public Enumeration&lt;IPlayer&gt; getPlayers() {
+<span class="nc" id="L454">        return players.elements();</span>
+    }
+
+    /**
+     * Return the players vector
+     */
+    public Vector&lt;IPlayer&gt; getPlayersVector() {
+<span class="nc" id="L461">        return players;</span>
+    }
+
+    /**
+     * Return the current number of active players in the game.
+     */
+    public int getNoOfPlayers() {
+<span class="nc" id="L468">        return players.size();</span>
+    }
+
+    /**
+     * Returns the individual player assigned the id parameter.
+     */
+    public IPlayer getPlayer(int id) {
+<span class="nc bnc" id="L475" title="All 2 branches missed.">        if (IPlayer.PLAYER_NONE == id) {</span>
+<span class="nc" id="L476">            return null;</span>
+        }
+<span class="nc" id="L478">        return playerIds.get(Integer.valueOf(id));</span>
+    }
+
+    public void addPlayer(int id, IPlayer player) {
+<span class="nc" id="L482">        player.setGame(this);</span>
+<span class="nc" id="L483">        players.addElement(player);</span>
+<span class="nc" id="L484">        playerIds.put(Integer.valueOf(id), player);</span>
+<span class="nc" id="L485">        setupTeams();</span>
+<span class="nc" id="L486">        updatePlayer(player);</span>
+<span class="nc" id="L487">    }</span>
+
+    public void setPlayer(int id, IPlayer player) {
+<span class="nc" id="L490">        final IPlayer oldPlayer = getPlayer(id);</span>
+<span class="nc" id="L491">        player.setGame(this);</span>
+<span class="nc" id="L492">        players.setElementAt(player, players.indexOf(oldPlayer));</span>
+<span class="nc" id="L493">        playerIds.put(Integer.valueOf(id), player);</span>
+<span class="nc" id="L494">        setupTeams();</span>
+<span class="nc" id="L495">        updatePlayer(player);</span>
+<span class="nc" id="L496">    }</span>
+
+    protected void updatePlayer(IPlayer player) {
+<span class="nc" id="L499">        processGameEvent(new GamePlayerChangeEvent(this, player));</span>
+<span class="nc" id="L500">    }</span>
+
+    public void removePlayer(int id) {
+<span class="nc" id="L503">        IPlayer playerToRemove = getPlayer(id);</span>
+<span class="nc" id="L504">        players.removeElement(playerToRemove);</span>
+<span class="nc" id="L505">        playerIds.remove(Integer.valueOf(id));</span>
+<span class="nc" id="L506">        setupTeams();</span>
+<span class="nc" id="L507">        processGameEvent(new GamePlayerChangeEvent(this, playerToRemove));</span>
+<span class="nc" id="L508">    }</span>
+
+    /**
+     * Returns the number of entities owned by the player, regardless of their
+     * status, as long as they are in the game.
+     */
+    public int getEntitiesOwnedBy(IPlayer player) {
+<span class="nc" id="L515">        int count = 0;</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L517" title="All 2 branches missed.">            if (entity.getOwner().equals(player)) {</span>
+<span class="nc" id="L518">                count++;</span>
+            }
+<span class="nc" id="L520">        }</span>
+<span class="nc" id="L521">        return count;</span>
+    }
+
+    /**
+     * Returns the number of entities owned by the player, regardless of their
+     * status.
+     */
+    public int getAllEntitiesOwnedBy(IPlayer player) {
+<span class="nc" id="L529">        int count = 0;</span>
+<span class="nc bnc" id="L530" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L531" title="All 2 branches missed.">            if (entity.getOwner().equals(player)) {</span>
+<span class="nc" id="L532">                count++;</span>
+            }
+<span class="nc" id="L534">        }</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">            if (entity.getOwner().equals(player)) {</span>
+<span class="nc" id="L537">                count++;</span>
+            }
+<span class="nc" id="L539">        }</span>
+<span class="nc" id="L540">        return count;</span>
+    }
+
+    /**
+     * Returns the number of non-destroyed entityes owned by the player
+     */
+    public int getLiveEntitiesOwnedBy(IPlayer player) {
+<span class="nc" id="L547">        int count = 0;</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L549" title="All 4 branches missed.">            if (entity.getOwner().equals(player) &amp;&amp; !entity.isDestroyed()</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">                    &amp;&amp; !entity.isCarcass()) {</span>
+<span class="nc" id="L551">                count++;</span>
+            }
+<span class="nc" id="L553">        }</span>
+<span class="nc" id="L554">        return count;</span>
+    }
+
+    /**
+     * Returns the number of non-destroyed entities owned by the player,
+     * including entities not yet deployed. Ignore offboard units and captured
+     * Mek pilots.
+     */
+    public int getLiveDeployedEntitiesOwnedBy(IPlayer player) {
+<span class="nc" id="L563">        int count = 0;</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L565" title="All 4 branches missed.">            if (entity.getOwner().equals(player) &amp;&amp; !entity.isDestroyed()</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">                &amp;&amp; !entity.isCarcass()</span>
+<span class="nc bnc" id="L567" title="All 4 branches missed.">                &amp;&amp; !entity.isOffBoard() &amp;&amp; !entity.isCaptured()) {</span>
+<span class="nc" id="L568">                count++;</span>
+            }
+<span class="nc" id="L570">        }</span>
+<span class="nc" id="L571">        return count;</span>
+    }
+
+    /**
+     * Returns the number of non-destroyed deployed entities owned by the
+     * player. Ignore offboard units and captured Mek pilots.
+     */
+    public int getLiveCommandersOwnedBy(IPlayer player) {
+<span class="nc" id="L579">        int count = 0;</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L581" title="All 4 branches missed.">            if (entity.getOwner().equals(player) &amp;&amp; !entity.isDestroyed()</span>
+<span class="nc bnc" id="L582" title="All 2 branches missed.">                &amp;&amp; !entity.isCarcass()</span>
+<span class="nc bnc" id="L583" title="All 4 branches missed.">                &amp;&amp; entity.isCommander() &amp;&amp; !entity.isOffBoard()</span>
+<span class="nc bnc" id="L584" title="All 2 branches missed.">                &amp;&amp; !entity.isCaptured()) {</span>
+<span class="nc" id="L585">                count++;</span>
+            }
+<span class="nc" id="L587">        }</span>
+<span class="nc" id="L588">        return count;</span>
+    }
+
+    /**
+     * Returns true if the player has a valid unit with the Tactical Genius
+     * pilot special ability.
+     */
+    public boolean hasTacticalGenius(IPlayer player) {
+<span class="nc bnc" id="L596" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">            if (entity.hasAbility(OptionsConstants.MISC_TACTICAL_GENIUS)</span>
+<span class="nc bnc" id="L598" title="All 6 branches missed.">                    &amp;&amp; entity.getOwner().equals(player) &amp;&amp; !entity.isDestroyed() &amp;&amp; entity.isDeployed()</span>
+<span class="nc bnc" id="L599" title="All 4 branches missed.">                    &amp;&amp; !entity.isCarcass() &amp;&amp; !entity.getCrew().isUnconscious()) {</span>
+<span class="nc" id="L600">                return true;</span>
+            }
+<span class="nc" id="L602">        }</span>
+<span class="nc" id="L603">        return false;</span>
+    }
+
+    /**
+     * Get a vector of entity objects that are &quot;acceptable&quot; to attack with this
+     * entity
+     */
+    public List&lt;Entity&gt; getValidTargets(Entity entity) {
+<span class="nc" id="L611">        List&lt;Entity&gt; ents = new ArrayList&lt;Entity&gt;();</span>
+
+<span class="nc" id="L613">        boolean friendlyFire = getOptions().booleanOption(OptionsConstants.BASE_FRIENDLY_FIRE);</span>
+
+<span class="nc bnc" id="L615" title="All 2 branches missed.">        for (Entity otherEntity : entities) {</span>
+            // Even if friendly fire is acceptable, do not shoot yourself
+            // Enemy units not on the board can not be shot.
+<span class="nc bnc" id="L618" title="All 2 branches missed.">            if ((otherEntity.getPosition() != null)</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">                    &amp;&amp; !otherEntity.isOffBoard()</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">                    &amp;&amp; otherEntity.isTargetable()</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">                    &amp;&amp; !otherEntity.isHidden()</span>
+<span class="nc bnc" id="L622" title="All 2 branches missed.">                    &amp;&amp; !otherEntity.isSensorReturn(entity.getOwner())</span>
+<span class="nc bnc" id="L623" title="All 2 branches missed.">                    &amp;&amp; otherEntity.hasSeenEntity(entity.getOwner())</span>
+<span class="nc bnc" id="L624" title="All 4 branches missed.">                    &amp;&amp; (entity.isEnemyOf(otherEntity) || (friendlyFire &amp;&amp; (entity</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">                            .getId() != otherEntity.getId())))) {</span>
+                // Air to Ground - target must be on flight path
+<span class="nc bnc" id="L627" title="All 2 branches missed.">                if (Compute.isAirToGround(entity, otherEntity)) {</span>
+<span class="nc bnc" id="L628" title="All 2 branches missed.">                    if (entity.getPassedThrough().contains(</span>
+<span class="nc" id="L629">                            otherEntity.getPosition())) {</span>
+<span class="nc" id="L630">                        ents.add(otherEntity);</span>
+                    }                
+                } else {
+<span class="nc" id="L633">                    ents.add(otherEntity);</span>
+                }
+            }
+<span class="nc" id="L636">        }</span>
+
+<span class="nc" id="L638">        return Collections.unmodifiableList(ents);</span>
+    }
+
+    /**
+     * Returns true if this phase has turns. If false, the phase is simply
+     * waiting for everybody to declare &quot;done&quot;.
+     */
+    public boolean phaseHasTurns(IGame.Phase thisPhase) {
+<span class="nc bnc" id="L646" title="All 2 branches missed.">        switch (thisPhase) {</span>
+            case PHASE_SET_ARTYAUTOHITHEXES:
+            case PHASE_DEPLOY_MINEFIELDS:
+            case PHASE_DEPLOYMENT:
+            case PHASE_MOVEMENT:
+            case PHASE_FIRING:
+            case PHASE_PHYSICAL:
+            case PHASE_TARGETING:
+            case PHASE_OFFBOARD:
+<span class="nc" id="L655">                return true;</span>
+            default:
+<span class="nc" id="L657">                return false;</span>
+        }
+    }
+
+    public boolean isPhaseSimultaneous() {
+<span class="nc" id="L662">        return phase.isPhaseSimultaneous(this);</span>
+    }
+
+    /**
+     * Returns the current GameTurn object
+     */
+    public GameTurn getTurn() {
+<span class="nc bnc" id="L669" title="All 4 branches missed.">        if ((turnIndex &lt; 0) || (turnIndex &gt;= turnVector.size())) {</span>
+<span class="nc" id="L670">            return null;</span>
+        }
+<span class="nc" id="L672">        return turnVector.elementAt(turnIndex);</span>
+    }
+
+    public GameTurn getTurnForPlayer(int pn) {
+<span class="nc bnc" id="L676" title="All 2 branches missed.">        for (int i = turnIndex; i &lt; turnVector.size(); i++) {</span>
+<span class="nc" id="L677">            GameTurn gt = turnVector.get(i);</span>
+<span class="nc bnc" id="L678" title="All 2 branches missed.">            if (gt.isValid(pn, this)) {</span>
+<span class="nc" id="L679">                return gt;</span>
+            }
+        }
+<span class="nc" id="L682">        return null;</span>
+    }
+
+    /**
+     * Changes to the next turn, returning it.
+     */
+    public GameTurn changeToNextTurn() {
+<span class="nc" id="L689">        turnIndex++;</span>
+<span class="nc" id="L690">        return getTurn();</span>
+    }
+
+    /**
+     * Resets the turn index to -1 (awaiting first turn)
+     */
+    public void resetTurnIndex() {
+<span class="nc" id="L697">        turnIndex = -1;</span>
+<span class="nc" id="L698">    }</span>
+
+    /**
+     * Returns true if there is a turn after the current one
+     */
+    public boolean hasMoreTurns() {
+<span class="nc bnc" id="L704" title="All 2 branches missed.">        return turnVector.size() &gt; turnIndex;</span>
+    }
+
+    /**
+     * Inserts a turn that will come directly after the current one
+     */
+    public void insertNextTurn(GameTurn turn) {
+<span class="nc" id="L711">        turnVector.insertElementAt(turn, turnIndex + 1);</span>
+<span class="nc" id="L712">    }</span>
+
+    /**
+     * Inserts a turn after the specific index
+     */
+    public void insertTurnAfter(GameTurn turn, int index) {
+<span class="nc bnc" id="L718" title="All 2 branches missed.">        if ((index + 1) &gt;= turnVector.size()) {</span>
+<span class="nc" id="L719">            turnVector.add(turn);</span>
+        } else {
+<span class="nc" id="L721">            turnVector.insertElementAt(turn, index + 1);</span>
+        }
+<span class="nc" id="L723">    }</span>
+
+    public void swapTurnOrder(int index1, int index2) {
+<span class="nc" id="L726">        GameTurn turn1 = turnVector.get(index1);</span>
+<span class="nc" id="L727">        GameTurn turn2 = turnVector.get(index2);</span>
+<span class="nc" id="L728">        turnVector.set(index2, turn1);</span>
+<span class="nc" id="L729">        turnVector.set(index1, turn2);</span>
+<span class="nc" id="L730">    }</span>
+
+    /**
+     * Returns an Enumeration of the current turn list
+     */
+    public Enumeration&lt;GameTurn&gt; getTurns() {
+<span class="nc" id="L736">        return turnVector.elements();</span>
+    }
+
+    /**
+     * Returns the current turn index
+     */
+    public int getTurnIndex() {
+<span class="nc" id="L743">        return turnIndex;</span>
+    }
+
+    /**
+     * Sets the current turn index
+     */
+    public void setTurnIndex(int turnIndex, int prevPlayerId) {
+        // FIXME: occasionally getTurn() returns null. Handle that case
+        // intelligently.
+<span class="nc" id="L752">        this.turnIndex = turnIndex;</span>
+<span class="nc" id="L753">        processGameEvent(new GameTurnChangeEvent(this, getPlayer(getTurn()</span>
+<span class="nc" id="L754">                .getPlayerNum()), prevPlayerId));</span>
+<span class="nc" id="L755">    }</span>
+
+    /**
+     * Returns the current turn vector
+     */
+    public List&lt;GameTurn&gt; getTurnVector() {
+<span class="nc" id="L761">        return Collections.unmodifiableList(turnVector);</span>
+    }
+
+    /**
+     * Sets the current turn vector
+     */
+    public void setTurnVector(List&lt;GameTurn&gt; turnVector) {
+<span class="nc" id="L768">        this.turnVector.clear();</span>
+<span class="nc bnc" id="L769" title="All 2 branches missed.">        for (GameTurn turn : turnVector) {</span>
+<span class="nc" id="L770">            this.turnVector.add(turn);</span>
+<span class="nc" id="L771">        }</span>
+<span class="nc" id="L772">    }</span>
+
+    public Phase getPhase() {
+<span class="nc" id="L775">        return phase;</span>
+    }
+
+    public void setPhase(Phase phase) {
+<span class="nc" id="L779">        final Phase oldPhase = this.phase;</span>
+<span class="nc" id="L780">        this.phase = phase;</span>
+        // Handle phase-specific items.
+<span class="nc bnc" id="L782" title="All 9 branches missed.">        switch (phase) {</span>
+            case PHASE_LOUNGE:
+<span class="nc" id="L784">                reset();</span>
+<span class="nc" id="L785">                break;</span>
+            case PHASE_TARGETING:
+<span class="nc" id="L787">                resetActions();</span>
+<span class="nc" id="L788">                break;</span>
+            case PHASE_MOVEMENT:
+<span class="nc" id="L790">                resetActions();</span>
+<span class="nc" id="L791">                break;</span>
+            case PHASE_FIRING:
+<span class="nc" id="L793">                resetActions();</span>
+<span class="nc" id="L794">                break;</span>
+            case PHASE_PHYSICAL:
+<span class="nc" id="L796">                resetActions();</span>
+<span class="nc" id="L797">                break;</span>
+            case PHASE_DEPLOYMENT:
+<span class="nc" id="L799">                resetActions();</span>
+<span class="nc" id="L800">                break;</span>
+            case PHASE_INITIATIVE:
+<span class="nc" id="L802">                resetActions();</span>
+<span class="nc" id="L803">                resetCharges();</span>
+<span class="nc" id="L804">                resetRams();</span>
+<span class="nc" id="L805">                break;</span>
+            // TODO Is there better solution to handle charges?
+            case PHASE_PHYSICAL_REPORT:
+            case PHASE_END:
+<span class="nc" id="L809">                resetCharges();</span>
+<span class="nc" id="L810">                resetRams();</span>
+<span class="nc" id="L811">                break;</span>
+            default:
+        }
+
+<span class="nc" id="L815">        processGameEvent(new GamePhaseChangeEvent(this, oldPhase, phase));</span>
+<span class="nc" id="L816">    }</span>
+
+    public Phase getLastPhase() {
+<span class="nc" id="L819">        return lastPhase;</span>
+    }
+
+    public void setLastPhase(Phase lastPhase) {
+<span class="nc" id="L823">        this.lastPhase = lastPhase;</span>
+<span class="nc" id="L824">    }</span>
+
+    public void setDeploymentComplete(boolean deploymentComplete) {
+<span class="nc" id="L827">        this.deploymentComplete = deploymentComplete;</span>
+<span class="nc" id="L828">    }</span>
+
+    public boolean isDeploymentComplete() {
+<span class="nc" id="L831">        return deploymentComplete;</span>
+    }
+
+    /**
+     * Sets up up the hashtable of who deploys when
+     */
+    public void setupRoundDeployment() {
+<span class="nc" id="L838">        deploymentTable = new Hashtable&lt;Integer, Vector&lt;Entity&gt;&gt;();</span>
+
+<span class="nc bnc" id="L840" title="All 2 branches missed.">        for (Entity ent : entities) {</span>
+<span class="nc bnc" id="L841" title="All 2 branches missed.">            if (ent.isDeployed()) {</span>
+<span class="nc" id="L842">                continue;</span>
+            }
+
+<span class="nc" id="L845">            Vector&lt;Entity&gt; roundVec = deploymentTable.get(Integer.valueOf(ent.getDeployRound()));</span>
+
+<span class="nc bnc" id="L847" title="All 2 branches missed.">            if (null == roundVec) {</span>
+<span class="nc" id="L848">                roundVec = new Vector&lt;Entity&gt;();</span>
+<span class="nc" id="L849">                deploymentTable.put(ent.getDeployRound(), roundVec);</span>
+            }
+
+<span class="nc" id="L852">            roundVec.addElement(ent);</span>
+<span class="nc" id="L853">            lastDeploymentRound = Math.max(lastDeploymentRound,</span>
+<span class="nc" id="L854">                                           ent.getDeployRound());</span>
+<span class="nc" id="L855">        }</span>
+<span class="nc" id="L856">    }</span>
+
+    /**
+     * Checks to see if we've past our deployment completion
+     */
+    public void checkForCompleteDeployment() {
+<span class="nc bnc" id="L862" title="All 2 branches missed.">        setDeploymentComplete(lastDeploymentRound &lt; getRoundCount());</span>
+<span class="nc" id="L863">    }</span>
+
+    /**
+     * Check to see if we should deploy this round
+     */
+    public boolean shouldDeployThisRound() {
+<span class="nc" id="L869">        return shouldDeployForRound(getRoundCount());</span>
+    }
+
+    public boolean shouldDeployForRound(int round) {
+<span class="nc" id="L873">        Vector&lt;Entity&gt; vec = getEntitiesToDeployForRound(round);</span>
+
+<span class="nc bnc" id="L875" title="All 4 branches missed.">        return (((null == vec) || (vec.size() == 0)) ? false : true);</span>
+    }
+
+    private Vector&lt;Entity&gt; getEntitiesToDeployForRound(int round) {
+<span class="nc" id="L879">        return deploymentTable.get(Integer.valueOf(round));</span>
+    }
+
+    /**
+     * Clear this round from this list of entities to deploy
+     */
+    public void clearDeploymentThisRound() {
+<span class="nc" id="L886">        deploymentTable.remove(Integer.valueOf(getRoundCount()));</span>
+<span class="nc" id="L887">    }</span>
+
+    /**
+     * Returns a vector of entities that have not yet deployed
+     */
+    public List&lt;Entity&gt; getUndeployedEntities() {
+<span class="nc" id="L893">        List&lt;Entity&gt; entList = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc" id="L894">        Enumeration&lt;Vector&lt;Entity&gt;&gt; iter = deploymentTable.elements();</span>
+
+<span class="nc bnc" id="L896" title="All 2 branches missed.">        while (iter.hasMoreElements()) {</span>
+<span class="nc" id="L897">            Vector&lt;Entity&gt; vecTemp = iter.nextElement();</span>
+
+<span class="nc bnc" id="L899" title="All 2 branches missed.">            for (int i = 0; i &lt; vecTemp.size(); i++) {</span>
+<span class="nc" id="L900">                entList.add(vecTemp.elementAt(i));</span>
+            }
+<span class="nc" id="L902">        }</span>
+
+<span class="nc" id="L904">        return Collections.unmodifiableList(entList);</span>
+    }
+
+    /**
+     * Returns an enumeration of all the entites in the game.
+     */
+    public Iterator&lt;Entity&gt; getEntities() {
+<span class="nc" id="L911">        return entities.iterator();</span>
+    }
+
+    public Entity getPreviousEntityFromList(Entity current) {
+<span class="nc bnc" id="L915" title="All 4 branches missed.">        if ((current != null) &amp;&amp; entities.contains(current)) {</span>
+<span class="nc" id="L916">            int prev = entities.indexOf(current) - 1;</span>
+<span class="nc bnc" id="L917" title="All 2 branches missed.">            if (prev &lt; 0) {</span>
+<span class="nc" id="L918">                prev = entities.size() - 1; // wrap around to end</span>
+            }
+<span class="nc" id="L920">            return entities.get(prev);</span>
+        }
+<span class="nc" id="L922">        return null;</span>
+    }
+
+    public Entity getNextEntityFromList(Entity current) {
+<span class="nc bnc" id="L926" title="All 4 branches missed.">        if ((current != null) &amp;&amp; entities.contains(current)) {</span>
+<span class="nc" id="L927">            int next = entities.indexOf(current) + 1;</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">            if (next &gt;= entities.size()) {</span>
+<span class="nc" id="L929">                next = 0; // wrap-around to begining</span>
+            }
+<span class="nc" id="L931">            return entities.get(next);</span>
+        }
+<span class="nc" id="L933">        return null;</span>
+    }
+
+    /**
+     * Returns the actual vector for the entities
+     */
+    public List&lt;Entity&gt; getEntitiesVector() {
+<span class="fc" id="L940">        return Collections.unmodifiableList(entities);</span>
+    }
+
+    public synchronized void setEntitiesVector(List&lt;Entity&gt; entities) {
+        //checkPositionCacheConsistency();
+<span class="nc" id="L945">        this.entities.clear();</span>
+<span class="nc" id="L946">        this.entities.addAll(entities);</span>
+<span class="nc" id="L947">        reindexEntities();</span>
+<span class="nc" id="L948">        resetEntityPositionLookup();</span>
+<span class="nc" id="L949">        processGameEvent(new GameEntityNewEvent(this, entities));</span>
+<span class="nc" id="L950">    }</span>
+
+    /**
+     * Returns the actual vector for the out-of-game entities
+     */
+    public Vector&lt;Entity&gt; getOutOfGameEntitiesVector() {
+<span class="nc" id="L956">        return vOutOfGame;</span>
+    }
+
+    /**
+     * Swap out the current list of dead (or fled) units for a new one.
+     *
+     * @param vOutOfGame - the new &lt;code&gt;Vector&lt;/code&gt; of dead or fled units. This
+     *                   value should &lt;em&gt;not&lt;/em&gt; be &lt;code&gt;null&lt;/code&gt;.
+     * @throws IllegalArgumentException if the new list is &lt;code&gt;null&lt;/code&gt;.
+     */
+    public void setOutOfGameEntitiesVector(List&lt;Entity&gt; vOutOfGame) {
+<span class="nc bnc" id="L967" title="All 4 branches missed.">        assert (vOutOfGame != null) : &quot;New out-of-game list should not be null.&quot;;</span>
+<span class="nc" id="L968">        Vector&lt;Entity&gt; newOutOfGame = new Vector&lt;Entity&gt;();</span>
+
+        // Add entities for the existing players to the game.
+<span class="nc bnc" id="L971" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc" id="L972">            int ownerId = entity.getOwnerId();</span>
+<span class="nc bnc" id="L973" title="All 4 branches missed.">            if ((ownerId != Entity.NONE) &amp;&amp; (getPlayer(ownerId) != null)) {</span>
+<span class="nc" id="L974">                entity.setGame(this);</span>
+<span class="nc" id="L975">                newOutOfGame.addElement(entity);</span>
+            }
+<span class="nc" id="L977">        }</span>
+<span class="nc" id="L978">        this.vOutOfGame = newOutOfGame;</span>
+<span class="nc" id="L979">        processGameEvent(new GameEntityNewOffboardEvent(this));</span>
+<span class="nc" id="L980">    }</span>
+
+    /**
+     * Returns an out-of-game entity.
+     *
+     * @param id the &lt;code&gt;int&lt;/code&gt; ID of the out-of-game entity.
+     * @return the out-of-game &lt;code&gt;Entity&lt;/code&gt; with that ID. If no
+     * out-of-game entity has that ID, returns a &lt;code&gt;null&lt;/code&gt;.
+     */
+    public Entity getOutOfGameEntity(int id) {
+<span class="nc" id="L990">        Entity match = null;</span>
+<span class="nc" id="L991">        Enumeration&lt;Entity&gt; iter = vOutOfGame.elements();</span>
+<span class="nc bnc" id="L992" title="All 4 branches missed.">        while ((null == match) &amp;&amp; iter.hasMoreElements()) {</span>
+<span class="nc" id="L993">            Entity entity = iter.nextElement();</span>
+<span class="nc bnc" id="L994" title="All 2 branches missed.">            if (id == entity.getId()) {</span>
+<span class="nc" id="L995">                match = entity;</span>
+            }
+<span class="nc" id="L997">        }</span>
+<span class="nc" id="L998">        return match;</span>
+    }
+
+    /**
+     * Returns a &lt;code&gt;Vector&lt;/code&gt; containing the &lt;code&gt;Entity&lt;/code&gt;s that
+     * are in the same C3 network as the passed-in unit. The output will contain
+     * the passed-in unit, if the unit has a C3 computer. If the unit has no C3
+     * computer, the output will be empty (but it will never be
+     * &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @param entity - the &lt;code&gt;Entity&lt;/code&gt; whose C3 network co- members is
+     *               required. This value may be &lt;code&gt;null&lt;/code&gt;.
+     * @return a &lt;code&gt;Vector&lt;/code&gt; that will contain all other
+     * &lt;code&gt;Entity&lt;/code&gt;s that are in the same C3 network as the
+     * passed-in unit. This &lt;code&gt;Vector&lt;/code&gt; may be empty, but it
+     * will not be &lt;code&gt;null&lt;/code&gt;.
+     * @see #getC3SubNetworkMembers(Entity)
+     */
+    public Vector&lt;Entity&gt; getC3NetworkMembers(Entity entity) {
+<span class="nc" id="L1017">        Vector&lt;Entity&gt; members = new Vector&lt;Entity&gt;();</span>
+        //WOR
+        // Does the unit have a C3 computer?
+<span class="nc bnc" id="L1020" title="All 10 branches missed.">        if ((entity != null) &amp;&amp; (entity.hasC3() || entity.hasC3i() || entity.hasActiveNovaCEWS() || entity.hasNavalC3())) {</span>
+
+            // Walk throught the entities in the game, and add all
+            // members of the C3 network to the output Vector.
+<span class="nc bnc" id="L1024" title="All 2 branches missed.">            for (Entity unit : entities) {</span>
+<span class="nc bnc" id="L1025" title="All 4 branches missed.">                if (entity.equals(unit) || entity.onSameC3NetworkAs(unit)) {</span>
+<span class="nc" id="L1026">                    members.addElement(unit);</span>
+                }
+<span class="nc" id="L1028">            }</span>
+
+        } // End entity-has-C3
+
+<span class="nc" id="L1032">        return members;</span>
+    }
+
+    /**
+     * Returns a &lt;code&gt;Vector&lt;/code&gt; containing the &lt;code&gt;Entity&lt;/code&gt;s that
+     * are in the C3 sub-network under the passed-in unit. The output will
+     * contain the passed-in unit, if the unit has a C3 computer. If the unit
+     * has no C3 computer, the output will be empty (but it will never be
+     * &lt;code&gt;null&lt;/code&gt;). If the passed-in unit is a company commander or a
+     * member of a C3i network, this call is the same as
+     * &lt;code&gt;getC3NetworkMembers&lt;/code&gt;.
+     *
+     * @param entity - the &lt;code&gt;Entity&lt;/code&gt; whose C3 network sub- members is
+     *               required. This value may be &lt;code&gt;null&lt;/code&gt;.
+     * @return a &lt;code&gt;Vector&lt;/code&gt; that will contain all other
+     * &lt;code&gt;Entity&lt;/code&gt;s that are in the same C3 network under the
+     * passed-in unit. This &lt;code&gt;Vector&lt;/code&gt; may be empty, but it
+     * will not be &lt;code&gt;null&lt;/code&gt;.
+     * @see #getC3NetworkMembers(Entity)
+     */
+    public Vector&lt;Entity&gt; getC3SubNetworkMembers(Entity entity) {
+        //WOR
+        // Handle null, C3i, NC3, and company commander units.
+<span class="nc bnc" id="L1055" title="All 10 branches missed.">        if ((entity == null) || entity.hasC3i() || entity.hasNavalC3() || entity.hasActiveNovaCEWS() || entity.C3MasterIs(entity)) {</span>
+<span class="nc" id="L1056">            return getC3NetworkMembers(entity);</span>
+        }
+
+<span class="nc" id="L1059">        Vector&lt;Entity&gt; members = new Vector&lt;Entity&gt;();</span>
+
+        // Does the unit have a C3 computer?
+<span class="nc bnc" id="L1062" title="All 2 branches missed.">        if (entity.hasC3()) {</span>
+
+            // Walk throught the entities in the game, and add all
+            // sub-members of the C3 network to the output Vector.
+<span class="nc bnc" id="L1066" title="All 2 branches missed.">            for (Entity unit : entities) {</span>
+<span class="nc bnc" id="L1067" title="All 4 branches missed.">                if (entity.equals(unit) || unit.C3MasterIs(entity)) {</span>
+<span class="nc" id="L1068">                    members.addElement(unit);</span>
+                }
+<span class="nc" id="L1070">            }</span>
+
+        } // End entity-has-C3
+
+<span class="nc" id="L1074">        return members;</span>
+    }
+
+    /**
+     * Returns a &lt;code&gt;Hashtable&lt;/code&gt; that maps the &lt;code&gt;Coords&lt;/code&gt; of
+     * each unit in this &lt;code&gt;Game&lt;/code&gt; to a &lt;code&gt;Vector&lt;/code&gt; of
+     * &lt;code&gt;Entity&lt;/code&gt;s at that positions. Units that have no position (e.g.
+     * loaded units) will not be in the map.
+     *
+     * @return a &lt;code&gt;Hashtable&lt;/code&gt; that maps the &lt;code&gt;Coords&lt;/code&gt;
+     * positions or each unit in the game to a &lt;code&gt;Vector&lt;/code&gt; of
+     * &lt;code&gt;Entity&lt;/code&gt;s at that position.
+     */
+    public Hashtable&lt;Coords, Vector&lt;Entity&gt;&gt; getPositionMap() {
+<span class="nc" id="L1088">        Hashtable&lt;Coords, Vector&lt;Entity&gt;&gt; positionMap = new Hashtable&lt;Coords, Vector&lt;Entity&gt;&gt;();</span>
+<span class="nc" id="L1089">        Vector&lt;Entity&gt; atPos = null;</span>
+
+        // Walk through the entities in this game.
+<span class="nc bnc" id="L1092" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+            // Get the vector for this entity's position.
+<span class="nc" id="L1094">            final Coords coords = entity.getPosition();</span>
+<span class="nc bnc" id="L1095" title="All 2 branches missed.">            if (coords != null) {</span>
+<span class="nc" id="L1096">                atPos = positionMap.get(coords);</span>
+
+                // If this is the first entity at this position,
+                // create the vector and add it to the map.
+<span class="nc bnc" id="L1100" title="All 2 branches missed.">                if (atPos == null) {</span>
+<span class="nc" id="L1101">                    atPos = new Vector&lt;Entity&gt;();</span>
+<span class="nc" id="L1102">                    positionMap.put(coords, atPos);</span>
+                }
+
+                // Add the entity to the vector for this position.
+<span class="nc" id="L1106">                atPos.addElement(entity);</span>
+
+            }
+<span class="nc" id="L1109">        } // Handle the next entity.</span>
+
+        // Return the map.
+<span class="nc" id="L1112">        return positionMap;</span>
+    }
+
+    /**
+     * Returns an enumeration of salvagable entities.
+     */
+    public Enumeration&lt;Entity&gt; getGraveyardEntities() {
+<span class="nc" id="L1119">        Vector&lt;Entity&gt; graveyard = new Vector&lt;Entity&gt;();</span>
+
+<span class="nc bnc" id="L1121" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1122" title="All 2 branches missed.">            if ((entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_SALVAGEABLE)</span>
+<span class="nc bnc" id="L1123" title="All 2 branches missed.">                || (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_EJECTED)) {</span>
+<span class="nc" id="L1124">                graveyard.addElement(entity);</span>
+            }
+<span class="nc" id="L1126">        }</span>
+
+<span class="nc" id="L1128">        return graveyard.elements();</span>
+    }
+
+    /**
+     * Returns an enumeration of wrecked entities.
+     */
+    public Enumeration&lt;Entity&gt; getWreckedEntities() {
+<span class="nc" id="L1135">        Vector&lt;Entity&gt; wrecks = new Vector&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L1136" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1137" title="All 2 branches missed.">            if ((entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_SALVAGEABLE)</span>
+<span class="nc bnc" id="L1138" title="All 2 branches missed.">                || (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_EJECTED)</span>
+<span class="nc bnc" id="L1139" title="All 2 branches missed.">                || (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_DEVASTATED)) {</span>
+<span class="nc" id="L1140">                wrecks.addElement(entity);</span>
+            }
+<span class="nc" id="L1142">        }</span>
+        
+<span class="nc" id="L1144">        return wrecks.elements();</span>
+    }
+
+    /**
+     * Returns an enumeration of entities that have retreated
+     */
+ // TODO: Correctly implement &quot;Captured&quot; Entities
+    public Enumeration&lt;Entity&gt; getRetreatedEntities() {
+<span class="nc" id="L1152">        Vector&lt;Entity&gt; sanctuary = new Vector&lt;Entity&gt;();</span>
+
+<span class="nc bnc" id="L1154" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1155" title="All 2 branches missed.">            if ((entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_IN_RETREAT)</span>
+<span class="nc bnc" id="L1156" title="All 2 branches missed.">                || (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_CAPTURED)</span>
+<span class="nc bnc" id="L1157" title="All 2 branches missed.">                || (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_PUSHED)) {</span>
+<span class="nc" id="L1158">                sanctuary.addElement(entity);</span>
+            }
+<span class="nc" id="L1160">        }</span>
+
+<span class="nc" id="L1162">        return sanctuary.elements();</span>
+    }
+
+    /**
+     * Returns an enumeration of entities that were utterly destroyed
+     */
+    public Enumeration&lt;Entity&gt; getDevastatedEntities() {
+<span class="nc" id="L1169">        Vector&lt;Entity&gt; smithereens = new Vector&lt;Entity&gt;();</span>
+
+<span class="nc bnc" id="L1171" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1172" title="All 2 branches missed.">            if (entity.getRemovalCondition() == IEntityRemovalConditions.REMOVE_DEVASTATED) {</span>
+<span class="nc" id="L1173">                smithereens.addElement(entity);</span>
+            }
+<span class="nc" id="L1175">        }</span>
+
+<span class="nc" id="L1177">        return smithereens.elements();</span>
+    }
+    
+    /**
+     * Returns an enumeration of &quot;carcass&quot; entities, i.e., vehicles with dead
+     * crews that are still on the map.
+     */
+    public Enumeration&lt;Entity&gt; getCarcassEntities() {
+<span class="nc" id="L1185">        Vector&lt;Entity&gt; carcasses = new Vector&lt;Entity&gt;();</span>
+        
+<span class="nc bnc" id="L1187" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1188" title="All 2 branches missed.">            if (entity.isCarcass()) {</span>
+<span class="nc" id="L1189">                carcasses.addElement(entity);</span>
+            }
+<span class="nc" id="L1191">        }</span>
+        
+<span class="nc" id="L1193">        return carcasses.elements();</span>
+    }
+
+    /**
+     * Return the current number of entities in the game.
+     */
+    public int getNoOfEntities() {
+<span class="nc" id="L1200">        return entities.size();</span>
+    }
+
+    /**
+     * Returns the appropriate target for this game given a type and id
+     */
+    @Override
+    public @Nullable Targetable getTarget(int nType, int nID) {
+        try {
+<span class="nc bnc" id="L1209" title="All 6 branches missed.">            switch (nType) {</span>
+                case Targetable.TYPE_ENTITY:
+<span class="nc" id="L1211">                    return getEntity(nID);</span>
+                case Targetable.TYPE_HEX_CLEAR:
+                case Targetable.TYPE_HEX_IGNITE:
+                case Targetable.TYPE_HEX_BOMB:
+                case Targetable.TYPE_MINEFIELD_DELIVER:
+                case Targetable.TYPE_FLARE_DELIVER:
+                case Targetable.TYPE_HEX_EXTINGUISH:
+                case Targetable.TYPE_HEX_ARTILLERY:
+                case Targetable.TYPE_HEX_SCREEN:
+                case Targetable.TYPE_HEX_AERO_BOMB:
+                case Targetable.TYPE_HEX_TAG:
+<span class="nc" id="L1222">                    return new HexTarget(HexTarget.idToCoords(nID), nType);</span>
+                case Targetable.TYPE_FUEL_TANK:
+                case Targetable.TYPE_FUEL_TANK_IGNITE:
+                case Targetable.TYPE_BUILDING:
+                case Targetable.TYPE_BLDG_IGNITE:
+                case Targetable.TYPE_BLDG_TAG:
+<span class="nc" id="L1228">                    return new BuildingTarget(BuildingTarget.idToCoords(nID), board, nType);</span>
+                case Targetable.TYPE_MINEFIELD_CLEAR:
+<span class="nc" id="L1230">                    return new MinefieldTarget(MinefieldTarget.idToCoords(nID), board);</span>
+                case Targetable.TYPE_INARC_POD:
+<span class="nc" id="L1232">                    return INarcPod.idToInstance(nID);</span>
+                default:
+<span class="nc" id="L1234">                    return null;</span>
+            }
+<span class="nc" id="L1236">        } catch (Exception e) {</span>
+<span class="nc" id="L1237">            MegaMek.getLogger().error(e);</span>
+<span class="nc" id="L1238">            return null;</span>
+        }
+    }
+
+    /**
+     * Returns the entity with the given id number, if any.
+     */
+    @Override
+    public @Nullable Entity getEntity(final int id) {
+<span class="nc" id="L1247">        return entityIds.get(id);</span>
+    }
+
+    /**
+     * looks for an entity by id number even if out of the game
+     */
+    public Entity getEntityFromAllSources(int id) {
+<span class="nc" id="L1254">        Entity en = getEntity(id);</span>
+<span class="nc bnc" id="L1255" title="All 2 branches missed.">        if(null == en) {</span>
+<span class="nc bnc" id="L1256" title="All 2 branches missed.">            for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1257" title="All 2 branches missed.">                if(entity.getId() == id) {</span>
+<span class="nc" id="L1258">                    return entity;</span>
+                }
+<span class="nc" id="L1260">            }</span>
+        }
+<span class="nc" id="L1262">        return en;</span>
+    }
+    
+    public void addEntities(List&lt;Entity&gt; entities) {
+<span class="nc bnc" id="L1266" title="All 2 branches missed.">        for (int i = 0; i &lt; entities.size(); i++) {</span>
+<span class="nc" id="L1267">            addEntity(entities.get(i), false);</span>
+        }
+        // We need to delay calculating BV until all units have been added because
+        // C3 network connections will be cleared if the master is not in the game yet.
+<span class="nc" id="L1271">        entities.forEach(e -&gt; e.setInitialBV(e.calculateBattleValue(false, false)));</span>
+<span class="nc" id="L1272">        processGameEvent(new GameEntityNewEvent(this, entities));</span>
+<span class="nc" id="L1273">    }</span>
+
+    public void addEntity(int id, Entity entity) {
+        // Disregard the passed id, addEntity(Entity) pulls the id from the
+        //  Entity instance.
+<span class="nc" id="L1278">        addEntity(entity);</span>
+<span class="nc" id="L1279">    }</span>
+
+    public void addEntity(Entity entity) {
+<span class="nc" id="L1282">        addEntity(entity, true);</span>
+<span class="nc" id="L1283">    }</span>
+
+    public synchronized void addEntity(Entity entity, boolean genEvent) {
+<span class="nc" id="L1286">        entity.setGame(this);</span>
+<span class="nc bnc" id="L1287" title="All 2 branches missed.">        if (entity instanceof Mech) {</span>
+<span class="nc" id="L1288">            ((Mech) entity).setBAGrabBars();</span>
+<span class="nc" id="L1289">            ((Mech) entity).setProtomechClampMounts();</span>
+        }
+<span class="nc bnc" id="L1291" title="All 2 branches missed.">        if (entity instanceof Tank) {</span>
+<span class="nc" id="L1292">            ((Tank) entity).setBAGrabBars();</span>
+<span class="nc" id="L1293">            ((Tank) entity).setTrailerHitches();</span>
+        }
+
+        // Add magnetic clamp mounts
+<span class="nc bnc" id="L1297" title="All 4 branches missed.">        if ((entity instanceof Mech) &amp;&amp; !entity.isOmni()</span>
+<span class="nc bnc" id="L1298" title="All 2 branches missed.">                &amp;&amp; !entity.hasBattleArmorHandles()) {</span>
+<span class="nc" id="L1299">            entity.addTransporter(new ClampMountMech());</span>
+<span class="nc bnc" id="L1300" title="All 4 branches missed.">        } else if ((entity instanceof Tank) &amp;&amp; !entity.isOmni()</span>
+<span class="nc bnc" id="L1301" title="All 2 branches missed.">                &amp;&amp; !entity.hasBattleArmorHandles()) {</span>
+<span class="nc" id="L1302">            entity.addTransporter(new ClampMountTank());</span>
+        }
+
+<span class="nc" id="L1305">        entity.setGameOptions();</span>
+<span class="nc bnc" id="L1306" title="All 2 branches missed.">        if (entity.getC3UUIDAsString() == null) { // We don't want to be</span>
+            // resetting a UUID that
+            // exists already!
+<span class="nc" id="L1309">            entity.setC3UUID();</span>
+        }
+        // Add this Entity, ensuring that it's id is unique
+<span class="nc" id="L1312">        int id = entity.getId();</span>
+<span class="nc bnc" id="L1313" title="All 2 branches missed.">        if (!entityIds.containsKey(id)) {</span>
+<span class="nc" id="L1314">            entityIds.put(Integer.valueOf(id), entity);</span>
+        } else {
+<span class="nc" id="L1316">            id = getNextEntityId();</span>
+<span class="nc" id="L1317">            entity.setId(id);</span>
+<span class="nc" id="L1318">            entityIds.put(id, entity);</span>
+        }
+<span class="nc" id="L1320">        entities.add(entity);</span>
+<span class="nc" id="L1321">        updateEntityPositionLookup(entity, null);</span>
+
+<span class="nc bnc" id="L1323" title="All 2 branches missed.">        if (id &gt; lastEntityId) {</span>
+<span class="nc" id="L1324">            lastEntityId = id;</span>
+        }
+
+        // And... lets get this straight now.
+<span class="nc bnc" id="L1328" title="All 2 branches missed.">        if ((entity instanceof Mech)</span>
+<span class="nc bnc" id="L1329" title="All 2 branches missed.">            &amp;&amp; getOptions().booleanOption(OptionsConstants.RPG_CONDITIONAL_EJECTION)) {</span>
+<span class="nc" id="L1330">            ((Mech) entity).setAutoEject(true);</span>
+<span class="nc bnc" id="L1331" title="All 2 branches missed.">            if (((Mech) entity).hasCase()</span>
+<span class="nc bnc" id="L1332" title="All 2 branches missed.">                || ((Mech) entity).hasCASEIIAnywhere()) {</span>
+<span class="nc" id="L1333">                ((Mech) entity).setCondEjectAmmo(false);</span>
+            } else {
+<span class="nc" id="L1335">                ((Mech) entity).setCondEjectAmmo(true);</span>
+            }
+<span class="nc" id="L1337">            ((Mech) entity).setCondEjectEngine(true);</span>
+<span class="nc" id="L1338">            ((Mech) entity).setCondEjectCTDest(true);</span>
+<span class="nc" id="L1339">            ((Mech) entity).setCondEjectHeadshot(true);</span>
+        }
+
+<span class="nc bnc" id="L1342" title="All 4 branches missed.">        assert (entities.size() == entityIds.size()) : &quot;Add Entity failed&quot;;</span>
+<span class="nc bnc" id="L1343" title="All 2 branches missed.">        if (genEvent) {</span>
+<span class="nc" id="L1344">            entity.setInitialBV(entity.calculateBattleValue(false, false));</span>
+<span class="nc" id="L1345">            processGameEvent(new GameEntityNewEvent(this, entity));</span>
+        }
+<span class="nc" id="L1347">    }</span>
+
+    public void setEntity(int id, Entity entity) {
+<span class="nc" id="L1350">        setEntity(id, entity, null);</span>
+<span class="nc" id="L1351">    }</span>
+
+    public synchronized void setEntity(int id, Entity entity, Vector&lt;UnitLocation&gt; movePath) {
+<span class="nc" id="L1354">        final Entity oldEntity = getEntity(id);</span>
+<span class="nc bnc" id="L1355" title="All 2 branches missed.">        if (oldEntity == null) {</span>
+<span class="nc" id="L1356">            addEntity(entity);</span>
+        } else {
+<span class="nc" id="L1358">            entity.setGame(this);</span>
+<span class="nc" id="L1359">            entities.set(entities.indexOf(oldEntity), entity);</span>
+<span class="nc" id="L1360">            entityIds.put(id, entity);</span>
+            // Get the collection of positions
+<span class="nc" id="L1362">            HashSet&lt;Coords&gt; oldPositions = oldEntity.getOccupiedCoords();</span>
+            // Update position lookup table
+<span class="nc" id="L1364">            updateEntityPositionLookup(entity, oldPositions);</span>
+
+            // Not sure if this really required
+<span class="nc bnc" id="L1367" title="All 2 branches missed.">            if (id &gt; lastEntityId) {</span>
+<span class="nc" id="L1368">                lastEntityId = id;</span>
+            }
+
+<span class="nc" id="L1371">            processGameEvent(</span>
+                    new GameEntityChangeEvent(this, entity, movePath, oldEntity));
+        }
+<span class="nc bnc" id="L1374" title="All 4 branches missed.">        assert (entities.size() == entityIds.size()) : &quot;Set Entity Failed&quot;;</span>
+<span class="nc" id="L1375">    }</span>
+
+    /**
+     * @return int containing an unused entity id
+     */
+    public int getNextEntityId() {
+<span class="nc" id="L1381">        return lastEntityId + 1;</span>
+    }
+
+    /**
+     * Returns true if an entity with the specified id number exists in this
+     * game.
+     */
+    public boolean hasEntity(int entityId) {
+<span class="nc" id="L1389">        return entityIds.containsKey(Integer.valueOf(entityId));</span>
+    }
+
+    /**
+     * Remove an entity from the master list. If we can't find that entity,
+     * (probably due to double-blind) ignore it.
+     */
+    public synchronized void removeEntity(int id, int condition) {
+        // always attempt to remove the entity with this ID from the entities collection
+        // as it may have gotten stuck there.
+<span class="nc bnc" id="L1399" title="All 2 branches missed.">        entities.removeIf(ent -&gt; (ent.getId() == id));</span>
+        
+<span class="nc" id="L1401">        Entity toRemove = getEntity(id);</span>
+<span class="nc bnc" id="L1402" title="All 2 branches missed.">        if (toRemove == null) {</span>
+<span class="nc" id="L1403">            return;</span>
+        }
+
+<span class="nc" id="L1406">        entityIds.remove(id);</span>
+<span class="nc" id="L1407">        removeEntityPositionLookup(toRemove);</span>
+
+<span class="nc" id="L1409">        toRemove.setRemovalCondition(condition);</span>
+
+        // do not keep never-joined entities
+<span class="nc bnc" id="L1412" title="All 4 branches missed.">        if ((vOutOfGame != null)</span>
+            &amp;&amp; (condition != IEntityRemovalConditions.REMOVE_NEVER_JOINED)) {
+<span class="nc" id="L1414">            vOutOfGame.addElement(toRemove);</span>
+        }
+
+        // We also need to remove it from the list of things to be deployed...
+        // we might still be in this list if we never joined the game
+<span class="nc bnc" id="L1419" title="All 2 branches missed.">        if (deploymentTable.size() &gt; 0) {</span>
+<span class="nc" id="L1420">            Enumeration&lt;Vector&lt;Entity&gt;&gt; iter = deploymentTable.elements();</span>
+
+<span class="nc bnc" id="L1422" title="All 2 branches missed.">            while (iter.hasMoreElements()) {</span>
+<span class="nc" id="L1423">                Vector&lt;Entity&gt; vec = iter.nextElement();</span>
+
+<span class="nc bnc" id="L1425" title="All 2 branches missed.">                for (int i = vec.size() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L1426">                    Entity en = vec.elementAt(i);</span>
+
+<span class="nc bnc" id="L1428" title="All 2 branches missed.">                    if (en.getId() == id) {</span>
+<span class="nc" id="L1429">                        vec.removeElementAt(i);</span>
+                    }
+                }
+<span class="nc" id="L1432">            }</span>
+        }
+<span class="nc" id="L1434">        processGameEvent(new GameEntityRemoveEvent(this, toRemove));</span>
+<span class="nc" id="L1435">    }</span>
+
+    public void removeEntities(List&lt;Integer&gt; ids, int condition) {
+<span class="nc bnc" id="L1438" title="All 2 branches missed.">        for (int i = 0; i &lt; ids.size(); i++) {</span>
+<span class="nc" id="L1439">            removeEntity(ids.get(i), condition);</span>
+        }
+<span class="nc" id="L1441">    }</span>
+
+    /**
+     * Resets this game.
+     */
+    public synchronized void reset() {
+<span class="nc" id="L1447">        uuid = UUID.randomUUID();</span>
+
+<span class="nc" id="L1449">        roundCount = 0;</span>
+
+<span class="nc" id="L1451">        entities.clear();</span>
+<span class="nc" id="L1452">        entityIds.clear();</span>
+<span class="nc" id="L1453">        entityPosLookup.clear();</span>
+
+<span class="nc" id="L1455">        vOutOfGame.removeAllElements();</span>
+
+<span class="nc" id="L1457">        turnVector.clear();</span>
+<span class="nc" id="L1458">        turnIndex = 0;</span>
+
+<span class="nc" id="L1460">        resetActions();</span>
+<span class="nc" id="L1461">        resetCharges();</span>
+<span class="nc" id="L1462">        resetRams();</span>
+<span class="nc" id="L1463">        resetPSRs();</span>
+<span class="nc" id="L1464">        resetArtilleryAttacks();</span>
+<span class="nc" id="L1465">        resetAttacks();</span>
+        // removeMinefields();  Broken and bad!
+<span class="nc" id="L1467">        clearMinefields();</span>
+<span class="nc" id="L1468">        removeArtyAutoHitHexes();</span>
+<span class="nc" id="L1469">        flares.removeAllElements();</span>
+<span class="nc" id="L1470">        illuminatedPositions.clear();</span>
+<span class="nc" id="L1471">        clearAllReports();</span>
+<span class="nc" id="L1472">        smokeCloudList.clear();</span>
+
+<span class="nc" id="L1474">        forceVictory = false;</span>
+<span class="nc" id="L1475">        victoryPlayerId = Player.PLAYER_NONE;</span>
+<span class="nc" id="L1476">        victoryTeam = Player.TEAM_NONE;</span>
+<span class="nc" id="L1477">        lastEntityId = 0;</span>
+<span class="nc" id="L1478">        planetaryConditions = new PlanetaryConditions();</span>
+<span class="nc" id="L1479">    }</span>
+
+    private void removeArtyAutoHitHexes() {
+<span class="nc" id="L1482">        Enumeration&lt;IPlayer&gt; iter = getPlayers();</span>
+<span class="nc bnc" id="L1483" title="All 2 branches missed.">        while (iter.hasMoreElements()) {</span>
+<span class="nc" id="L1484">            IPlayer player = iter.nextElement();</span>
+<span class="nc" id="L1485">            player.removeArtyAutoHitHexes();</span>
+<span class="nc" id="L1486">        }</span>
+<span class="nc" id="L1487">    }</span>
+
+//    private void removeMinefields() {
+//        minefields.clear();
+//        vibrabombs.removeAllElements();
+//
+//        Enumeration&lt;IPlayer&gt; iter = getPlayers();
+//        while (iter.hasMoreElements()) {
+//            IPlayer player = iter.nextElement();
+//            player.removeMinefields();
+//        }
+//    }
+
+    /**
+     * Regenerates the entities by id hashtable by going thru all entities in
+     * the Vector
+     */
+    private void reindexEntities() {
+<span class="nc" id="L1505">        entityIds.clear();</span>
+<span class="nc" id="L1506">        lastEntityId = 0;</span>
+
+<span class="nc bnc" id="L1508" title="All 2 branches missed.">        if (entities != null) {</span>
+            // Add these entities to the game.
+<span class="nc bnc" id="L1510" title="All 2 branches missed.">            for (Entity entity : entities) {</span>
+<span class="nc" id="L1511">                final int id = entity.getId();</span>
+<span class="nc" id="L1512">                entityIds.put(Integer.valueOf(id), entity);</span>
+
+<span class="nc bnc" id="L1514" title="All 2 branches missed.">                if (id &gt; lastEntityId) {</span>
+<span class="nc" id="L1515">                    lastEntityId = id;</span>
+                }
+<span class="nc" id="L1517">            }</span>
+            // We need to ensure that each entity has the propery Game reference
+            //  however, the entityIds Hashmap must be fully formed before this
+            //  is called, since setGame also calls setGame for loaded Entities
+<span class="nc bnc" id="L1521" title="All 2 branches missed.">            for (Entity entity : entities) {</span>
+<span class="nc" id="L1522">                entity.setGame(this);</span>
+<span class="nc" id="L1523">            }</span>
+        }
+<span class="nc" id="L1525">    }</span>
+
+    /**
+     * Returns the first entity at the given coordinate, if any. Only returns
+     * targetable (non-dead) entities.
+     *
+     * @param c the coordinates to search at
+     */
+    public Entity getFirstEntity(Coords c) {
+<span class="nc bnc" id="L1534" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1535" title="All 4 branches missed.">            if (c.equals(entity.getPosition()) &amp;&amp; entity.isTargetable()) {</span>
+<span class="nc" id="L1536">                return entity;</span>
+            }
+<span class="nc" id="L1538">        }</span>
+<span class="nc" id="L1539">        return null;</span>
+    }
+
+    /**
+     * Returns the first enemy entity at the given coordinate, if any. Only
+     * returns targetable (non-dead) entities.
+     *
+     * @param c             the coordinates to search at
+     * @param currentEntity the entity that is firing
+     */
+    public Entity getFirstEnemyEntity(Coords c, Entity currentEntity) {
+<span class="nc bnc" id="L1550" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1551" title="All 4 branches missed.">            if (c.equals(entity.getPosition()) &amp;&amp; entity.isTargetable()</span>
+<span class="nc bnc" id="L1552" title="All 2 branches missed.">                &amp;&amp; entity.isEnemyOf(currentEntity)) {</span>
+<span class="nc" id="L1553">                return entity;</span>
+            }
+<span class="nc" id="L1555">        }</span>
+<span class="nc" id="L1556">        return null;</span>
+    }
+
+    /**
+     * Returns an Enumeration of the active entities at the given coordinates.
+     */
+    public Iterator&lt;Entity&gt; getEntities(Coords c) {
+<span class="nc" id="L1563">        return getEntities(c, false);</span>
+    }
+
+    /**
+     * Returns an Enumeration of the active entities at the given coordinates.
+     */
+    public Iterator&lt;Entity&gt; getEntities(Coords c, boolean ignore) {
+<span class="nc" id="L1570">        return getEntitiesVector(c,ignore).iterator();</span>
+    }
+
+    /**
+     * Return a List of Entities at Coords &lt;code&gt;c&lt;/code&gt;
+     *
+     * @param c The coordinates to check
+     * @return &lt;code&gt;List&lt;Entity&gt;&lt;/code&gt;
+     */
+    public List&lt;Entity&gt; getEntitiesVector(Coords c) {
+<span class="nc" id="L1580">        return getEntitiesVector(c, false);</span>
+    }
+
+    /**
+     * Return a List of Entities at Coords &lt;code&gt;c&lt;/code&gt;
+     *
+     * @param c The coordinates to check
+     * @param ignore
+     *            Flag that determines whether the ability to target is ignored
+     * @return &lt;code&gt;List&lt;Entity&gt;&lt;/code&gt;
+     */
+    public synchronized List&lt;Entity&gt; getEntitiesVector(Coords c, boolean ignore) {
+        //checkPositionCacheConsistency();
+        // Make sure the look-up is initialized
+<span class="nc bnc" id="L1594" title="All 2 branches missed.">        if (entityPosLookup == null</span>
+<span class="nc bnc" id="L1595" title="All 4 branches missed.">                || (entityPosLookup.size() &lt; 1 &amp;&amp; entities.size() &gt; 0)) {</span>
+<span class="nc" id="L1596">            resetEntityPositionLookup();</span>
+        }
+<span class="nc" id="L1598">        Set&lt;Integer&gt; posEntities = entityPosLookup.get(c);</span>
+<span class="nc" id="L1599">        List&lt;Entity&gt; vector = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L1600" title="All 2 branches missed.">        if (posEntities != null) {</span>
+<span class="nc bnc" id="L1601" title="All 2 branches missed.">            for (Integer eId : posEntities) {</span>
+<span class="nc" id="L1602">                Entity e = getEntity(eId);</span>
+                
+                // if the entity with the given ID doesn't exist, we will update the lookup table
+                // and move on
+<span class="nc bnc" id="L1606" title="All 2 branches missed.">                if (e == null) {</span>
+<span class="nc" id="L1607">                    posEntities.remove(eId);</span>
+<span class="nc" id="L1608">                    continue;</span>
+                }
+                
+<span class="nc bnc" id="L1611" title="All 4 branches missed.">                if (e.isTargetable() || ignore) {</span>
+<span class="nc" id="L1612">                    vector.add(e);</span>
+
+                    // Sanity check
+<span class="nc" id="L1615">                    HashSet&lt;Coords&gt; positions = e.getOccupiedCoords();</span>
+<span class="nc bnc" id="L1616" title="All 2 branches missed.">                    if (!positions.contains(c)) {</span>
+<span class="nc" id="L1617">                        MegaMek.getLogger().error(e.getDisplayName() + &quot; is not in &quot; + c + &quot;!&quot;);</span>
+                    }
+                }
+<span class="nc" id="L1620">            }</span>
+        }
+<span class="nc" id="L1622">        return Collections.unmodifiableList(vector);</span>
+    }
+    
+    /**
+     * Convenience function that gets a list of all off-board enemy entities.
+     * @param player
+     * @return
+     */
+    public synchronized List&lt;Entity&gt; getAllOffboardEnemyEntities(IPlayer player) {
+<span class="nc" id="L1631">        List&lt;Entity&gt; vector = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L1632" title="All 2 branches missed.">        for(Entity e : entities) {</span>
+<span class="nc bnc" id="L1633" title="All 8 branches missed.">            if(e.getOwner().isEnemyOf(player) &amp;&amp; e.isOffBoard() &amp;&amp; !e.isDestroyed() &amp;&amp; e.isDeployed()) {</span>
+<span class="nc" id="L1634">                vector.add(e);</span>
+            }
+<span class="nc" id="L1636">        }</span>
+        
+<span class="nc" id="L1638">        return Collections.unmodifiableList(vector);</span>
+    }
+
+    /**
+     * Return a Vector of gun emplacements at Coords &lt;code&gt;c&lt;/code&gt;
+     *
+     * @param c The coordinates to check
+     * @return &lt;code&gt;Vector&lt;Entity&gt;&lt;/code&gt;
+     */
+    public Vector&lt;GunEmplacement&gt; getGunEmplacements(Coords c) {
+<span class="nc" id="L1648">        Vector&lt;GunEmplacement&gt; vector = new Vector&lt;GunEmplacement&gt;();</span>
+
+        // Only build the list if the coords are on the board.
+<span class="nc bnc" id="L1651" title="All 2 branches missed.">        if (board.contains(c)) {</span>
+<span class="nc bnc" id="L1652" title="All 2 branches missed.">            for (Entity entity : getEntitiesVector(c, true)) {</span>
+<span class="nc bnc" id="L1653" title="All 2 branches missed.">                if (entity.hasETypeFlag(Entity.ETYPE_GUN_EMPLACEMENT)) {</span>
+<span class="nc" id="L1654">                    vector.addElement((GunEmplacement) entity);</span>
+                }
+<span class="nc" id="L1656">            }</span>
+        }
+
+<span class="nc" id="L1659">        return vector;</span>
+    }
+    
+    /**
+     * Determine if the given set of coordinates has a gun emplacement on the roof of a building.
+     * @param c The coordinates to check
+     */
+    public boolean hasRooftopGunEmplacement(Coords c) {
+<span class="nc" id="L1667">        Building building = getBoard().getBuildingAt(c);</span>
+<span class="nc bnc" id="L1668" title="All 2 branches missed.">        if(building == null) {</span>
+<span class="nc" id="L1669">            return false;</span>
+        }
+        
+<span class="nc" id="L1672">        IHex hex = getBoard().getHex(c);</span>
+        
+<span class="nc bnc" id="L1674" title="All 2 branches missed.">        for (Entity entity : getEntitiesVector(c, true)) {</span>
+<span class="nc bnc" id="L1675" title="All 4 branches missed.">            if (entity.hasETypeFlag(Entity.ETYPE_GUN_EMPLACEMENT) &amp;&amp; entity.getElevation() == hex.ceiling()) {</span>
+<span class="nc" id="L1676">                return true;</span>
+            }
+<span class="nc" id="L1678">        }</span>
+        
+<span class="nc" id="L1680">        return false;</span>
+    }
+
+    /**
+     * Returns a Target for an Accidental Fall From above, or null if no
+     * possible target is there
+     *
+     * @param c      The &lt;code&gt;Coords&lt;/code&gt; of the hex in which the accidental
+     *               fall from above happens
+     * @param ignore The entity who is falling
+     * @return The &lt;code&gt;Entity&lt;/code&gt; that should be an AFFA target.
+     */
+    public Entity getAffaTarget(Coords c, Entity ignore) {
+<span class="nc" id="L1693">        Vector&lt;Entity&gt; vector = new Vector&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L1694" title="All 2 branches missed.">        if (board.contains(c)) {</span>
+<span class="nc" id="L1695">            IHex hex = board.getHex(c);</span>
+<span class="nc bnc" id="L1696" title="All 2 branches missed.">            for (Entity entity : getEntitiesVector(c)) {</span>
+<span class="nc bnc" id="L1697" title="All 2 branches missed.">                if (entity.isTargetable()</span>
+<span class="nc bnc" id="L1698" title="All 2 branches missed.">                    &amp;&amp; ((entity.getElevation() == 0) // Standing on hex surface </span>
+<span class="nc bnc" id="L1699" title="All 2 branches missed.">                            || (entity.getElevation() == -hex.depth())) // Standing on hex floor</span>
+<span class="nc bnc" id="L1700" title="All 6 branches missed.">                    &amp;&amp; (entity.getAltitude() == 0)</span>
+                    &amp;&amp; !(entity instanceof Infantry) &amp;&amp; (entity != ignore)) {
+<span class="nc" id="L1702">                    vector.addElement(entity);</span>
+                }
+<span class="nc" id="L1704">            }</span>
+        }
+<span class="nc bnc" id="L1706" title="All 2 branches missed.">        if (!vector.isEmpty()) {</span>
+<span class="nc" id="L1707">            int count = vector.size();</span>
+<span class="nc" id="L1708">            int random = Compute.randomInt(count);</span>
+<span class="nc" id="L1709">            return vector.elementAt(random);</span>
+        }
+<span class="nc" id="L1711">        return null;</span>
+    }
+
+    /**
+     * Returns an &lt;code&gt;Enumeration&lt;/code&gt; of the enemy's active entities at the
+     * given coordinates.
+     *
+     * @param c
+     *            the &lt;code&gt;Coords&lt;/code&gt; of the hex being examined.
+     * @param currentEntity
+     *            the &lt;code&gt;Entity&lt;/code&gt; whose enemies are needed.
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of &lt;code&gt;Entity&lt;/code&gt;s at the given
+     *         coordinates who are enemies of the given unit.
+     */
+    public Iterator&lt;Entity&gt; getEnemyEntities(final Coords c,
+            final Entity currentEntity) {
+        // Use an EntitySelector to avoid walking the entities vector twice.
+<span class="nc" id="L1728">        return getSelectedEntities(new EntitySelector() {</span>
+<span class="nc" id="L1729">            private Coords coords = c;</span>
+<span class="nc" id="L1730">            private Entity friendly = currentEntity;</span>
+
+            public boolean accept(Entity entity) {
+<span class="nc bnc" id="L1733" title="All 2 branches missed.">                if (coords.equals(entity.getPosition())</span>
+<span class="nc bnc" id="L1734" title="All 4 branches missed.">                        &amp;&amp; entity.isTargetable() &amp;&amp; entity.isEnemyOf(friendly)) {</span>
+<span class="nc" id="L1735">                    return true;</span>
+                }
+<span class="nc" id="L1737">                return false;</span>
+            }
+        });
+    }
+    
+    /**
+     * Returns an &lt;code&gt;Enumeration&lt;/code&gt; of all active enemy entities.
+     *
+     * @param currentEntity
+     *            the &lt;code&gt;Entity&lt;/code&gt; whose enemies are needed.
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of &lt;code&gt;Entity&lt;/code&gt;s at the given
+     *         coordinates who are enemies of the given unit.
+     */
+    public Iterator&lt;Entity&gt; getAllEnemyEntities(final Entity currentEntity) {
+<span class="nc" id="L1751">    	return getSelectedEntities(new EntitySelector() {</span>
+<span class="nc" id="L1752">    		private Entity friendly = currentEntity;</span>
+    		
+    		public boolean accept(Entity entity) {
+<span class="nc bnc" id="L1755" title="All 4 branches missed.">    			return entity.isTargetable() &amp;&amp; entity.isEnemyOf(friendly);</span>
+    		}
+    	});
+    }
+
+    /**
+     * Returns an &lt;code&gt;Enumeration&lt;/code&gt; of friendly active entities at the
+     * given coordinates.
+     *
+     * @param c
+     *            the &lt;code&gt;Coords&lt;/code&gt; of the hex being examined.
+     * @param currentEntity
+     *            the &lt;code&gt;Entity&lt;/code&gt; whose friends are needed.
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of &lt;code&gt;Entity&lt;/code&gt;s at the given
+     *         coordinates who are friends of the given unit.
+     */
+    public Iterator&lt;Entity&gt; getFriendlyEntities(final Coords c,
+            final Entity currentEntity) {
+        // Use an EntitySelector to avoid walking the entities vector twice.
+<span class="nc" id="L1774">        return getSelectedEntities(new EntitySelector() {</span>
+<span class="nc" id="L1775">            private Coords coords = c;</span>
+<span class="nc" id="L1776">            private Entity friendly = currentEntity;</span>
+
+            public boolean accept(Entity entity) {
+<span class="nc bnc" id="L1779" title="All 2 branches missed.">                if (coords.equals(entity.getPosition())</span>
+<span class="nc bnc" id="L1780" title="All 4 branches missed.">                        &amp;&amp; entity.isTargetable() &amp;&amp; !entity.isEnemyOf(friendly)) {</span>
+<span class="nc" id="L1781">                    return true;</span>
+                }
+<span class="nc" id="L1783">                return false;</span>
+            }
+        });
+    }
+
+    /**
+     * Moves an entity into the graveyard so it stops getting sent out every
+     * phase.
+     */
+    public void moveToGraveyard(int id) {
+<span class="nc" id="L1793">        removeEntity(id, IEntityRemovalConditions.REMOVE_SALVAGEABLE);</span>
+<span class="nc" id="L1794">    }</span>
+
+    /**
+     * See if the &lt;code&gt;Entity&lt;/code&gt; with the given ID is out of the game.
+     *
+     * @param id - the ID of the &lt;code&gt;Entity&lt;/code&gt; to be checked.
+     * @return &lt;code&gt;true&lt;/code&gt; if the &lt;code&gt;Entity&lt;/code&gt; is in the graveyard,
+     * &lt;code&gt;false&lt;/code&gt; otherwise.
+     */
+    public boolean isOutOfGame(int id) {
+<span class="nc bnc" id="L1804" title="All 2 branches missed.">        for (Entity entity : vOutOfGame) {</span>
+<span class="nc bnc" id="L1805" title="All 2 branches missed.">            if (entity.getId() == id) {</span>
+<span class="nc" id="L1806">                return true;</span>
+            }
+<span class="nc" id="L1808">        }</span>
+
+<span class="nc" id="L1810">        return false;</span>
+    }
+
+    /**
+     * See if the &lt;code&gt;Entity&lt;/code&gt; is out of the game.
+     *
+     * @param entity - the &lt;code&gt;Entity&lt;/code&gt; to be checked.
+     * @return &lt;code&gt;true&lt;/code&gt; if the &lt;code&gt;Entity&lt;/code&gt; is in the graveyard,
+     * &lt;code&gt;false&lt;/code&gt; otherwise.
+     */
+    public boolean isOutOfGame(Entity entity) {
+<span class="nc" id="L1821">        return isOutOfGame(entity.getId());</span>
+    }
+
+    /**
+     * Returns the first entity that can act in the present turn, or null if
+     * none can.
+     */
+    public Entity getFirstEntity() {
+<span class="nc" id="L1829">        return getFirstEntity(getTurn());</span>
+    }
+
+    /**
+     * Returns the first entity that can act in the specified turn, or null if
+     * none can.33
+     */
+    public Entity getFirstEntity(GameTurn turn) {
+<span class="nc" id="L1837">        return getEntity(getFirstEntityNum(turn));</span>
+    }
+
+    /**
+     * Returns the id of the first entity that can act in the current turn, or
+     * -1 if none can.
+     */
+    public int getFirstEntityNum() {
+<span class="nc" id="L1845">        return getFirstEntityNum(getTurn());</span>
+    }
+
+    /**
+     * Returns the id of the first entity that can act in the specified turn, or
+     * -1 if none can.
+     */
+    public int getFirstEntityNum(GameTurn turn) {
+<span class="nc bnc" id="L1853" title="All 2 branches missed.">        if (turn == null) {</span>
+<span class="nc" id="L1854">            return -1;</span>
+        }
+<span class="nc bnc" id="L1856" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1857" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this)) {</span>
+<span class="nc" id="L1858">                return entity.getId();</span>
+            }
+<span class="nc" id="L1860">        }</span>
+<span class="nc" id="L1861">        return -1;</span>
+    }
+
+    /**
+     * Returns the next selectable entity that can act this turn, or null if
+     * none can.
+     *
+     * @param start the index number to start at (not an Entity Id)
+     */
+    public Entity getNextEntity(int start) {
+<span class="nc bnc" id="L1871" title="All 2 branches missed.">        if (entities.size() == 0) {</span>
+<span class="nc" id="L1872">            return null;</span>
+        }
+<span class="nc" id="L1874">        start = start % entities.size();</span>
+<span class="nc" id="L1875">        int entityId = entities.get(start).getId();</span>
+<span class="nc" id="L1876">        return getEntity(getNextEntityNum(getTurn(), entityId));</span>
+    }
+
+    /**
+     * Returns the entity id of the next entity that can move during the
+     * specified
+     *
+     * @param turn  the turn to use
+     * @param start the entity id to start at
+     */
+    public int getNextEntityNum(GameTurn turn, int start) {
+        // If we don't have a turn, return ENTITY_NONE
+<span class="nc bnc" id="L1888" title="All 2 branches missed.">        if (turn == null) {</span>
+<span class="nc" id="L1889">            return Entity.NONE;</span>
+        }
+<span class="nc" id="L1891">        boolean hasLooped = false;</span>
+<span class="nc" id="L1892">        int i = (entities.indexOf(entityIds.get(start)) + 1) % entities.size();</span>
+<span class="nc bnc" id="L1893" title="All 2 branches missed.">        if (i == -1) {</span>
+            //This means we were given an invalid entity ID, punt
+<span class="nc" id="L1895">            return Entity.NONE;</span>
+        }
+<span class="nc" id="L1897">        int startingIndex = i;</span>
+<span class="nc bnc" id="L1898" title="All 4 branches missed.">        while (!((hasLooped == true) &amp;&amp; (i == startingIndex))) {</span>
+<span class="nc" id="L1899">            final Entity entity = entities.get(i);</span>
+<span class="nc bnc" id="L1900" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this)) {</span>
+<span class="nc" id="L1901">                return entity.getId();</span>
+            }
+<span class="nc" id="L1903">            i++;</span>
+<span class="nc bnc" id="L1904" title="All 2 branches missed.">            if (i == entities.size()) {</span>
+<span class="nc" id="L1905">                i = 0;</span>
+<span class="nc" id="L1906">                hasLooped = true;</span>
+            }
+<span class="nc" id="L1908">        }</span>
+        // return getFirstEntityNum(turn);
+<span class="nc" id="L1910">        return Entity.NONE;</span>
+    }
+
+    /**
+     * Returns the entity id of the previous entity that can move during the
+     * specified
+     *
+     * @param turn  the turn to use
+     * @param start the entity id to start at
+     */
+    public int getPrevEntityNum(GameTurn turn, int start) {
+<span class="nc" id="L1921">        boolean hasLooped = false;</span>
+<span class="nc" id="L1922">        int i = (entities.indexOf(entityIds.get(start)) - 1) % entities.size();</span>
+<span class="nc bnc" id="L1923" title="All 2 branches missed.">        if (i == -2) {</span>
+            //This means we were given an invalid entity ID, punt
+<span class="nc" id="L1925">            return -1;</span>
+        }
+<span class="nc bnc" id="L1927" title="All 2 branches missed.">        if (i == -1) {</span>
+            //This means we were given an invalid entity ID, punt
+<span class="nc" id="L1929">            i = entities.size() - 1;</span>
+        }
+<span class="nc" id="L1931">        int startingIndex = i;</span>
+<span class="nc bnc" id="L1932" title="All 4 branches missed.">        while (!((hasLooped == true) &amp;&amp; (i == startingIndex))) {</span>
+<span class="nc" id="L1933">            final Entity entity = entities.get(i);</span>
+<span class="nc bnc" id="L1934" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this)) {</span>
+<span class="nc" id="L1935">                return entity.getId();</span>
+            }
+<span class="nc" id="L1937">            i--;</span>
+<span class="nc bnc" id="L1938" title="All 2 branches missed.">            if (i &lt; 0) {</span>
+<span class="nc" id="L1939">                i = entities.size() - 1;</span>
+<span class="nc" id="L1940">                hasLooped = true;</span>
+            }
+<span class="nc" id="L1942">        }</span>
+        // return getFirstEntityNum(turn);
+<span class="nc" id="L1944">        return -1;</span>
+    }
+
+    public int getFirstDeployableEntityNum(GameTurn turn) {
+        // Repeat the logic from getFirstEntityNum.
+<span class="nc bnc" id="L1949" title="All 2 branches missed.">        if (turn == null) {</span>
+<span class="nc" id="L1950">            return -1;</span>
+        }
+<span class="nc bnc" id="L1952" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1953" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this)</span>
+<span class="nc bnc" id="L1954" title="All 2 branches missed.">                &amp;&amp; entity.shouldDeploy(getRoundCount())) {</span>
+<span class="nc" id="L1955">                return entity.getId();</span>
+            }
+<span class="nc" id="L1957">        }</span>
+<span class="nc" id="L1958">        return -1;</span>
+    }
+
+    public int getNextDeployableEntityNum(GameTurn turn, int start) {
+<span class="nc bnc" id="L1962" title="All 2 branches missed.">        if (start &gt;= 0) {</span>
+<span class="nc bnc" id="L1963" title="All 2 branches missed.">            for (int i = start; i &lt; entities.size(); i++) {</span>
+<span class="nc" id="L1964">                final Entity entity = entities.get(i);</span>
+<span class="nc bnc" id="L1965" title="All 2 branches missed.">                if (turn.isValidEntity(entity, this)</span>
+<span class="nc bnc" id="L1966" title="All 2 branches missed.">                    &amp;&amp; entity.shouldDeploy(getRoundCount())) {</span>
+<span class="nc" id="L1967">                    return entity.getId();</span>
+                }
+            }
+        }
+<span class="nc" id="L1971">        return getFirstDeployableEntityNum(turn);</span>
+    }
+
+    /**
+     * Get the entities for the player.
+     *
+     * @param player - the &lt;code&gt;Player&lt;/code&gt; whose entities are required.
+     * @param hide   - should fighters loaded into squadrons be excluded?
+     * @return a &lt;code&gt;Vector&lt;/code&gt; of &lt;code&gt;Entity&lt;/code&gt;s.
+     */
+    public ArrayList&lt;Entity&gt; getPlayerEntities(IPlayer player, boolean hide) {
+<span class="nc" id="L1982">        ArrayList&lt;Entity&gt; output = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L1983" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L1984" title="All 4 branches missed.">            if (entity.isPartOfFighterSquadron() &amp;&amp; hide) {</span>
+<span class="nc" id="L1985">                continue;</span>
+            }
+<span class="nc bnc" id="L1987" title="All 2 branches missed.">            if (player.equals(entity.getOwner())) {</span>
+<span class="nc" id="L1988">                output.add(entity);</span>
+            }
+<span class="nc" id="L1990">        }</span>
+<span class="nc" id="L1991">        return output;</span>
+    }
+
+    /**
+     * Get the entities for the player.
+     *
+     * @param player - the &lt;code&gt;Player&lt;/code&gt; whose entities are required.
+     * @param hide   - should fighters loaded into squadrons be excluded from this list?
+     * @return a &lt;code&gt;Vector&lt;/code&gt; of &lt;code&gt;Entity&lt;/code&gt;s.
+     */
+    public ArrayList&lt;Integer&gt; getPlayerEntityIds(IPlayer player, boolean hide) {
+<span class="nc" id="L2002">        ArrayList&lt;Integer&gt; output = new ArrayList&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L2003" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L2004" title="All 4 branches missed.">            if (entity.isPartOfFighterSquadron() &amp;&amp; hide) {</span>
+<span class="nc" id="L2005">                continue;</span>
+            }
+<span class="nc bnc" id="L2007" title="All 2 branches missed.">            if (player.equals(entity.getOwner())) {</span>
+<span class="nc" id="L2008">                output.add(entity.getId());</span>
+            }
+<span class="nc" id="L2010">        }</span>
+<span class="nc" id="L2011">        return output;</span>
+    }
+
+    /**
+     * Determines if the indicated entity is stranded on a transport that can't
+     * move.
+     * &lt;p/&gt;
+     * According to &lt;a href=
+     * &quot;http://www.classicbattletech.com/w3t/showflat.php?Cat=&amp;Board=ask&amp;Number=555466&amp;page=2&amp;view=collapsed&amp;sb=5&amp;o=0&amp;fpart=&quot;
+     * &gt; Randall Bills&lt;/a&gt;, the &quot;minimum move&quot; rule allow stranded units to
+     * dismount at the start of the turn.
+     *
+     * @param entity the &lt;code&gt;Entity&lt;/code&gt; that may be stranded
+     * @return &lt;code&gt;true&lt;/code&gt; if the entity is stranded &lt;code&gt;false&lt;/code&gt;
+     * otherwise.
+     */
+    public boolean isEntityStranded(Entity entity) {
+
+        // Is the entity being transported?
+<span class="nc" id="L2030">        final int transportId = entity.getTransportId();</span>
+<span class="nc" id="L2031">        Entity transport = getEntity(transportId);</span>
+<span class="nc bnc" id="L2032" title="All 4 branches missed.">        if ((Entity.NONE != transportId) &amp;&amp; (null != transport)) {</span>
+
+            // aero units don't count here
+<span class="nc bnc" id="L2035" title="All 2 branches missed.">            if (transport instanceof Aero) {</span>
+<span class="nc" id="L2036">                return false;</span>
+            }
+
+            // Can that transport unload the unit?
+<span class="nc bnc" id="L2040" title="All 4 branches missed.">            if (transport.isImmobile() || (0 == transport.getWalkMP())) {</span>
+<span class="nc" id="L2041">                return true;</span>
+            }
+        }
+<span class="nc" id="L2044">        return false;</span>
+    }
+
+    /**
+     * Returns the number of remaining selectable infantry owned by a player.
+     */
+    public int getInfantryLeft(int playerId) {
+<span class="nc" id="L2051">        IPlayer player = getPlayer(playerId);</span>
+<span class="nc" id="L2052">        int remaining = 0;</span>
+
+<span class="nc bnc" id="L2054" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L2055" title="All 2 branches missed.">            if (player.equals(entity.getOwner())</span>
+<span class="nc bnc" id="L2056" title="All 4 branches missed.">                &amp;&amp; entity.isSelectableThisTurn()</span>
+                &amp;&amp; (entity instanceof Infantry)) {
+<span class="nc" id="L2058">                remaining++;</span>
+            }
+<span class="nc" id="L2060">        }</span>
+
+<span class="nc" id="L2062">        return remaining;</span>
+    }
+
+    /**
+     * Returns the number of remaining selectable Protomechs owned by a player.
+     */
+    public int getProtomechsLeft(int playerId) {
+<span class="nc" id="L2069">        IPlayer player = getPlayer(playerId);</span>
+<span class="nc" id="L2070">        int remaining = 0;</span>
+
+<span class="nc bnc" id="L2072" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L2073" title="All 2 branches missed.">            if (player.equals(entity.getOwner())</span>
+<span class="nc bnc" id="L2074" title="All 4 branches missed.">                &amp;&amp; entity.isSelectableThisTurn()</span>
+                &amp;&amp; (entity instanceof Protomech)) {
+<span class="nc" id="L2076">                remaining++;</span>
+            }
+<span class="nc" id="L2078">        }</span>
+
+<span class="nc" id="L2080">        return remaining;</span>
+    }
+
+    /**
+     * Returns the number of Vehicles that &lt;code&gt;playerId&lt;/code&gt; has not moved
+     * yet this turn.
+     *
+     * @param playerId
+     * @return number of vehicles &lt;code&gt;playerId&lt;/code&gt; has not moved yet this
+     * turn
+     */
+    public int getVehiclesLeft(int playerId) {
+<span class="nc" id="L2092">        IPlayer player = getPlayer(playerId);</span>
+<span class="nc" id="L2093">        int remaining = 0;</span>
+
+<span class="nc bnc" id="L2095" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L2096" title="All 2 branches missed.">            if (player.equals(entity.getOwner())</span>
+<span class="nc bnc" id="L2097" title="All 4 branches missed.">                &amp;&amp; entity.isSelectableThisTurn()</span>
+                &amp;&amp; (entity instanceof Tank)) {
+<span class="nc" id="L2099">                remaining++;</span>
+            }
+<span class="nc" id="L2101">        }</span>
+
+<span class="nc" id="L2103">        return remaining;</span>
+    }
+
+    /**
+     * Returns the number of Mechs that &lt;code&gt;playerId&lt;/code&gt; has not moved
+     * yet this turn.
+     *
+     * @param playerId
+     * @return number of vehicles &lt;code&gt;playerId&lt;/code&gt; has not moved yet this
+     * turn
+     */
+    public int getMechsLeft(int playerId) {
+<span class="nc" id="L2115">        IPlayer player = getPlayer(playerId);</span>
+<span class="nc" id="L2116">        int remaining = 0;</span>
+
+<span class="nc bnc" id="L2118" title="All 2 branches missed.">        for (Entity entity : entities) {</span>
+<span class="nc bnc" id="L2119" title="All 2 branches missed.">            if (player.equals(entity.getOwner())</span>
+<span class="nc bnc" id="L2120" title="All 4 branches missed.">                &amp;&amp; entity.isSelectableThisTurn()</span>
+                &amp;&amp; (entity instanceof Mech)) {
+<span class="nc" id="L2122">                remaining++;</span>
+            }
+<span class="nc" id="L2124">        }</span>
+
+<span class="nc" id="L2126">        return remaining;</span>
+    }
+
+    /**
+     * Removes the first turn found that the specified entity can move in. Used
+     * when a turn is played out of order
+     */
+    public GameTurn removeFirstTurnFor(Entity entity) {
+<span class="nc bnc" id="L2134" title="All 4 branches missed.">        assert (phase != Phase.PHASE_MOVEMENT); // special move multi cases</span>
+        // ignored
+<span class="nc bnc" id="L2136" title="All 2 branches missed.">        for (int i = turnIndex; i &lt; turnVector.size(); i++) {</span>
+<span class="nc" id="L2137">            GameTurn turn = turnVector.elementAt(i);</span>
+<span class="nc bnc" id="L2138" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this)) {</span>
+<span class="nc" id="L2139">                turnVector.removeElementAt(i);</span>
+<span class="nc" id="L2140">                return turn;</span>
+            }
+        }
+<span class="nc" id="L2143">        return null;</span>
+    }
+
+    /**
+     * Removes the last, next turn found that the specified entity can move in.
+     * Used when, say, an entity dies mid-phase.
+     */
+    public void removeTurnFor(Entity entity) {
+<span class="nc bnc" id="L2151" title="All 2 branches missed.">        if (turnVector.size() == 0) {</span>
+<span class="nc" id="L2152">            return;</span>
+        }
+        // If the game option &quot;move multiple infantry per mech&quot; is selected,
+        // then we might not need to remove a turn at all.
+        // A turn only needs to be removed when going from 4 inf (2 turns) to
+        // 3 inf (1 turn)
+<span class="nc bnc" id="L2158" title="All 6 branches missed.">        if (getOptions().booleanOption(OptionsConstants.INIT_INF_MOVE_MULTI)</span>
+            &amp;&amp; (entity instanceof Infantry)
+            &amp;&amp; (phase == Phase.PHASE_MOVEMENT)) {
+<span class="nc bnc" id="L2161" title="All 2 branches missed.">            if ((getInfantryLeft(entity.getOwnerId()) % getOptions().intOption(</span>
+                    OptionsConstants.INIT_INF_PROTO_MOVE_MULTI)) != 1) {
+                // exception, if the _next_ turn is an infantry turn, remove
+                // that
+                // contrived, but may come up e.g. one inf accidently kills
+                // another
+<span class="nc bnc" id="L2167" title="All 2 branches missed.">                if (hasMoreTurns()) {</span>
+<span class="nc" id="L2168">                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);</span>
+<span class="nc bnc" id="L2169" title="All 2 branches missed.">                    if (nextTurn instanceof GameTurn.EntityClassTurn) {</span>
+<span class="nc" id="L2170">                        GameTurn.EntityClassTurn ect =</span>
+                                (GameTurn.EntityClassTurn) nextTurn;
+<span class="nc bnc" id="L2172" title="All 2 branches missed.">                        if (ect.isValidClass(GameTurn.CLASS_INFANTRY)</span>
+<span class="nc bnc" id="L2173" title="All 2 branches missed.">                            &amp;&amp; !ect.isValidClass(~GameTurn.CLASS_INFANTRY)) {</span>
+<span class="nc" id="L2174">                            turnVector.removeElementAt(turnIndex + 1);</span>
+                        }
+                    }
+                }
+<span class="nc" id="L2178">                return;</span>
+            }
+        }
+        // Same thing but for protos
+<span class="nc bnc" id="L2182" title="All 6 branches missed.">        if (getOptions().booleanOption(OptionsConstants.INIT_PROTOS_MOVE_MULTI)</span>
+            &amp;&amp; (entity instanceof Protomech)
+            &amp;&amp; (phase == Phase.PHASE_MOVEMENT)) {
+<span class="nc" id="L2185">            if ((getProtomechsLeft(entity.getOwnerId()) % getOptions()</span>
+<span class="nc bnc" id="L2186" title="All 2 branches missed.">                    .intOption(OptionsConstants.INIT_INF_PROTO_MOVE_MULTI)) != 1) {</span>
+                // exception, if the _next_ turn is an protomek turn, remove
+                // that
+                // contrived, but may come up e.g. one inf accidently kills
+                // another
+<span class="nc bnc" id="L2191" title="All 2 branches missed.">                if (hasMoreTurns()) {</span>
+<span class="nc" id="L2192">                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);</span>
+<span class="nc bnc" id="L2193" title="All 2 branches missed.">                    if (nextTurn instanceof GameTurn.EntityClassTurn) {</span>
+<span class="nc" id="L2194">                        GameTurn.EntityClassTurn ect =</span>
+                                (GameTurn.EntityClassTurn) nextTurn;
+<span class="nc bnc" id="L2196" title="All 2 branches missed.">                        if (ect.isValidClass(GameTurn.CLASS_PROTOMECH)</span>
+<span class="nc bnc" id="L2197" title="All 2 branches missed.">                            &amp;&amp; !ect.isValidClass(~GameTurn.CLASS_PROTOMECH)) {</span>
+<span class="nc" id="L2198">                            turnVector.removeElementAt(turnIndex + 1);</span>
+                        }
+                    }
+                }
+<span class="nc" id="L2202">                return;</span>
+            }
+        }
+
+        // Same thing but for vehicles
+<span class="nc bnc" id="L2207" title="All 6 branches missed.">        if (getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT)</span>
+            &amp;&amp; (entity instanceof Tank) &amp;&amp; (phase == Phase.PHASE_MOVEMENT)) {
+<span class="nc" id="L2209">            if ((getVehiclesLeft(entity.getOwnerId()) % getOptions()</span>
+<span class="nc bnc" id="L2210" title="All 2 branches missed.">                    .intOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT_NUMBER)) != 1) {</span>
+                // exception, if the _next_ turn is a tank turn, remove that
+                // contrived, but may come up e.g. one tank accidently kills
+                // another
+<span class="nc bnc" id="L2214" title="All 2 branches missed.">                if (hasMoreTurns()) {</span>
+<span class="nc" id="L2215">                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);</span>
+<span class="nc bnc" id="L2216" title="All 2 branches missed.">                    if (nextTurn instanceof GameTurn.EntityClassTurn) {</span>
+<span class="nc" id="L2217">                        GameTurn.EntityClassTurn ect =</span>
+                                (GameTurn.EntityClassTurn) nextTurn;
+<span class="nc bnc" id="L2219" title="All 2 branches missed.">                        if (ect.isValidClass(GameTurn.CLASS_TANK)</span>
+<span class="nc bnc" id="L2220" title="All 2 branches missed.">                            &amp;&amp; !ect.isValidClass(~GameTurn.CLASS_TANK)) {</span>
+<span class="nc" id="L2221">                            turnVector.removeElementAt(turnIndex + 1);</span>
+                        }
+                    }
+                }
+<span class="nc" id="L2225">                return;</span>
+            }
+        }
+
+        // Same thing but for meks
+<span class="nc bnc" id="L2230" title="All 6 branches missed.">        if (getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT)</span>
+            &amp;&amp; (entity instanceof Mech) &amp;&amp; (phase == Phase.PHASE_MOVEMENT)) {
+<span class="nc" id="L2232">            if ((getMechsLeft(entity.getOwnerId()) % getOptions()</span>
+<span class="nc bnc" id="L2233" title="All 2 branches missed.">                    .intOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT_NUMBER)) != 1) {</span>
+                // exception, if the _next_ turn is a mech turn, remove that
+                // contrived, but may come up e.g. one mech accidently kills
+                // another
+<span class="nc bnc" id="L2237" title="All 2 branches missed.">                if (hasMoreTurns()) {</span>
+<span class="nc" id="L2238">                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);</span>
+<span class="nc bnc" id="L2239" title="All 2 branches missed.">                    if (nextTurn instanceof GameTurn.EntityClassTurn) {</span>
+<span class="nc" id="L2240">                        GameTurn.EntityClassTurn ect =</span>
+                                (GameTurn.EntityClassTurn) nextTurn;
+<span class="nc bnc" id="L2242" title="All 2 branches missed.">                        if (ect.isValidClass(GameTurn.CLASS_MECH)</span>
+<span class="nc bnc" id="L2243" title="All 2 branches missed.">                            &amp;&amp; !ect.isValidClass(~GameTurn.CLASS_MECH)) {</span>
+<span class="nc" id="L2244">                            turnVector.removeElementAt(turnIndex + 1);</span>
+                        }
+                    }
+                }
+<span class="nc" id="L2248">                return;</span>
+            }
+        }
+
+
+<span class="nc" id="L2253">        boolean useInfantryMoveLaterCheck = true;</span>
+        // If we have the &quot;infantry move later&quot; or &quot;protos move later&quot; optional
+        //  rules, then we may be removing an infantry unit that would be
+        //  considered invalid unless we don't consider the extra validity
+        //  checks.
+<span class="nc bnc" id="L2258" title="All 4 branches missed.">        if ((getOptions().booleanOption(OptionsConstants.INIT_INF_MOVE_LATER) &amp;&amp;</span>
+             (entity instanceof Infantry)) ||
+<span class="nc bnc" id="L2260" title="All 4 branches missed.">            (getOptions().booleanOption(OptionsConstants.INIT_PROTOS_MOVE_LATER) &amp;&amp;</span>
+             (entity instanceof Protomech))) {
+<span class="nc" id="L2262">            useInfantryMoveLaterCheck = false;</span>
+        }
+
+<span class="nc bnc" id="L2265" title="All 2 branches missed.">        for (int i = turnVector.size() - 1; i &gt;= turnIndex; i--) {</span>
+<span class="nc" id="L2266">            GameTurn turn = turnVector.elementAt(i);</span>
+
+<span class="nc bnc" id="L2268" title="All 2 branches missed.">            if (turn.isValidEntity(entity, this, useInfantryMoveLaterCheck)) {</span>
+<span class="nc" id="L2269">                turnVector.removeElementAt(i);</span>
+<span class="nc" id="L2270">                break;</span>
+            }
+        }
+<span class="nc" id="L2273">    }</span>
+    
+    public int removeSpecificEntityTurnsFor(Entity entity) {
+<span class="nc" id="L2276">        List&lt;GameTurn&gt; turnsToRemove = new ArrayList&lt;GameTurn&gt;();</span>
+        
+<span class="nc bnc" id="L2278" title="All 2 branches missed.">        for (GameTurn turn : turnVector) {</span>
+<span class="nc bnc" id="L2279" title="All 2 branches missed.">            if (turn instanceof SpecificEntityTurn) {</span>
+<span class="nc" id="L2280">                int turnOwner = ((SpecificEntityTurn) turn).getEntityNum();</span>
+<span class="nc bnc" id="L2281" title="All 2 branches missed.">                if (entity.getId() == turnOwner) {</span>
+<span class="nc" id="L2282">                    turnsToRemove.add(turn);</span>
+                }
+            }
+<span class="nc" id="L2285">        }</span>
+<span class="nc" id="L2286">        turnVector.removeAll(turnsToRemove);</span>
+<span class="nc" id="L2287">        return turnsToRemove.size();</span>
+    }
+
+    /**
+     * Check each player for the presence of a Battle Armor squad equipped with
+     * a Magnetic Clamp. If one unit is found, update that player's units to
+     * allow the squad to be transported.
+     * &lt;p/&gt;
+     * This method should be called &lt;/b&gt;*ONCE*&lt;/b&gt; per game, after all units for
+     * all players have been loaded.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if a unit was updated, &lt;code&gt;false&lt;/code&gt; if no
+     *         player has a Battle Armor squad equipped with a Magnetic Clamp.
+     */
+    /* Taharqa: I am removing this function and instead I am simply adding clamp mounts to all
+     * non omni/ none BA handled mechs in the game.addEntity routine - It should not be too much memory to
+     * do this and it allows us to load these units in the lobby
+    public boolean checkForMagneticClamp() {
+
+        // Declare local variables.
+        Player player = null;
+        Entity unit = null;
+        boolean result;
+        Hashtable&lt;Player, Boolean&gt; playerFlags = null;
+
+        // Assume that we don't need new transporters.
+        result = false;
+
+        // Create a map of flags for the players.
+        playerFlags = new Hashtable&lt;Player, Boolean&gt;(getNoOfPlayers());
+
+        // Walk through the game's entities.
+        for (Enumeration&lt;Entity&gt; i = entities.elements(); i.hasMoreElements();) {
+
+            // Is the next unit a Battle Armor squad?
+            unit = i.nextElement();
+            if (unit instanceof BattleArmor) {
+
+                if (unit.countWorkingMisc(MiscType.F_MAGNETIC_CLAMP) &gt; 0) {
+                    // The unit's player needs new transporters.
+                    result = true;
+                    playerFlags.put(unit.getOwner(), Boolean.TRUE);
+
+                }
+
+            } // End unit-is-BattleArmor
+
+        } // Handle the next entity.
+
+        // Do we need to add any Magnetic Clamp transporters?
+        if (result) {
+
+            // Walk through the game's entities again.
+            for (Enumeration&lt;Entity&gt; i = entities.elements(); i
+                    .hasMoreElements();) {
+
+                // Get this unit's player.
+                unit = i.nextElement();
+                player = unit.getOwner();
+
+                // Does this player need updated transporters?
+                if (Boolean.TRUE.equals(playerFlags.get(player))) {
+
+                    // Add the appropriate transporter to the unit.
+                    if (!unit.isOmni() &amp;&amp; !unit.hasBattleArmorHandles() &amp;&amp; (unit instanceof Mech)) {
+                        unit.addTransporter(new ClampMountMech());
+                    } else if (!unit.isOmni() &amp;&amp; !unit.hasBattleArmorHandles() &amp;&amp; (unit instanceof Tank)
+                            &amp;&amp; !(unit instanceof VTOL)) {
+                        unit.addTransporter(new ClampMountTank());
+                    }
+
+                }
+            } // End player-needs-transports
+
+        } // Handle the next unit.
+
+        // Return the result.
+        return result;
+
+    } // End private boolean checkForMagneticClamp()
+     */
+
+    /**
+     * Adds the specified action to the actions list for this phase.
+     */
+    public void addAction(EntityAction ea) {
+<span class="nc" id="L2373">        actions.addElement(ea);</span>
+<span class="nc" id="L2374">        processGameEvent(new GameNewActionEvent(this, ea));</span>
+<span class="nc" id="L2375">    }</span>
+
+    public void setArtilleryVector(Vector&lt;ArtilleryAttackAction&gt; v) {
+<span class="nc" id="L2378">        offboardArtilleryAttacks = v;</span>
+<span class="nc" id="L2379">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L2380">    }</span>
+
+    public void resetArtilleryAttacks() {
+<span class="nc" id="L2383">        offboardArtilleryAttacks.removeAllElements();</span>
+<span class="nc" id="L2384">    }</span>
+
+    public Enumeration&lt;ArtilleryAttackAction&gt; getArtilleryAttacks() {
+<span class="nc" id="L2387">        return offboardArtilleryAttacks.elements();</span>
+    }
+
+    public int getArtillerySize() {
+<span class="nc" id="L2391">        return offboardArtilleryAttacks.size();</span>
+    }
+
+    /**
+     * Returns an Enumeration of actions scheduled for this phase.
+     */
+    public Enumeration&lt;EntityAction&gt; getActions() {
+<span class="nc" id="L2398">        return actions.elements();</span>
+    }
+
+    /**
+     * Resets the actions list.
+     */
+    public void resetActions() {
+<span class="nc" id="L2405">        actions.removeAllElements();</span>
+<span class="nc" id="L2406">    }</span>
+
+    /**
+     * Removes all actions by the specified entity
+     */
+    public void removeActionsFor(int entityId) {
+        // or rather, only keeps actions NOT by that entity
+<span class="nc" id="L2413">        Vector&lt;EntityAction&gt; toKeep = new Vector&lt;EntityAction&gt;(actions.size());</span>
+<span class="nc bnc" id="L2414" title="All 2 branches missed.">        for (EntityAction ea : actions) {</span>
+<span class="nc bnc" id="L2415" title="All 2 branches missed.">            if (ea.getEntityId() != entityId) {</span>
+<span class="nc" id="L2416">                toKeep.addElement(ea);</span>
+            }
+<span class="nc" id="L2418">        }</span>
+<span class="nc" id="L2419">        actions = toKeep;</span>
+<span class="nc" id="L2420">    }</span>
+
+    /**
+     * Remove a specified action
+     *
+     * @param o The action to remove.
+     */
+    public void removeAction(Object o) {
+<span class="nc" id="L2428">        actions.removeElement(o);</span>
+<span class="nc" id="L2429">    }</span>
+
+    public int actionsSize() {
+<span class="nc" id="L2432">        return actions.size();</span>
+    }
+
+    /**
+     * Returns the actions vector. Do not use to modify the actions; I will be
+     * angry. &gt;:[ Used for sending all actions to the client.
+     */
+    public List&lt;EntityAction&gt; getActionsVector() {
+<span class="nc" id="L2440">        return Collections.unmodifiableList(actions);</span>
+    }
+
+    public void addInitiativeRerollRequest(Team t) {
+<span class="nc" id="L2444">        initiativeRerollRequests.addElement(t);</span>
+<span class="nc" id="L2445">    }</span>
+
+    public void rollInitAndResolveTies() {
+<span class="nc bnc" id="L2448" title="All 2 branches missed.">        if (getOptions().booleanOption(OptionsConstants.RPG_INDIVIDUAL_INITIATIVE)) {</span>
+<span class="nc" id="L2449">            Vector&lt;TurnOrdered&gt; vRerolls = new Vector&lt;TurnOrdered&gt;();</span>
+<span class="nc bnc" id="L2450" title="All 2 branches missed.">            for (int i = 0; i &lt; entities.size(); i++) {</span>
+<span class="nc" id="L2451">                Entity e = entities.get(i);</span>
+<span class="nc bnc" id="L2452" title="All 2 branches missed.">                if (initiativeRerollRequests.contains(getTeamForPlayer(e.getOwner()))) {</span>
+<span class="nc" id="L2453">                    vRerolls.add(e);</span>
+                }
+            }
+<span class="nc" id="L2456">            TurnOrdered.rollInitAndResolveTies(getEntitiesVector(), vRerolls, false);</span>
+<span class="nc" id="L2457">        } else {</span>
+<span class="nc" id="L2458">            TurnOrdered.rollInitAndResolveTies(teams, initiativeRerollRequests,</span>
+<span class="nc" id="L2459">                    getOptions().booleanOption(OptionsConstants.INIT_INITIATIVE_STREAK_COMPENSATION));</span>
+        }
+<span class="nc" id="L2461">        initiativeRerollRequests.removeAllElements();</span>
+
+<span class="nc" id="L2463">    }</span>
+    
+    public void handleInitiativeCompensation() {
+<span class="nc bnc" id="L2466" title="All 2 branches missed.">        if (getOptions().booleanOption(OptionsConstants.INIT_INITIATIVE_STREAK_COMPENSATION)) {</span>
+<span class="nc" id="L2467">            TurnOrdered.resetInitiativeCompensation(teams, getOptions().booleanOption(OptionsConstants.INIT_INITIATIVE_STREAK_COMPENSATION));</span>
+        }
+<span class="nc" id="L2469">    }</span>
+
+    public int getNoOfInitiativeRerollRequests() {
+<span class="nc" id="L2472">        return initiativeRerollRequests.size();</span>
+    }
+
+    /**
+     * Adds a pending displacement attack to the list for this phase.
+     */
+    public void addCharge(AttackAction ea) {
+<span class="nc" id="L2479">        pendingCharges.addElement(ea);</span>
+<span class="nc" id="L2480">        processGameEvent(new GameNewActionEvent(this, ea));</span>
+<span class="nc" id="L2481">    }</span>
+
+    /**
+     * Returns an Enumeration of displacement attacks scheduled for the end of
+     * the physical phase.
+     */
+    public Enumeration&lt;AttackAction&gt; getCharges() {
+<span class="nc" id="L2488">        return pendingCharges.elements();</span>
+    }
+
+    /**
+     * Resets the pending charges list.
+     */
+    public void resetCharges() {
+<span class="nc" id="L2495">        pendingCharges.removeAllElements();</span>
+<span class="nc" id="L2496">    }</span>
+
+    /**
+     * Returns the charges vector. Do not modify. &gt;:[ Used for sending all
+     * charges to the client.
+     */
+    public List&lt;AttackAction&gt; getChargesVector() {
+<span class="nc" id="L2503">        return Collections.unmodifiableList(pendingCharges);</span>
+    }
+
+    /**
+     * Adds a pending ramming attack to the list for this phase.
+     */
+    public void addRam(AttackAction ea) {
+<span class="nc" id="L2510">        pendingRams.addElement(ea);</span>
+<span class="nc" id="L2511">        processGameEvent(new GameNewActionEvent(this, ea));</span>
+<span class="nc" id="L2512">    }</span>
+
+    /**
+     * Returns an Enumeration of ramming attacks scheduled for the end of the
+     * physical phase.
+     */
+    public Enumeration&lt;AttackAction&gt; getRams() {
+<span class="nc" id="L2519">        return pendingRams.elements();</span>
+    }
+
+    /**
+     * Resets the pending rams list.
+     */
+    public void resetRams() {
+<span class="nc" id="L2526">        pendingRams.removeAllElements();</span>
+<span class="nc" id="L2527">    }</span>
+
+    /**
+     * Returns the rams vector. Do not modify. &gt;:[ Used for sending all charges
+     * to the client.
+     */
+    public List&lt;AttackAction&gt; getRamsVector() {
+<span class="nc" id="L2534">        return Collections.unmodifiableList(pendingRams);</span>
+    }
+
+    /**
+     * Adds a pending ramming attack to the list for this phase.
+     */
+    public void addTeleMissileAttack(AttackAction ea) {
+<span class="nc" id="L2541">        pendingTeleMissileAttacks.addElement(ea);</span>
+<span class="nc" id="L2542">        processGameEvent(new GameNewActionEvent(this, ea));</span>
+<span class="nc" id="L2543">    }</span>
+
+    /**
+     * Returns an Enumeration of ramming attacks scheduled for the end of the
+     * physical phase.
+     */
+    public Enumeration&lt;AttackAction&gt; getTeleMissileAttacks() {
+<span class="nc" id="L2550">        return pendingTeleMissileAttacks.elements();</span>
+    }
+
+    /**
+     * Resets the pending rams list.
+     */
+    public void resetTeleMissileAttacks() {
+<span class="nc" id="L2557">        pendingTeleMissileAttacks.removeAllElements();</span>
+<span class="nc" id="L2558">    }</span>
+
+    /**
+     * Returns the rams vector. Do not modify. &gt;:[ Used for sending all charges
+     * to the client.
+     */
+    public List&lt;AttackAction&gt; getTeleMissileAttacksVector() {
+<span class="nc" id="L2565">        return Collections.unmodifiableList(pendingTeleMissileAttacks);</span>
+    }
+
+    /**
+     * Adds a pending PSR to the list for this phase.
+     */
+    public void addPSR(PilotingRollData psr) {
+<span class="nc" id="L2572">        pilotRolls.addElement(psr);</span>
+<span class="nc" id="L2573">    }</span>
+
+    /**
+     * Returns an Enumeration of pending PSRs.
+     */
+    public Enumeration&lt;PilotingRollData&gt; getPSRs() {
+<span class="nc" id="L2579">        return pilotRolls.elements();</span>
+    }
+
+    /**
+     * Adds a pending extreme Gravity PSR to the list for this phase.
+     */
+    public void addExtremeGravityPSR(PilotingRollData psr) {
+<span class="nc" id="L2586">        extremeGravityRolls.addElement(psr);</span>
+<span class="nc" id="L2587">    }</span>
+
+    /**
+     * Returns an Enumeration of pending extreme GravityPSRs.
+     */
+    public Enumeration&lt;PilotingRollData&gt; getExtremeGravityPSRs() {
+<span class="nc" id="L2593">        return extremeGravityRolls.elements();</span>
+    }
+
+    /**
+     * Resets the PSR list for a given entity.
+     */
+    public void resetPSRs(Entity entity) {
+        PilotingRollData roll;
+<span class="nc" id="L2601">        Vector&lt;Integer&gt; rollsToRemove = new Vector&lt;Integer&gt;();</span>
+<span class="nc" id="L2602">        int i = 0;</span>
+
+        // first, find all the rolls belonging to the target entity
+<span class="nc bnc" id="L2605" title="All 2 branches missed.">        for (i = 0; i &lt; pilotRolls.size(); i++) {</span>
+<span class="nc" id="L2606">            roll = pilotRolls.elementAt(i);</span>
+<span class="nc bnc" id="L2607" title="All 2 branches missed.">            if (roll.getEntityId() == entity.getId()) {</span>
+<span class="nc" id="L2608">                rollsToRemove.addElement(Integer.valueOf(i));</span>
+            }
+        }
+
+        // now, clear them out
+<span class="nc bnc" id="L2613" title="All 2 branches missed.">        for (i = rollsToRemove.size() - 1; i &gt; -1; i--) {</span>
+<span class="nc" id="L2614">            pilotRolls.removeElementAt(rollsToRemove.elementAt(i).intValue());</span>
+        }
+<span class="nc" id="L2616">    }</span>
+
+    /**
+     * Resets the extreme Gravity PSR list.
+     */
+    public void resetExtremeGravityPSRs() {
+<span class="nc" id="L2622">        extremeGravityRolls.removeAllElements();</span>
+<span class="nc" id="L2623">    }</span>
+
+    /**
+     * Resets the extreme Gravity PSR list for a given entity.
+     */
+    public void resetExtremeGravityPSRs(Entity entity) {
+        PilotingRollData roll;
+<span class="nc" id="L2630">        Vector&lt;Integer&gt; rollsToRemove = new Vector&lt;Integer&gt;();</span>
+<span class="nc" id="L2631">        int i = 0;</span>
+
+        // first, find all the rolls belonging to the target entity
+<span class="nc bnc" id="L2634" title="All 2 branches missed.">        for (i = 0; i &lt; extremeGravityRolls.size(); i++) {</span>
+<span class="nc" id="L2635">            roll = extremeGravityRolls.elementAt(i);</span>
+<span class="nc bnc" id="L2636" title="All 2 branches missed.">            if (roll.getEntityId() == entity.getId()) {</span>
+<span class="nc" id="L2637">                rollsToRemove.addElement(Integer.valueOf(i));</span>
+            }
+        }
+
+        // now, clear them out
+<span class="nc bnc" id="L2642" title="All 2 branches missed.">        for (i = rollsToRemove.size() - 1; i &gt; -1; i--) {</span>
+<span class="nc" id="L2643">            extremeGravityRolls.removeElementAt(rollsToRemove.elementAt(i)</span>
+<span class="nc" id="L2644">                    .intValue());</span>
+        }
+<span class="nc" id="L2646">    }</span>
+
+    /**
+     * Resets the PSR list.
+     */
+    public void resetPSRs() {
+<span class="nc" id="L2652">        pilotRolls.removeAllElements();</span>
+<span class="nc" id="L2653">    }</span>
+
+    /**
+     * add an AttackHandler to the attacks list
+     *
+     * @param ah - The &lt;code&gt;AttackHandler&lt;/code&gt; to add
+     */
+    public void addAttack(AttackHandler ah) {
+<span class="nc" id="L2661">        attacks.add(ah);</span>
+<span class="nc" id="L2662">    }</span>
+
+    /**
+     * remove an AttackHandler from the attacks list
+     *
+     * @param ah - The &lt;code&gt;AttackHandler&lt;/code&gt; to remove
+     */
+    public void removeAttack(AttackHandler ah) {
+<span class="nc" id="L2670">        attacks.removeElement(ah);</span>
+<span class="nc" id="L2671">    }</span>
+
+    /**
+     * get the attacks
+     *
+     * @return a &lt;code&gt;Enumeration&lt;/code&gt; of all &lt;code&gt;AttackHandler&lt;/code&gt;s
+     */
+    public Enumeration&lt;AttackHandler&gt; getAttacks() {
+<span class="nc" id="L2679">        return attacks.elements();</span>
+    }
+
+    /**
+     * get the attacks vector
+     *
+     * @return the &lt;code&gt;Vector&lt;/code&gt; containing the attacks
+     */
+    public Vector&lt;AttackHandler&gt; getAttacksVector() {
+<span class="nc" id="L2688">        return attacks;</span>
+    }
+
+    /**
+     * reset the attacks vector
+     */
+    public void resetAttacks() {
+<span class="nc" id="L2695">        attacks = new Vector&lt;AttackHandler&gt;();</span>
+<span class="nc" id="L2696">    }</span>
+
+    /**
+     * set the attacks vector
+     *
+     * @param v - the &lt;code&gt;Vector&lt;/code&gt; that should be the new attacks
+     *          vector
+     */
+    public void setAttacksVector(Vector&lt;AttackHandler&gt; v) {
+<span class="nc" id="L2705">        attacks = v;</span>
+<span class="nc" id="L2706">    }</span>
+
+    /**
+     * Getter for property roundCount.
+     *
+     * @return Value of property roundCount.
+     */
+    public int getRoundCount() {
+<span class="nc" id="L2714">        return roundCount;</span>
+    }
+
+    public void setRoundCount(int roundCount) {
+<span class="nc" id="L2718">        this.roundCount = roundCount;</span>
+<span class="nc" id="L2719">    }</span>
+
+    /**
+     * Increments the round counter
+     */
+    public void incrementRoundCount() {
+<span class="nc" id="L2725">        roundCount++;</span>
+<span class="nc" id="L2726">    }</span>
+
+    /**
+     * Getter for property forceVictory.
+     *
+     * @return Value of property forceVictory.
+     */
+    public boolean isForceVictory() {
+<span class="nc" id="L2734">        return forceVictory;</span>
+    }
+
+    /**
+     * Setter for property forceVictory.
+     *
+     * @param forceVictory New value of property forceVictory.
+     */
+    public void setForceVictory(boolean forceVictory) {
+<span class="nc" id="L2743">        this.forceVictory = forceVictory;</span>
+<span class="nc" id="L2744">    }</span>
+
+    public void addReports(Vector&lt;Report&gt; v) {
+<span class="nc bnc" id="L2747" title="All 2 branches missed.">        if (v.size() == 0) {</span>
+<span class="nc" id="L2748">            return;</span>
+        }
+<span class="nc" id="L2750">        gameReports.add(roundCount, v);</span>
+<span class="nc" id="L2751">    }</span>
+
+    public Vector&lt;Report&gt; getReports(int r) {
+<span class="nc" id="L2754">        return gameReports.get(r);</span>
+    }
+
+    public Vector&lt;Vector&lt;Report&gt;&gt; getAllReports() {
+<span class="nc" id="L2758">        return gameReports.get();</span>
+    }
+
+    public void setAllReports(Vector&lt;Vector&lt;Report&gt;&gt; v) {
+<span class="nc" id="L2762">        gameReports.set(v);</span>
+<span class="nc" id="L2763">    }</span>
+
+    public void clearAllReports() {
+<span class="nc" id="L2766">        gameReports.clear();</span>
+<span class="nc" id="L2767">    }</span>
+
+    public void end(int winner, int winnerTeam) {
+<span class="nc" id="L2770">        setVictoryPlayerId(winner);</span>
+<span class="nc" id="L2771">        setVictoryTeam(winnerTeam);</span>
+<span class="nc" id="L2772">        processGameEvent(new GameEndEvent(this));</span>
+
+<span class="nc" id="L2774">    }</span>
+
+    /**
+     * Getter for property victoryPlayerId.
+     *
+     * @return Value of property victoryPlayerId.
+     */
+    public int getVictoryPlayerId() {
+<span class="nc" id="L2782">        return victoryPlayerId;</span>
+    }
+
+    /**
+     * Setter for property victoryPlayerId.
+     *
+     * @param victoryPlayerId New value of property victoryPlayerId.
+     */
+    public void setVictoryPlayerId(int victoryPlayerId) {
+<span class="nc" id="L2791">        this.victoryPlayerId = victoryPlayerId;</span>
+<span class="nc" id="L2792">    }</span>
+
+    /**
+     * Getter for property victoryTeam.
+     *
+     * @return Value of property victoryTeam.
+     */
+    public int getVictoryTeam() {
+<span class="nc" id="L2800">        return victoryTeam;</span>
+    }
+
+    /**
+     * Setter for property victoryTeam.
+     *
+     * @param victoryTeam New value of property victoryTeam.
+     */
+    public void setVictoryTeam(int victoryTeam) {
+<span class="nc" id="L2809">        this.victoryTeam = victoryTeam;</span>
+<span class="nc" id="L2810">    }</span>
+
+    /**
+     * Returns true if the specified player is either the victor, or is on the
+     * winning team. Best to call during PHASE_VICTORY.
+     */
+    public boolean isPlayerVictor(IPlayer player) {
+<span class="nc bnc" id="L2817" title="All 2 branches missed.">        if (player.getTeam() == IPlayer.TEAM_NONE) {</span>
+<span class="nc bnc" id="L2818" title="All 2 branches missed.">            return player.getId() == victoryPlayerId;</span>
+        }
+<span class="nc bnc" id="L2820" title="All 2 branches missed.">        return player.getTeam() == victoryTeam;</span>
+    }
+
+    public HashMap&lt;String, Object&gt; getVictoryContext() {
+<span class="nc" id="L2824">        return victoryContext;</span>
+    }
+
+    public void setVictoryContext(HashMap&lt;String, Object&gt; ctx) {
+<span class="nc" id="L2828">        victoryContext = ctx;</span>
+<span class="nc" id="L2829">    }</span>
+
+    /**
+     * Shortcut to isPlayerVictor(Player player)
+     */
+    public boolean isPlayerVictor(int playerId) {
+<span class="nc" id="L2835">        return isPlayerVictor(getPlayer(playerId));</span>
+    }
+
+    /**
+     * Get all &lt;code&gt;Entity&lt;/code&gt;s that pass the given selection criteria.
+     *
+     * @param selector the &lt;code&gt;EntitySelector&lt;/code&gt; that implements test that an
+     *                 entity must pass to be included. This value may be
+     *                 &lt;code&gt;null&lt;/code&gt; (in which case all entities in the game will
+     *                 be returned).
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of all entities that the selector
+     * accepts. This value will not be &lt;code&gt;null&lt;/code&gt; but it may be
+     * empty.
+     */
+    public Iterator&lt;Entity&gt; getSelectedEntities(EntitySelector selector) {
+        Iterator&lt;Entity&gt; retVal;
+
+        // If no selector was supplied, return all entities.
+<span class="nc bnc" id="L2853" title="All 2 branches missed.">        if (null == selector) {</span>
+<span class="nc" id="L2854">            retVal = this.getEntities();</span>
+        }
+
+        // Otherwise, return an anonymous Enumeration
+        // that selects entities in this game.
+        else {
+<span class="nc" id="L2860">            final EntitySelector entry = selector;</span>
+<span class="nc" id="L2861">            retVal = new Iterator&lt;Entity&gt;() {</span>
+<span class="nc" id="L2862">                private EntitySelector entitySelector = entry;</span>
+<span class="nc" id="L2863">                private Entity current = null;</span>
+<span class="nc" id="L2864">                private Iterator&lt;Entity&gt; iter = getEntities();</span>
+
+                // Do any more entities meet the selection criteria?
+                public boolean hasNext() {
+                    // See if we have a pre-approved entity.
+<span class="nc bnc" id="L2869" title="All 2 branches missed.">                    if (null == current) {</span>
+
+                        // Find the first acceptable entity
+<span class="nc bnc" id="L2872" title="All 4 branches missed.">                        while ((null == current) &amp;&amp; iter.hasNext()) {</span>
+<span class="nc" id="L2873">                            current = iter.next();</span>
+<span class="nc bnc" id="L2874" title="All 2 branches missed.">                            if (!entitySelector.accept(current)) {</span>
+<span class="nc" id="L2875">                                current = null;</span>
+                            }
+                        }
+                    }
+<span class="nc bnc" id="L2879" title="All 2 branches missed.">                    return (null != current);</span>
+                }
+
+                // Get the next entity that meets the selection criteria.
+                public Entity next() {
+                    // Pre-approve an entity.
+<span class="nc bnc" id="L2885" title="All 2 branches missed.">                    if (!hasNext()) {</span>
+<span class="nc" id="L2886">                        return null;</span>
+                    }
+
+                    // Use the pre-approved entity, and null out our reference.
+<span class="nc" id="L2890">                    Entity next = current;</span>
+<span class="nc" id="L2891">                    current = null;</span>
+<span class="nc" id="L2892">                    return next;</span>
+                }
+
+                @Override
+                public void remove() {
+<span class="nc" id="L2897">                    throw new UnsupportedOperationException();</span>
+                }
+            };
+
+        } // End use-selector
+
+        // Return the selected entities.
+<span class="nc" id="L2904">        return retVal;</span>
+
+    }
+
+    /**
+     * Count all &lt;code&gt;Entity&lt;/code&gt;s that pass the given selection criteria.
+     *
+     * @param selector the &lt;code&gt;EntitySelector&lt;/code&gt; that implements test that an
+     *                 entity must pass to be included. This value may be
+     *                 &lt;code&gt;null&lt;/code&gt; (in which case the count of all entities in
+     *                 the game will be returned).
+     * @return the &lt;code&gt;int&lt;/code&gt; count of all entities that the selector
+     * accepts. This value will not be &lt;code&gt;null&lt;/code&gt; but it may be
+     * empty.
+     */
+    public int getSelectedEntityCount(EntitySelector selector) {
+<span class="nc" id="L2920">        int retVal = 0;</span>
+
+        // If no selector was supplied, return the count of all game entities.
+<span class="nc bnc" id="L2923" title="All 2 branches missed.">        if (null == selector) {</span>
+<span class="nc" id="L2924">            retVal = getNoOfEntities();</span>
+        }
+
+        // Otherwise, count the entities that meet the selection criteria.
+        else {
+<span class="nc" id="L2929">            Iterator&lt;Entity&gt; iter = this.getEntities();</span>
+<span class="nc bnc" id="L2930" title="All 2 branches missed.">            while (iter.hasNext()) {</span>
+<span class="nc bnc" id="L2931" title="All 2 branches missed.">                if (selector.accept(iter.next())) {</span>
+<span class="nc" id="L2932">                    retVal++;</span>
+                }
+            }
+
+        } // End use-selector
+
+        // Return the number of selected entities.
+<span class="nc" id="L2939">        return retVal;</span>
+    }
+
+    /**
+     * Get all out-of-game &lt;code&gt;Entity&lt;/code&gt;s that pass the given selection
+     * criteria.
+     *
+     * @param selector the &lt;code&gt;EntitySelector&lt;/code&gt; that implements test that an
+     *                 entity must pass to be included. This value may be
+     *                 &lt;code&gt;null&lt;/code&gt; (in which case all entities in the game will
+     *                 be returned).
+     * @return an &lt;code&gt;Enumeration&lt;/code&gt; of all entities that the selector
+     * accepts. This value will not be &lt;code&gt;null&lt;/code&gt; but it may be
+     * empty.
+     */
+    public Enumeration&lt;Entity&gt; getSelectedOutOfGameEntities(
+            EntitySelector selector) {
+        Enumeration&lt;Entity&gt; retVal;
+
+        // If no selector was supplied, return all entities.
+<span class="nc bnc" id="L2959" title="All 2 branches missed.">        if (null == selector) {</span>
+<span class="nc" id="L2960">            retVal = vOutOfGame.elements();</span>
+        }
+
+        // Otherwise, return an anonymous Enumeration
+        // that selects entities in this game.
+        else {
+<span class="nc" id="L2966">            final EntitySelector entry = selector;</span>
+<span class="nc" id="L2967">            retVal = new Enumeration&lt;Entity&gt;() {</span>
+<span class="nc" id="L2968">                private EntitySelector entitySelector = entry;</span>
+<span class="nc" id="L2969">                private Entity current = null;</span>
+<span class="nc" id="L2970">                private Enumeration&lt;Entity&gt; iter = vOutOfGame.elements();</span>
+
+                // Do any more entities meet the selection criteria?
+                public boolean hasMoreElements() {
+                    // See if we have a pre-approved entity.
+<span class="nc bnc" id="L2975" title="All 2 branches missed.">                    if (null == current) {</span>
+
+                        // Find the first acceptable entity
+<span class="nc bnc" id="L2978" title="All 4 branches missed.">                        while ((null == current) &amp;&amp; iter.hasMoreElements()) {</span>
+<span class="nc" id="L2979">                            current = iter.nextElement();</span>
+<span class="nc bnc" id="L2980" title="All 2 branches missed.">                            if (!entitySelector.accept(current)) {</span>
+<span class="nc" id="L2981">                                current = null;</span>
+                            }
+                        }
+                    }
+<span class="nc bnc" id="L2985" title="All 2 branches missed.">                    return (null != current);</span>
+                }
+
+                // Get the next entity that meets the selection criteria.
+                public Entity nextElement() {
+                    // Pre-approve an entity.
+<span class="nc bnc" id="L2991" title="All 2 branches missed.">                    if (!hasMoreElements()) {</span>
+<span class="nc" id="L2992">                        return null;</span>
+                    }
+
+                    // Use the pre-approved entity, and null out our reference.
+<span class="nc" id="L2996">                    Entity next = current;</span>
+<span class="nc" id="L2997">                    current = null;</span>
+<span class="nc" id="L2998">                    return next;</span>
+                }
+            };
+
+        } // End use-selector
+
+        // Return the selected entities.
+<span class="nc" id="L3005">        return retVal;</span>
+
+    }
+
+    /**
+     * Count all out-of-game&lt;code&gt;Entity&lt;/code&gt;s that pass the given selection
+     * criteria.
+     *
+     * @param selector the &lt;code&gt;EntitySelector&lt;/code&gt; that implements test that an
+     *                 entity must pass to be included. This value may be
+     *                 &lt;code&gt;null&lt;/code&gt; (in which case the count of all out-of-game
+     *                 entities will be returned).
+     * @return the &lt;code&gt;int&lt;/code&gt; count of all entities that the selector
+     * accepts. This value will not be &lt;code&gt;null&lt;/code&gt; but it may be
+     * empty.
+     */
+    public int getSelectedOutOfGameEntityCount(EntitySelector selector) {
+<span class="nc" id="L3022">        int retVal = 0;</span>
+
+        // If no selector was supplied, return the count of all game entities.
+<span class="nc bnc" id="L3025" title="All 2 branches missed.">        if (null == selector) {</span>
+<span class="nc" id="L3026">            retVal = vOutOfGame.size();</span>
+        }
+
+        // Otherwise, count the entities that meet the selection criteria.
+        else {
+<span class="nc" id="L3031">            Enumeration&lt;Entity&gt; iter = vOutOfGame.elements();</span>
+<span class="nc bnc" id="L3032" title="All 2 branches missed.">            while (iter.hasMoreElements()) {</span>
+<span class="nc bnc" id="L3033" title="All 2 branches missed.">                if (selector.accept(iter.nextElement())) {</span>
+<span class="nc" id="L3034">                    retVal++;</span>
+                }
+            }
+
+        } // End use-selector
+
+        // Return the number of selected entities.
+<span class="nc" id="L3041">        return retVal;</span>
+    }
+
+    /**
+     * Returns true if the player has any valid units this turn that are not
+     * infantry, not protomechs, or not either of those. This method is
+     * utitilized by the &quot;A players Infantry moves after that players other
+     * units&quot;, and &quot;A players Protomechs move after that players other units&quot;
+     * options.
+     */
+    public boolean checkForValidNonInfantryAndOrProtomechs(int playerId) {
+<span class="nc" id="L3052">        Iterator&lt;Entity&gt; iter = getPlayerEntities(getPlayer(playerId), false)</span>
+<span class="nc" id="L3053">                .iterator();</span>
+<span class="nc bnc" id="L3054" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L3055">            Entity entity = iter.next();</span>
+<span class="nc" id="L3056">            boolean excluded = false;</span>
+<span class="nc bnc" id="L3057" title="All 2 branches missed.">            if ((entity instanceof Infantry)</span>
+<span class="nc bnc" id="L3058" title="All 2 branches missed.">                &amp;&amp; getOptions().booleanOption(OptionsConstants.INIT_INF_MOVE_LATER)) {</span>
+<span class="nc" id="L3059">                excluded = true;</span>
+<span class="nc bnc" id="L3060" title="All 2 branches missed.">            } else if ((entity instanceof Protomech)</span>
+<span class="nc bnc" id="L3061" title="All 2 branches missed.">                       &amp;&amp; getOptions().booleanOption(OptionsConstants.INIT_PROTOS_MOVE_LATER)) {</span>
+<span class="nc" id="L3062">                excluded = true;</span>
+            }
+
+<span class="nc bnc" id="L3065" title="All 4 branches missed.">            if (!excluded &amp;&amp; getTurn().isValidEntity(entity, this)) {</span>
+<span class="nc" id="L3066">                return true;</span>
+            }
+<span class="nc" id="L3068">        }</span>
+<span class="nc" id="L3069">        return false;</span>
+    }
+
+    /**
+     * Get Entities that have have a iNarc Nemesis pod attached and are situated
+     * between two Coords
+     *
+     * @param attacker The attacking &lt;code&gt;Entity&lt;/code&gt;.
+     * @param target   The &lt;code&gt;Coords&lt;/code&gt; of the original target.
+     * @return a &lt;code&gt;Enumeration&lt;/code&gt; of entities that have nemesis pods
+     * attached and are located between attacker and target and are
+     * friendly with the attacker.
+     */
+    public Enumeration&lt;Entity&gt; getNemesisTargets(Entity attacker, Coords target) {
+<span class="nc" id="L3083">        final Coords attackerPos = attacker.getPosition();</span>
+<span class="nc" id="L3084">        final ArrayList&lt;Coords&gt; in = Coords.intervening(attackerPos, target);</span>
+<span class="nc" id="L3085">        Vector&lt;Entity&gt; nemesisTargets = new Vector&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L3086" title="All 2 branches missed.">        for (Coords c : in) {</span>
+<span class="nc bnc" id="L3087" title="All 2 branches missed.">            for (Entity entity : getEntitiesVector(c)) {</span>
+<span class="nc bnc" id="L3088" title="All 2 branches missed.">                if (entity.isINarcedWith(INarcPod.NEMESIS)</span>
+<span class="nc bnc" id="L3089" title="All 2 branches missed.">                    &amp;&amp; !entity.isEnemyOf(attacker)) {</span>
+<span class="nc" id="L3090">                    nemesisTargets.addElement(entity);</span>
+                }
+<span class="nc" id="L3092">            }</span>
+<span class="nc" id="L3093">        }</span>
+<span class="nc" id="L3094">        return nemesisTargets.elements();</span>
+    }
+
+    /**
+     * Adds the specified game listener to receive board events from this board.
+     *
+     * @param listener the game listener.
+     */
+    public void addGameListener(GameListener listener) {
+        // Since gameListeners is transient, it could be null
+<span class="pc bpc" id="L3104" title="1 of 2 branches missed.">        if (gameListeners == null) {</span>
+<span class="nc" id="L3105">            gameListeners = new Vector&lt;GameListener&gt;();</span>
+        }
+<span class="fc" id="L3107">        gameListeners.addElement(listener);</span>
+<span class="fc" id="L3108">    }</span>
+
+    /**
+     * Removes the specified game listener.
+     *
+     * @param listener the game listener.
+     */
+    public void removeGameListener(GameListener listener) {
+        // Since gameListeners is transient, it could be null
+<span class="nc bnc" id="L3117" title="All 2 branches missed.">        if (gameListeners == null) {</span>
+<span class="nc" id="L3118">            gameListeners = new Vector&lt;GameListener&gt;();</span>
+        }
+<span class="nc" id="L3120">        gameListeners.removeElement(listener);</span>
+<span class="nc" id="L3121">    }</span>
+
+    /**
+     * Returns all the GameListeners.
+     *
+     * @return
+     */
+    public List&lt;GameListener&gt; getGameListeners() {
+        // Since gameListeners is transient, it could be null
+<span class="nc bnc" id="L3130" title="All 2 branches missed.">        if (gameListeners == null) {</span>
+<span class="nc" id="L3131">            gameListeners = new Vector&lt;GameListener&gt;();</span>
+        }
+<span class="nc" id="L3133">        return Collections.unmodifiableList(gameListeners);</span>
+    }
+
+    /**
+     * purges all Game Listener objects.
+     */
+    public void purgeGameListeners() {
+        // Since gameListeners is transient, it could be null
+<span class="nc bnc" id="L3141" title="All 2 branches missed.">        if (gameListeners == null) {</span>
+<span class="nc" id="L3142">            gameListeners = new Vector&lt;GameListener&gt;();</span>
+        }
+<span class="nc" id="L3144">        gameListeners.clear();</span>
+<span class="nc" id="L3145">    }</span>
+
+    /**
+     * Processes game events occurring on this connection by dispatching them to
+     * any registered GameListener objects.
+     *
+     * @param event the game event.
+     */
+    public void processGameEvent(GameEvent event) {
+        // Since gameListeners is transient, it could be null
+<span class="nc bnc" id="L3155" title="All 2 branches missed.">        if (gameListeners == null) {</span>
+<span class="nc" id="L3156">            gameListeners = new Vector&lt;GameListener&gt;();</span>
+        }
+<span class="nc" id="L3158">        for (Enumeration&lt;GameListener&gt; e = gameListeners.elements(); e</span>
+<span class="nc bnc" id="L3159" title="All 2 branches missed.">                .hasMoreElements(); ) {</span>
+<span class="nc" id="L3160">            event.fireEvent(e.nextElement());</span>
+        }
+<span class="nc" id="L3162">    }</span>
+
+    /**
+     * Returns this turn's tag information
+     */
+    public Vector&lt;TagInfo&gt; getTagInfo() {
+<span class="nc" id="L3168">        return tagInfoForTurn;</span>
+    }
+
+    public void addTagInfo(TagInfo info) {
+<span class="nc" id="L3172">        tagInfoForTurn.addElement(info);</span>
+<span class="nc" id="L3173">    }</span>
+
+    public void resetTagInfo() {
+<span class="nc" id="L3176">        tagInfoForTurn.removeAllElements();</span>
+<span class="nc" id="L3177">    }</span>
+
+    public void clearTagInfoShots(Entity ae, Coords tc) {
+<span class="nc bnc" id="L3180" title="All 2 branches missed.">        for (int i = 0; i &lt; tagInfoForTurn.size(); i++) {</span>
+<span class="nc" id="L3181">            TagInfo info = tagInfoForTurn.elementAt(i);</span>
+<span class="nc" id="L3182">            Entity attacker = getEntity(info.attackerId);</span>
+<span class="nc" id="L3183">            Targetable target = info.target;</span>
+<span class="nc bnc" id="L3184" title="All 4 branches missed.">            if (!ae.isEnemyOf(attacker) &amp;&amp; isIn8HexRadius(target.getPosition(), tc)) {</span>
+<span class="nc" id="L3185">                info.shots = info.priority;</span>
+<span class="nc" id="L3186">                tagInfoForTurn.setElementAt(info, i);</span>
+            }
+        }
+<span class="nc" id="L3189">    }</span>
+
+    public boolean isIn8HexRadius(Coords c1, Coords c2) {
+
+        // errata says we now always use 8 hex radius
+<span class="nc bnc" id="L3194" title="All 2 branches missed.">        if (c2.distance(c1) &lt;= 8) {</span>
+<span class="nc" id="L3195">            return true;</span>
+        }
+<span class="nc" id="L3197">        return false;</span>
+
+    }
+
+    /**
+     * Get a list of flares
+     */
+    public Vector&lt;Flare&gt; getFlares() {
+<span class="nc" id="L3205">        return flares;</span>
+    }
+
+    /**
+     * Set the list of flares
+     */
+    public void setFlares(Vector&lt;Flare&gt; flares) {
+<span class="nc" id="L3212">        this.flares = flares;</span>
+<span class="nc" id="L3213">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L3214">    }</span>
+
+    /**
+     * Add a new flare
+     */
+    public void addFlare(Flare flare) {
+<span class="nc" id="L3220">        flares.addElement(flare);</span>
+<span class="nc" id="L3221">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L3222">    }</span>
+
+    /**
+     * Get a set of Coords illuminated by searchlights.
+     * 
+     * Note: coords could be illuminated by other sources as well, it's likely
+     * that IGame.isPositionIlluminated is desired unless the searchlighted hex
+     * set is being sent to the client or server.
+     */
+    public HashSet&lt;Coords&gt; getIlluminatedPositions() {
+<span class="nc" id="L3232">        return illuminatedPositions;</span>
+    }
+
+    /**
+     * Clear the set of searchlight illuminated hexes.
+     */
+    public void clearIlluminatedPositions() {
+<span class="nc bnc" id="L3239" title="All 2 branches missed.">        if (illuminatedPositions == null) {</span>
+<span class="nc" id="L3240">            return;</span>
+        }
+<span class="nc" id="L3242">        illuminatedPositions.clear();</span>
+<span class="nc" id="L3243">    }</span>
+
+    /**
+     * Setter for the list of Coords illuminated by search lights.
+     */
+    @Override
+    public void setIlluminatedPositions(final @Nullable HashSet&lt;Coords&gt; ip) {
+<span class="nc bnc" id="L3250" title="All 2 branches missed.">        if (ip == null) {</span>
+<span class="nc" id="L3251">            throw MegaMek.getLogger().error(new RuntimeException(&quot;Illuminated Positions is null.&quot;));</span>
+        }
+<span class="nc" id="L3253">        illuminatedPositions = ip;</span>
+<span class="nc" id="L3254">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L3255">    }</span>
+
+    /**
+     * Add a new hex to the collection of Coords illuminated by searchlights.
+     *
+     * @return True if a new hex was added, else false if the set already
+     * contained the input hex.
+     */
+    public boolean addIlluminatedPosition(Coords c) {
+<span class="nc" id="L3264">        boolean rv = illuminatedPositions.add(c);</span>
+<span class="nc" id="L3265">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L3266">        return rv;</span>
+    }
+
+    /**
+     * Returns the level of illumination for a given coords.  Different light
+     * sources affect how much the night-time penalties are reduced. Note: this
+     * method should be used for determining is a Coords/Hex is illuminated, not
+     * IGame. getIlluminatedPositions(), as that just returns the hexes that
+     * are effected by spotlights, whereas this one considers searchlights as
+     * well as other light sources.
+     */
+    public int isPositionIlluminated(Coords c) {
+    	// fix for NPE when recovering spacecraft while in visual range of enemy
+<span class="nc bnc" id="L3279" title="All 2 branches missed.">    	if (getBoard().inSpace()) {</span>
+<span class="nc" id="L3280">    		return ILLUMINATED_NONE;</span>
+    	}
+        // Flares happen first, because they totally negate nighttime penalties
+<span class="nc bnc" id="L3283" title="All 2 branches missed.">        for (Flare flare : flares) {</span>
+<span class="nc bnc" id="L3284" title="All 2 branches missed.">            if (flare.illuminates(c)) {</span>
+<span class="nc" id="L3285">                return ILLUMINATED_FLARE;</span>
+            }
+<span class="nc" id="L3287">        }</span>
+<span class="nc" id="L3288">        IHex hex = getBoard().getHex(c);</span>
+
+        // Searchlights reduce nighttime penalties by up to 3 points.
+<span class="nc bnc" id="L3291" title="All 2 branches missed.">        if (illuminatedPositions.contains(c)) {</span>
+<span class="nc" id="L3292">            return ILLUMINATED_LIGHT;</span>
+        }
+
+        // Fires can reduce nighttime penalties by up to 2 points.
+<span class="nc bnc" id="L3296" title="All 4 branches missed.">        if (hex != null &amp;&amp; hex.containsTerrain(Terrains.FIRE)) {</span>
+<span class="nc" id="L3297">            return ILLUMINATED_FIRE;</span>
+        }
+        // If we are adjacent to a burning hex, we are also illuminated
+<span class="nc bnc" id="L3300" title="All 2 branches missed.">        for (int dir = 0; dir &lt; 6; dir++) {</span>
+<span class="nc" id="L3301">            Coords adj = c.translated(dir);</span>
+<span class="nc" id="L3302">            hex = getBoard().getHex(adj);</span>
+<span class="nc bnc" id="L3303" title="All 4 branches missed.">            if (hex != null &amp;&amp; hex.containsTerrain(Terrains.FIRE)) {</span>
+<span class="nc" id="L3304">                return ILLUMINATED_FIRE;</span>
+            }
+        }
+<span class="nc" id="L3307">        return ILLUMINATED_NONE;</span>
+    }
+
+    /**
+     * Age the flare list and remove any which have burnt out Artillery flares
+     * drift with wind. (called at end of turn)
+     */
+    public Vector&lt;Report&gt; ageFlares() {
+<span class="nc" id="L3315">        Vector&lt;Report&gt; reports = new Vector&lt;Report&gt;();</span>
+        Report r;
+<span class="nc bnc" id="L3317" title="All 2 branches missed.">        for (int i = flares.size() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L3318">            Flare flare = flares.elementAt(i);</span>
+<span class="nc" id="L3319">            r = new Report(5235);</span>
+<span class="nc" id="L3320">            r.add(flare.position.getBoardNum());</span>
+<span class="nc" id="L3321">            r.newlines = 0;</span>
+<span class="nc" id="L3322">            reports.addElement(r);</span>
+<span class="nc bnc" id="L3323" title="All 2 branches missed.">            if ((flare.flags &amp; Flare.F_IGNITED) != 0) {</span>
+<span class="nc" id="L3324">                flare.turnsToBurn--;</span>
+<span class="nc bnc" id="L3325" title="All 2 branches missed.">                if ((flare.flags &amp; Flare.F_DRIFTING) != 0) {</span>
+<span class="nc" id="L3326">                    int dir = planetaryConditions.getWindDirection();</span>
+<span class="nc" id="L3327">                    int str = planetaryConditions.getWindStrength();</span>
+
+                    // strength 1 and 2: drift 1 hex
+                    // strength 3: drift 2 hexes
+                    // strength 4: drift 3 hexes
+                    // for each above strenght 4 (storm), drift one more
+<span class="nc bnc" id="L3333" title="All 2 branches missed.">                    if (str &gt; 0) {</span>
+<span class="nc" id="L3334">                        flare.position = flare.position.translated(dir);</span>
+<span class="nc bnc" id="L3335" title="All 2 branches missed.">                        if (str &gt; 2) {</span>
+<span class="nc" id="L3336">                            flare.position = flare.position.translated(dir);</span>
+                        }
+<span class="nc bnc" id="L3338" title="All 2 branches missed.">                        if (str &gt; 3) {</span>
+<span class="nc" id="L3339">                            flare.position = flare.position.translated(dir);</span>
+                        }
+<span class="nc bnc" id="L3341" title="All 2 branches missed.">                        if (str &gt; 4) {</span>
+<span class="nc" id="L3342">                            flare.position = flare.position.translated(dir);</span>
+                        }
+<span class="nc bnc" id="L3344" title="All 2 branches missed.">                        if (str &gt; 5) {</span>
+<span class="nc" id="L3345">                            flare.position = flare.position.translated(dir);</span>
+                        }
+<span class="nc" id="L3347">                        r = new Report(5236);</span>
+<span class="nc" id="L3348">                        r.add(flare.position.getBoardNum());</span>
+<span class="nc" id="L3349">                        r.newlines = 0;</span>
+<span class="nc" id="L3350">                        reports.addElement(r);</span>
+                    }
+<span class="nc" id="L3352">                }</span>
+            } else {
+<span class="nc" id="L3354">                r = new Report(5237);</span>
+<span class="nc" id="L3355">                r.newlines = 0;</span>
+<span class="nc" id="L3356">                reports.addElement(r);</span>
+<span class="nc" id="L3357">                flare.flags |= Flare.F_IGNITED;</span>
+            }
+<span class="nc bnc" id="L3359" title="All 2 branches missed.">            if (flare.turnsToBurn &lt;= 0) {</span>
+<span class="nc" id="L3360">                r = new Report(5238);</span>
+<span class="nc" id="L3361">                reports.addElement(r);</span>
+<span class="nc" id="L3362">                flares.removeElementAt(i);</span>
+            } else {
+<span class="nc" id="L3364">                r = new Report(5239);</span>
+<span class="nc" id="L3365">                r.add(flare.turnsToBurn);</span>
+<span class="nc" id="L3366">                reports.addElement(r);</span>
+<span class="nc" id="L3367">                flares.setElementAt(flare, i);</span>
+            }
+        }
+<span class="nc" id="L3370">        processGameEvent(new GameBoardChangeEvent(this));</span>
+<span class="nc" id="L3371">        return reports;</span>
+    }
+
+    public boolean gameTimerIsExpired() {
+<span class="nc bnc" id="L3375" title="All 2 branches missed.">        return ((getOptions().booleanOption(OptionsConstants.VICTORY_USE_GAME_TURN_LIMIT)) &amp;&amp; (getRoundCount() == getOptions()</span>
+<span class="nc bnc" id="L3376" title="All 2 branches missed.">                .intOption(OptionsConstants.VICTORY_GAME_TURN_LIMIT)));</span>
+    }
+
+    public void createVictoryConditions() {
+<span class="nc" id="L3380">        victory = new Victory(getOptions());</span>
+<span class="nc" id="L3381">    }</span>
+
+    public Victory getVictory() {
+<span class="nc" id="L3384">        return victory;</span>
+    }
+
+    // a shortcut function for determining whether vectored movement is
+    // applicable
+    public boolean useVectorMove() {
+<span class="nc bnc" id="L3390" title="All 2 branches missed.">        return getOptions().booleanOption(OptionsConstants.ADVAERORULES_ADVANCED_MOVEMENT)</span>
+<span class="nc bnc" id="L3391" title="All 2 branches missed.">               &amp;&amp; board.inSpace();</span>
+    }
+
+    /**
+     * Adds a pending Control roll to the list for this phase.
+     */
+    public void addControlRoll(PilotingRollData control) {
+<span class="nc" id="L3398">        controlRolls.addElement(control);</span>
+<span class="nc" id="L3399">    }</span>
+
+    /**
+     * Returns an Enumeration of pending Control rolls.
+     */
+    public Enumeration&lt;PilotingRollData&gt; getControlRolls() {
+<span class="nc" id="L3405">        return controlRolls.elements();</span>
+    }
+
+    /**
+     * Resets the Control Roll list for a given entity.
+     */
+    public void resetControlRolls(Entity entity) {
+        PilotingRollData roll;
+<span class="nc" id="L3413">        Vector&lt;Integer&gt; rollsToRemove = new Vector&lt;Integer&gt;();</span>
+<span class="nc" id="L3414">        int i = 0;</span>
+
+        // first, find all the rolls belonging to the target entity
+<span class="nc bnc" id="L3417" title="All 2 branches missed.">        for (i = 0; i &lt; controlRolls.size(); i++) {</span>
+<span class="nc" id="L3418">            roll = controlRolls.elementAt(i);</span>
+<span class="nc bnc" id="L3419" title="All 2 branches missed.">            if (roll.getEntityId() == entity.getId()) {</span>
+<span class="nc" id="L3420">                rollsToRemove.addElement(Integer.valueOf(i));</span>
+            }
+        }
+
+        // now, clear them out
+<span class="nc bnc" id="L3425" title="All 2 branches missed.">        for (i = rollsToRemove.size() - 1; i &gt; -1; i--) {</span>
+<span class="nc" id="L3426">            controlRolls.removeElementAt(rollsToRemove.elementAt(i).intValue());</span>
+        }
+<span class="nc" id="L3428">    }</span>
+
+    /**
+     * Resets the PSR list.
+     */
+    public void resetControlRolls() {
+<span class="nc" id="L3434">        controlRolls.removeAllElements();</span>
+<span class="nc" id="L3435">    }</span>
+
+    /**
+     * A set of checks for aero units to make sure that the movement order is
+     * maintained
+     */
+    public boolean checkForValidSpaceStations(int playerId) {
+<span class="nc" id="L3442">        Iterator&lt;Entity&gt; iter = getPlayerEntities(getPlayer(playerId), false)</span>
+<span class="nc" id="L3443">                .iterator();</span>
+<span class="nc bnc" id="L3444" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L3445">            Entity entity = iter.next();</span>
+<span class="nc bnc" id="L3446" title="All 2 branches missed.">            if ((entity instanceof SpaceStation)</span>
+<span class="nc bnc" id="L3447" title="All 2 branches missed.">                &amp;&amp; getTurn().isValidEntity(entity, this)) {</span>
+<span class="nc" id="L3448">                return true;</span>
+            }
+<span class="nc" id="L3450">        }</span>
+<span class="nc" id="L3451">        return false;</span>
+    }
+
+    public boolean checkForValidJumpships(int playerId) {
+<span class="nc" id="L3455">        Iterator&lt;Entity&gt; iter = getPlayerEntities(getPlayer(playerId), false)</span>
+<span class="nc" id="L3456">                .iterator();</span>
+<span class="nc bnc" id="L3457" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L3458">            Entity entity = iter.next();</span>
+<span class="nc bnc" id="L3459" title="All 4 branches missed.">            if ((entity instanceof Jumpship) &amp;&amp; !(entity instanceof Warship)</span>
+<span class="nc bnc" id="L3460" title="All 2 branches missed.">                &amp;&amp; getTurn().isValidEntity(entity, this)) {</span>
+<span class="nc" id="L3461">                return true;</span>
+            }
+<span class="nc" id="L3463">        }</span>
+<span class="nc" id="L3464">        return false;</span>
+    }
+
+    public boolean checkForValidWarships(int playerId) {
+<span class="nc" id="L3468">        Iterator&lt;Entity&gt; iter = getPlayerEntities(getPlayer(playerId), false)</span>
+<span class="nc" id="L3469">                .iterator();</span>
+<span class="nc bnc" id="L3470" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L3471">            Entity entity = iter.next();</span>
+<span class="nc bnc" id="L3472" title="All 2 branches missed.">            if ((entity instanceof Warship)</span>
+<span class="nc bnc" id="L3473" title="All 2 branches missed.">                &amp;&amp; getTurn().isValidEntity(entity, this)) {</span>
+<span class="nc" id="L3474">                return true;</span>
+            }
+<span class="nc" id="L3476">        }</span>
+<span class="nc" id="L3477">        return false;</span>
+    }
+
+    public boolean checkForValidDropships(int playerId) {
+<span class="nc" id="L3481">        Iterator&lt;Entity&gt; iter = getPlayerEntities(getPlayer(playerId), false)</span>
+<span class="nc" id="L3482">                .iterator();</span>
+<span class="nc bnc" id="L3483" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L3484">            Entity entity = iter.next();</span>
+<span class="nc bnc" id="L3485" title="All 2 branches missed.">            if ((entity instanceof Dropship)</span>
+<span class="nc bnc" id="L3486" title="All 2 branches missed.">                &amp;&amp; getTurn().isValidEntity(entity, this)) {</span>
+<span class="nc" id="L3487">                return true;</span>
+            }
+<span class="nc" id="L3489">        }</span>
+<span class="nc" id="L3490">        return false;</span>
+    }
+
+    @Override
+    public boolean checkForValidSmallCraft(int playerId) {
+<span class="nc" id="L3495">        return getPlayerEntities(getPlayer(playerId), false).stream().anyMatch(e -&gt;</span>
+<span class="nc bnc" id="L3496" title="All 4 branches missed.">                (e instanceof SmallCraft) &amp;&amp; getTurn().isValidEntity(e, this));</span>
+    }
+
+    @Override
+    public PlanetaryConditions getPlanetaryConditions() {
+<span class="nc" id="L3501">        return planetaryConditions;</span>
+    }
+
+    @Override
+    public void setPlanetaryConditions(final @Nullable PlanetaryConditions conditions) {
+<span class="nc bnc" id="L3506" title="All 2 branches missed.">        if (conditions == null) {</span>
+<span class="nc" id="L3507">            MegaMek.getLogger().error(&quot;Can't set the planetary conditions to null!&quot;);</span>
+        } else {
+<span class="nc" id="L3509">            planetaryConditions.alterConditions(conditions);</span>
+<span class="nc" id="L3510">            processGameEvent(new GameSettingsChangeEvent(this));</span>
+        }
+<span class="nc" id="L3512">    }</span>
+
+    public void addSmokeCloud(SmokeCloud cloud) {
+<span class="nc" id="L3515">        smokeCloudList.add(cloud);</span>
+<span class="nc" id="L3516">    }</span>
+
+    public List&lt;SmokeCloud&gt; getSmokeCloudList() {
+<span class="nc" id="L3519">        return smokeCloudList;</span>
+    }
+    
+    public void removeSmokeClouds(List&lt;SmokeCloud&gt; cloudsToRemove) {
+<span class="nc bnc" id="L3523" title="All 2 branches missed.">        for (SmokeCloud cloud : cloudsToRemove) {</span>
+<span class="nc" id="L3524">            smokeCloudList.remove(cloud);</span>
+<span class="nc" id="L3525">        }</span>
+<span class="nc" id="L3526">    }</span>
+
+    /**
+     * Updates the map that maps a position to the list of Entity's in that
+     * position.
+     *
+     * @param e
+     */
+    public synchronized void updateEntityPositionLookup(Entity e,
+            HashSet&lt;Coords&gt; oldPositions) {
+<span class="nc" id="L3536">        HashSet&lt;Coords&gt; newPositions = e.getOccupiedCoords();</span>
+        // Check to see that the position has actually changed
+<span class="nc bnc" id="L3538" title="All 2 branches missed.">        if (newPositions.equals(oldPositions)) {</span>
+<span class="nc" id="L3539">            return;</span>
+        }
+
+        // Remove the old cached location(s)
+<span class="nc bnc" id="L3543" title="All 2 branches missed.">        if (oldPositions != null) {</span>
+<span class="nc bnc" id="L3544" title="All 2 branches missed.">            for (Coords pos : oldPositions) {</span>
+<span class="nc" id="L3545">                HashSet&lt;Integer&gt; posEntities = entityPosLookup.get(pos);</span>
+<span class="nc bnc" id="L3546" title="All 2 branches missed.">                if (posEntities != null) {</span>
+<span class="nc" id="L3547">                    posEntities.remove(e.getId());</span>
+                }
+<span class="nc" id="L3549">            }</span>
+        }
+
+        // Add Entity for each position
+<span class="nc bnc" id="L3553" title="All 2 branches missed.">        for (Coords pos : newPositions) {</span>
+<span class="nc" id="L3554">            HashSet&lt;Integer&gt; posEntities = entityPosLookup.get(pos);</span>
+<span class="nc bnc" id="L3555" title="All 2 branches missed.">            if (posEntities == null) {</span>
+<span class="nc" id="L3556">                posEntities = new HashSet&lt;Integer&gt;();</span>
+<span class="nc" id="L3557">                posEntities.add(e.getId());</span>
+<span class="nc" id="L3558">                entityPosLookup.put(pos, posEntities);</span>
+            } else {
+<span class="nc" id="L3560">                posEntities.add(e.getId());</span>
+            }
+<span class="nc" id="L3562">        }</span>
+<span class="nc" id="L3563">    }</span>
+
+    private void removeEntityPositionLookup(Entity e) {
+        // Remove Entity from cache
+<span class="nc bnc" id="L3567" title="All 2 branches missed.">        for (Coords pos : e.getOccupiedCoords()) {</span>
+<span class="nc" id="L3568">            HashSet&lt;Integer&gt; posEntities = entityPosLookup.get(pos);</span>
+<span class="nc bnc" id="L3569" title="All 2 branches missed.">            if (posEntities != null) {</span>
+<span class="nc" id="L3570">                posEntities.remove(e.getId());</span>
+            }
+<span class="nc" id="L3572">        }</span>
+<span class="nc" id="L3573">    }</span>
+
+    private void resetEntityPositionLookup() {
+<span class="nc" id="L3576">        entityPosLookup.clear();</span>
+<span class="nc bnc" id="L3577" title="All 2 branches missed.">        for (Entity e : entities) {</span>
+<span class="nc" id="L3578">            updateEntityPositionLookup(e, null);</span>
+<span class="nc" id="L3579">        }</span>
+<span class="nc" id="L3580">    }</span>
+
+    private int countEntitiesInCache(List&lt;Integer&gt; entitiesInCache) {
+<span class="nc" id="L3583">        int count = 0;</span>
+<span class="nc bnc" id="L3584" title="All 2 branches missed.">        for (Coords c : entityPosLookup.keySet()) {</span>
+<span class="nc" id="L3585">            count += entityPosLookup.get(c).size();</span>
+<span class="nc" id="L3586">            entitiesInCache.addAll(entityPosLookup.get(c));</span>
+<span class="nc" id="L3587">        }</span>
+<span class="nc" id="L3588">        return count;</span>
+    }
+    
+    /**
+     * A check to ensure that the position cache is properly updated.  This 
+     * is only used for debugging purposes, and will cause a number of things
+     * to slow down.
+     */
+    @SuppressWarnings(&quot;unused&quot;)
+    private void checkPositionCacheConsistency() {
+        // Sanity check on the position cache
+        //  This could be removed once we are confident the cache is working
+<span class="nc" id="L3600">        List&lt;Integer&gt; entitiesInCache = new ArrayList&lt;Integer&gt;();</span>
+<span class="nc" id="L3601">        List&lt;Integer&gt; entitiesInVector = new ArrayList&lt;Integer&gt;();</span>
+<span class="nc" id="L3602">        int entitiesInCacheCount = countEntitiesInCache(entitiesInCache);</span>
+<span class="nc" id="L3603">        int entityVectorSize = 0;</span>
+<span class="nc bnc" id="L3604" title="All 2 branches missed.">        for (Entity e : entities) {</span>
+<span class="nc bnc" id="L3605" title="All 2 branches missed.">            if (e.getPosition() != null) {</span>
+<span class="nc" id="L3606">                entityVectorSize++;</span>
+<span class="nc" id="L3607">                entitiesInVector.add(e.getId());</span>
+            }
+<span class="nc" id="L3609">        }</span>
+<span class="nc" id="L3610">        Collections.sort(entitiesInCache);</span>
+<span class="nc" id="L3611">        Collections.sort(entitiesInVector);</span>
+<span class="nc bnc" id="L3612" title="All 2 branches missed.">        if ((entitiesInCacheCount != entityVectorSize)</span>
+<span class="nc bnc" id="L3613" title="All 2 branches missed.">                &amp;&amp; (getPhase() != Phase.PHASE_DEPLOYMENT)</span>
+<span class="nc bnc" id="L3614" title="All 2 branches missed.">                &amp;&amp; (getPhase() != Phase.PHASE_EXCHANGE)</span>
+<span class="nc bnc" id="L3615" title="All 2 branches missed.">                &amp;&amp; (getPhase() != Phase.PHASE_LOUNGE)</span>
+<span class="nc bnc" id="L3616" title="All 2 branches missed.">                &amp;&amp; (getPhase() != Phase.PHASE_INITIATIVE_REPORT)</span>
+<span class="nc bnc" id="L3617" title="All 2 branches missed.">                &amp;&amp; (getPhase() != Phase.PHASE_INITIATIVE)) {</span>
+<span class="nc" id="L3618">            MegaMek.getLogger().warning(&quot;Entities vector has &quot; + entities.size()</span>
+<span class="nc" id="L3619">                    + &quot; but pos lookup cache has &quot; + entitiesInCache.size() + &quot;entities!&quot;);</span>
+<span class="nc" id="L3620">            List&lt;Integer&gt; missingIds = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L3621" title="All 2 branches missed.">            for (Integer id : entitiesInVector) {</span>
+<span class="nc bnc" id="L3622" title="All 2 branches missed.">                if (!entitiesInCache.contains(id)) {</span>
+<span class="nc" id="L3623">                    missingIds.add(id);</span>
+                }
+<span class="nc" id="L3625">            }</span>
+<span class="nc" id="L3626">            MegaMek.getLogger().info(&quot;Missing ids: &quot; + missingIds);</span>
+        }
+<span class="nc bnc" id="L3628" title="All 2 branches missed.">        for (Entity e : entities) {</span>
+<span class="nc" id="L3629">            HashSet&lt;Coords&gt; positions = e.getOccupiedCoords();</span>
+<span class="nc bnc" id="L3630" title="All 2 branches missed.">            for (Coords c : positions) {</span>
+<span class="nc" id="L3631">                HashSet&lt;Integer&gt; ents = entityPosLookup.get(c);</span>
+<span class="nc bnc" id="L3632" title="All 4 branches missed.">                if ((ents != null) &amp;&amp; !ents.contains(e.getId())) {</span>
+<span class="nc" id="L3633">                    MegaMek.getLogger().warning(&quot;Entity &quot; + e.getId() + &quot; is in &quot;</span>
+<span class="nc" id="L3634">                            + e.getPosition() + &quot; however the position cache &quot;</span>
+                            + &quot;does not have it in that position!&quot;);
+                }
+<span class="nc" id="L3637">            }</span>
+<span class="nc" id="L3638">        }</span>
+<span class="nc bnc" id="L3639" title="All 2 branches missed.">        for (Coords c : entityPosLookup.keySet()) {</span>
+<span class="nc bnc" id="L3640" title="All 2 branches missed.">            for (Integer eId : entityPosLookup.get(c)) {</span>
+<span class="nc" id="L3641">                Entity e = getEntity(eId);</span>
+<span class="nc bnc" id="L3642" title="All 2 branches missed.">                if (e == null) {</span>
+<span class="nc" id="L3643">                    continue;</span>
+                }
+<span class="nc" id="L3645">                HashSet&lt;Coords&gt; positions = e.getOccupiedCoords();</span>
+<span class="nc bnc" id="L3646" title="All 2 branches missed.">                if (!positions.contains(c)) {</span>
+<span class="nc" id="L3647">                    MegaMek.getLogger().warning(&quot;Entity Position Cache thinks Entity &quot; + eId</span>
+<span class="nc" id="L3648">                            + &quot;is in &quot; + c + &quot; but the Entity thinks it's in &quot; + e.getPosition());</span>
+                }
+<span class="nc" id="L3650">            }</span>
+<span class="nc" id="L3651">        }</span>
+<span class="nc" id="L3652">    }</span>
+
+    /**
+     * Get a string representation of the UUId for this game.
+     *
+     * @return
+     */
+    public String getUUIDString() {
+<span class="nc bnc" id="L3660" title="All 2 branches missed.">        if (uuid == null) {</span>
+<span class="nc" id="L3661">            uuid = UUID.randomUUID();</span>
+        }
+<span class="nc" id="L3663">        return uuid.toString();</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

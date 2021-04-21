@@ -1,0 +1,762 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Hex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common</a> &gt; <span class="el_source">Hex.java</span></div><h1>Hex.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2000-2003 Ben Mazur (bmazur@sev.org)
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.common;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+
+import megamek.common.Building.BasementType;
+import megamek.common.annotations.Nullable;
+
+/**
+ * Hex represents a single hex on the board.
+ *
+ * @author Ben
+ */
+public class Hex implements IHex, Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 82483704768044698L;
+    private int level;
+    /**
+     * A HashMap to &lt;code&gt;terrains&lt;/code&gt;. It contains the exact same terrain
+     * types that the old &lt;code&gt;terrains&lt;/code&gt; did, however it allows an
+     * efficient way to access all present terrains.
+     *
+     */
+<span class="fc" id="L41">    private HashMap&lt;Integer, ITerrain&gt; terrains = new HashMap&lt;Integer, ITerrain&gt;(1);</span>
+    private String theme;
+    private String originalTheme;
+    private int fireTurn;
+    private Coords coords;
+
+    /** Constructs clear, plain hex at level 0. */
+    public Hex() {
+<span class="fc" id="L49">        this(0);</span>
+<span class="fc" id="L50">    }</span>
+
+    /** Constructs clean, plain hex at specified level. */
+    public Hex(int level) {
+<span class="fc" id="L54">        this(level, new ITerrain[Terrains.SIZE], null, new Coords(0, 0));</span>
+<span class="fc" id="L55">    }</span>
+
+    public Hex(int level, ITerrain[] terrains, String theme) {
+<span class="nc" id="L58">        this(level, terrains, theme, new Coords(0, 0));</span>
+<span class="nc" id="L59">    }</span>
+
+    /** Constructs hex with all parameters. */
+<span class="fc" id="L62">    public Hex(int level, ITerrain[] terrains, String theme, Coords c) {</span>
+<span class="fc" id="L63">        this.level = level;</span>
+<span class="fc" id="L64">        coords = c;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (ITerrain t : terrains) {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if (t != null)</span>
+<span class="nc" id="L67">                this.terrains.put(t.getType(), t);</span>
+        }
+
+<span class="pc bpc" id="L70" title="3 of 4 branches missed.">        if ((theme == null) || (theme.length() &gt; 0)) {</span>
+<span class="fc" id="L71">            this.theme = theme;</span>
+        } else {
+<span class="nc" id="L73">            this.theme = null;</span>
+        }
+<span class="fc" id="L75">        originalTheme = this.theme;</span>
+<span class="fc" id="L76">    }</span>
+
+    public Hex(int level, String terrain, String theme) {
+<span class="nc" id="L79">        this(level, terrain, theme, new Coords(0, 0));</span>
+<span class="nc" id="L80">    }</span>
+
+    /** Contructs hex with string terrain info */
+    public Hex(int level, String terrain, String theme, Coords c) {
+<span class="nc" id="L84">        this(level, new ITerrain[Terrains.SIZE], theme, c);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (StringTokenizer st = new StringTokenizer(terrain, &quot;;&quot;, false); st.hasMoreTokens();) {</span>
+<span class="nc" id="L86">            addTerrain(Terrains.getTerrainFactory().createTerrain(st.nextToken()));</span>
+        }
+<span class="nc" id="L88">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#getTerrainTypes()
+     */
+    public int[] getTerrainTypes() {
+<span class="nc" id="L96">        return terrains.keySet().stream().mapToInt(Integer::intValue).toArray();</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#getLevel()
+     */
+    public int getLevel() {
+<span class="fc" id="L105">        return level;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#setLevel(int)
+     */
+    public void setLevel(int level) {
+<span class="nc" id="L114">        this.level = level;</span>
+<span class="nc" id="L115">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#getTheme()
+     */
+    public String getTheme() {
+<span class="nc" id="L123">        return theme;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#setTheme(java.lang.String)
+     */
+    public void setTheme(String theme) {
+<span class="nc" id="L132">        this.theme = theme;</span>
+<span class="nc" id="L133">    }</span>
+
+    /** Resets the theme to what was specified in the board file. */
+    public void resetTheme() {
+<span class="nc" id="L137">        setTheme(originalTheme);</span>
+<span class="nc" id="L138">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#clearExits()
+     */
+    public void clearExits() {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc" id="L147">            ITerrain t = terrains.get(i);</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">            if ((t != null) &amp;&amp; !t.hasExitsSpecified()) {</span>
+<span class="nc" id="L149">                t.setExits(0);</span>
+            }
+<span class="nc" id="L151">        }</span>
+<span class="nc" id="L152">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#setExits(megamek.common.IHex, int)
+     */
+    public void setExits(IHex other, int direction) {
+<span class="nc" id="L160">        this.setExits(other, direction, true);</span>
+<span class="nc" id="L161">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#setExits(megamek.common.IHex, int, boolean)
+     */
+    public void setExits(IHex other, int direction, boolean roadsAutoExit) {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc" id="L170">            ITerrain cTerr = getTerrain(i);</span>
+            ITerrain oTerr;
+
+<span class="nc bnc" id="L173" title="All 4 branches missed.">            if ((cTerr == null) || cTerr.hasExitsSpecified()) {</span>
+<span class="nc" id="L174">                continue;</span>
+            }
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">            if (other != null) {</span>
+<span class="nc" id="L178">                oTerr = other.getTerrain(i);</span>
+            } else {
+<span class="nc" id="L180">                oTerr = null;</span>
+            }
+
+<span class="nc" id="L183">            cTerr.setExit(direction, cTerr.exitsTo(oTerr));</span>
+
+            // Roads exit into pavement, too.
+<span class="nc bnc" id="L186" title="All 6 branches missed.">            if ((other != null) &amp;&amp; roadsAutoExit &amp;&amp; (cTerr.getType() == Terrains.ROAD)</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                    &amp;&amp; other.containsTerrain(Terrains.PAVEMENT)) {</span>
+<span class="nc" id="L188">                cTerr.setExit(direction, true);</span>
+            }
+
+            // buildings must have the same building class
+<span class="nc bnc" id="L192" title="All 4 branches missed.">            if ((other != null) &amp;&amp; (cTerr.getType() == Terrains.BUILDING)</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                    &amp;&amp; (terrainLevel(Terrains.BLDG_CLASS) != other.terrainLevel(Terrains.BLDG_CLASS))) {</span>
+<span class="nc" id="L194">                cTerr.setExit(direction, false);</span>
+            }
+
+            // gun emplacements can only be single hex buildings
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            if ((cTerr.getType() == Terrains.BUILDING)</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">                    &amp;&amp; (terrainLevel(Terrains.BLDG_CLASS) == Building.GUN_EMPLACEMENT)) {</span>
+<span class="nc" id="L200">                cTerr.setExit(direction, false);</span>
+            }
+
+<span class="nc" id="L203">        }</span>
+<span class="nc" id="L204">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#containsTerrainExit(int, int)
+     */
+    public boolean containsTerrainExit(int terrType, int direction) {
+<span class="nc" id="L212">        boolean result = false;</span>
+<span class="nc" id="L213">        final ITerrain terr = getTerrain(terrType);</span>
+
+        // Do we have the given terrain that has exits?
+<span class="nc bnc" id="L216" title="All 6 branches missed.">        if ((direction &gt;= 0) &amp;&amp; (direction &lt;= 5) &amp;&amp; (terr != null)) {</span>
+
+            // See if we have an exit in the given direction.
+<span class="nc" id="L219">            final int exits = terr.getExits();</span>
+<span class="nc" id="L220">            final int exitInDir = (int) Math.pow(2, direction);</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if ((exits &amp; exitInDir) &gt; 0) {</span>
+<span class="nc" id="L222">                result = true;</span>
+            }
+        }
+<span class="nc" id="L225">        return result;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#containsExit(int)
+     */
+    public boolean containsExit(int direction) {
+<span class="nc" id="L234">        boolean rv = false;</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        for (Integer terrType : terrains.keySet()) {</span>
+<span class="nc" id="L236">            rv |= containsTerrainExit(terrType, direction);</span>
+<span class="nc" id="L237">        }</span>
+<span class="nc" id="L238">        return rv;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#hasExitableTerrain()
+     */
+    public boolean hasExitableTerrain() {
+<span class="nc" id="L247">        boolean rv = false;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        for (Integer terrType : terrains.keySet()) {</span>
+<span class="nc" id="L249">            rv |= Terrains.exitableTerrain(terrType);</span>
+<span class="nc" id="L250">        }</span>
+<span class="nc" id="L251">        return rv;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#ceiling()
+     */
+    public int ceiling() {
+<span class="nc" id="L260">        return ceiling(false);</span>
+    }
+
+    public int ceiling(boolean inAtmosphere) {
+<span class="nc" id="L264">        return level + maxTerrainFeatureElevation(inAtmosphere);</span>
+    }
+
+    public int maxTerrainFeatureElevation(boolean inAtmo) {
+<span class="nc" id="L268">        int maxFeature = 0;</span>
+        int featureElev;
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        for (Integer terrainType : terrains.keySet()) {</span>
+<span class="nc" id="L271">            featureElev = terrains.get(terrainType).getTerrainElevation(inAtmo);</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">            if (featureElev &gt; maxFeature) {</span>
+<span class="nc" id="L273">                maxFeature = featureElev;</span>
+            }
+<span class="nc" id="L275">        }</span>
+<span class="nc" id="L276">        return maxFeature;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#surface()
+     */
+    public int surface() {
+<span class="fc" id="L285">        return level;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#floor()
+     */
+    public int floor() {
+<span class="nc" id="L294">        return level - depth();</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#depth()
+     */
+    public int depth() {
+<span class="nc" id="L303">        return depth(false);</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#depth( boolean hidden)
+     */
+    public int depth(boolean hidden) {
+<span class="nc" id="L312">        int depth = 0;</span>
+<span class="nc" id="L313">        ITerrain water = getTerrain(Terrains.WATER);</span>
+<span class="nc" id="L314">        ITerrain basement = getTerrain(Terrains.BLDG_BASEMENT_TYPE);</span>
+
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (water != null) {</span>
+<span class="nc" id="L317">            depth += water.getLevel();</span>
+        }
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (basement != null) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">            if (hidden) {</span>
+<span class="nc" id="L321">                depth += BasementType.getType(basement.getLevel()).getDepth();</span>
+            }
+        }
+
+<span class="nc" id="L325">        return depth;</span>
+    }
+
+    /**
+     * Returns true if this hex has a terrain with a non-zero terrain factor
+     * 
+     * @return
+     */
+    public boolean hasTerrainfactor() {
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        for (int type : terrains.keySet()) {</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">            if (terrains.get(type).getTerrainFactor() &gt; 0) {</span>
+<span class="nc" id="L336">                return true;</span>
+            }
+<span class="nc" id="L338">        }</span>
+<span class="nc" id="L339">        return false;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#contains(int)
+     */
+    public boolean containsTerrain(int type) {
+<span class="pc bpc" id="L348" title="1 of 2 branches missed.">        return getTerrain(type) != null;</span>
+    }
+    
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#containsAnyTerrainOf(int...)
+     */
+    public boolean containsAnyTerrainOf(int... types) {
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        for (int type: types) {</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">            if (containsTerrain(type)) {</span>
+<span class="nc" id="L359">                return true;</span>
+            }
+        }
+<span class="nc" id="L362">        return false;</span>
+    }
+    
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#containsAllTerrainsOf(int...)
+     */
+    public boolean containsAllTerrainsOf(int... types) {
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        for (int type: types) {</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">            if (!containsTerrain(type)) {</span>
+<span class="nc" id="L373">                return false;</span>
+            }
+        }
+<span class="nc" id="L376">        return true;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#contains(int, int)
+     */
+    public boolean containsTerrain(int type, int level) {
+<span class="nc" id="L385">        ITerrain terrain = getTerrain(type);</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (terrain != null) {</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">            return terrain.getLevel() == level;</span>
+        }
+<span class="nc" id="L389">        return false;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#hasPavement()
+     */
+    public boolean hasPavement() {
+<span class="nc bnc" id="L398" title="All 6 branches missed.">        return containsTerrain(Terrains.PAVEMENT) || containsTerrain(Terrains.ROAD) || containsTerrain(Terrains.BRIDGE);</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#levelOf(int)
+     */
+    public int terrainLevel(int type) {
+<span class="fc" id="L407">        ITerrain terrain = getTerrain(type);</span>
+<span class="pc bpc" id="L408" title="1 of 2 branches missed.">        if (terrain != null) {</span>
+<span class="nc" id="L409">            return terrain.getLevel();</span>
+        }
+<span class="fc" id="L411">        return ITerrain.LEVEL_NONE;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#getTerrain(int)
+     */
+    public ITerrain getTerrain(int type) {
+<span class="fc" id="L420">        return terrains.get(type);</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#addTerrain(megamek.common.Terrain)
+     */
+    public void addTerrain(ITerrain terrain) {
+<span class="nc" id="L429">        terrains.put(terrain.getType(), terrain);</span>
+<span class="nc" id="L430">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#removeTerrain(int)
+     */
+    public void removeTerrain(int type) {
+<span class="nc" id="L438">        terrains.remove(type);</span>
+<span class="nc" id="L439">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#removeAllTerrains()
+     */
+    public void removeAllTerrains() {
+<span class="nc" id="L447">        terrains.clear();</span>
+<span class="nc" id="L448">    }</span>
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#terrainsPresent()
+     */
+    public int displayableTerrainsPresent() {
+<span class="nc" id="L456">        int present = 0;</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">            if ((null != Terrains.getDisplayName(i, terrains.get(i).getLevel()))) {</span>
+<span class="nc" id="L459">                present++;</span>
+            }
+<span class="nc" id="L461">        }</span>
+<span class="nc" id="L462">        return present;</span>
+    }
+
+    /*
+     * report the number of terrains present for the tooltips.
+     */
+    public int terrainsPresent() {
+<span class="nc" id="L469">        return terrains.size();</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.IHex#duplicate
+     */
+    public IHex duplicate() {
+<span class="nc" id="L478">        ITerrain[] tcopy = new ITerrain[Terrains.SIZE];</span>
+<span class="nc" id="L479">        ITerrainFactory f = Terrains.getTerrainFactory();</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc" id="L481">            tcopy[i] = f.createTerrain(terrains.get(i));</span>
+<span class="nc" id="L482">        }</span>
+<span class="nc" id="L483">        return new Hex(level, tcopy, theme, coords);</span>
+    }
+
+    public void terrainPilotingModifier(EntityMovementMode moveMode, PilotingRollData roll, boolean enteringRubble) {
+<span class="nc bnc" id="L487" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc" id="L488">            terrains.get(i).pilotingModifier(moveMode, roll, enteringRubble);</span>
+<span class="nc" id="L489">        }</span>
+<span class="nc" id="L490">    }</span>
+
+    public int movementCost(Entity entity) {
+<span class="nc" id="L493">        int rv = 0;</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc" id="L495">            rv += terrain.movementCost(entity);</span>
+<span class="nc" id="L496">        }</span>
+<span class="nc" id="L497">        return rv;</span>
+    }
+
+    @Override
+    public String toString() {
+        String temp;
+<span class="nc" id="L503">        temp = &quot;Level: &quot; + getLevel();</span>
+<span class="nc" id="L504">        temp = temp + &quot;  Features: &quot;;</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">            if (terrain != null) {</span>
+<span class="nc bnc" id="L507" title="All 9 branches missed.">                switch (terrain.getType()) {</span>
+                case Terrains.WOODS:
+<span class="nc bnc" id="L509" title="All 2 branches missed.">                    if (terrain.getLevel() == 2) {</span>
+<span class="nc" id="L510">                        temp = temp + &quot;Heavy Woods&quot;;</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">                    } else if (terrain.getLevel() == 1) {</span>
+<span class="nc" id="L512">                        temp = temp + &quot;Light Woods&quot;;</span>
+                    } else {
+<span class="nc" id="L514">                        temp = temp + &quot;??? Woods&quot;;</span>
+                    }
+<span class="nc" id="L516">                    break;</span>
+                case Terrains.WATER:
+<span class="nc" id="L518">                    temp = temp + &quot;Water, depth: &quot; + terrain.getLevel();</span>
+<span class="nc" id="L519">                    break;</span>
+                case Terrains.ROAD:
+<span class="nc" id="L521">                    temp = temp + &quot;Road&quot;;</span>
+<span class="nc" id="L522">                    break;</span>
+                case Terrains.ROUGH:
+<span class="nc" id="L524">                    temp = temp + &quot;Rough&quot;;</span>
+<span class="nc" id="L525">                    break;</span>
+                case Terrains.RUBBLE:
+<span class="nc" id="L527">                    temp = temp + &quot;Rubble&quot;;</span>
+<span class="nc" id="L528">                    break;</span>
+                case Terrains.SWAMP:
+<span class="nc" id="L530">                    temp = temp + &quot;Swamp&quot;;</span>
+<span class="nc" id="L531">                    break;</span>
+                case Terrains.ARMS:
+<span class="nc" id="L533">                    temp = temp + &quot;Arm&quot;;</span>
+<span class="nc" id="L534">                    break;</span>
+                case Terrains.LEGS:
+<span class="nc" id="L536">                    temp = temp + &quot;Leg&quot;;</span>
+<span class="nc" id="L537">                    break;</span>
+                default:
+<span class="nc" id="L539">                    temp = temp + Terrains.getName(terrain.getType()) + &quot;(&quot; + terrain.getLevel() + &quot;, &quot;</span>
+<span class="nc" id="L540">                            + terrain.getTerrainFactor() + &quot;)&quot;;</span>
+                }
+<span class="nc" id="L542">                temp = temp + &quot;; &quot;;</span>
+            }
+<span class="nc" id="L544">        }</span>
+<span class="nc" id="L545">        return temp;</span>
+    }
+
+    /*
+     * Get the fire ignition modifier for this hex, based on its terrain
+     */
+    public int getIgnitionModifier() {
+<span class="nc" id="L552">        int mod = 0;</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">            if (terrain != null) {</span>
+<span class="nc" id="L555">                mod += terrain.ignitionModifier();</span>
+            }
+<span class="nc" id="L557">        }</span>
+<span class="nc" id="L558">        return mod;</span>
+    }
+
+    /**
+     * Is this hex ignitable?
+     */
+    public boolean isIgnitable() {
+<span class="nc bnc" id="L565" title="All 4 branches missed.">        return (containsTerrain(Terrains.WOODS) || containsTerrain(Terrains.JUNGLE)</span>
+<span class="nc bnc" id="L566" title="All 4 branches missed.">                || containsTerrain(Terrains.BUILDING) || containsTerrain(Terrains.FUEL_TANK)</span>
+<span class="nc bnc" id="L567" title="All 4 branches missed.">                || containsTerrain(Terrains.FIELDS) || containsTerrain(Terrains.INDUSTRIAL));</span>
+
+    }
+
+    public boolean isClearForTakeoff() {
+<span class="nc bnc" id="L572" title="All 2 branches missed.">        for (Integer i : terrains.keySet()) {</span>
+<span class="nc bnc" id="L573" title="All 8 branches missed.">            if (containsTerrain(i) &amp;&amp; (i != Terrains.PAVEMENT) &amp;&amp; (i != Terrains.ROAD) &amp;&amp; (i != Terrains.FLUFF)</span>
+<span class="nc bnc" id="L574" title="All 8 branches missed.">                    &amp;&amp; (i != Terrains.ARMS) &amp;&amp; (i != Terrains.LEGS) &amp;&amp; (i != Terrains.SNOW) &amp;&amp; (i != Terrains.MUD)</span>
+<span class="nc bnc" id="L575" title="All 4 branches missed.">                    &amp;&amp; (i != Terrains.SMOKE) &amp;&amp; (i != Terrains.METAL_CONTENT)) {</span>
+<span class="nc" id="L576">                return false;</span>
+            }
+<span class="nc" id="L578">        }</span>
+<span class="nc" id="L579">        return true;</span>
+    }
+
+    public boolean isClearForLanding() {
+<span class="nc bnc" id="L583" title="All 2 branches missed.">        return !containsTerrain(Terrains.IMPASSABLE);</span>
+    }
+
+    public int getFireTurn() {
+<span class="nc" id="L587">        return fireTurn;</span>
+    }
+
+    public void incrementFireTurn() {
+<span class="nc" id="L591">        fireTurn = fireTurn + 1;</span>
+<span class="nc" id="L592">    }</span>
+
+    public void resetFireTurn() {
+<span class="nc" id="L595">        fireTurn = 0;</span>
+<span class="nc" id="L596">    }</span>
+
+    /**
+     * get any modifiers to a bog-down roll in this hex. Takes the worst
+     * modifier. If there is no bog-down chance in this hex, then it returns
+     * TargetRoll.AUTOMATIC_SUCCESS
+     */
+    public int getBogDownModifier(EntityMovementMode moveMode, boolean largeVee) {
+<span class="nc" id="L604">        int mod = TargetRoll.AUTOMATIC_SUCCESS;</span>
+<span class="nc bnc" id="L605" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc bnc" id="L606" title="All 4 branches missed.">            if ((terrain != null) &amp;&amp; (mod &lt; terrain.getBogDownModifier(moveMode, largeVee))) {</span>
+<span class="nc" id="L607">                mod = terrain.getBogDownModifier(moveMode, largeVee);</span>
+            }
+<span class="nc" id="L609">        }</span>
+<span class="nc" id="L610">        return mod;</span>
+    }
+
+    /**
+     * get any modifiers to a an unstuck roll in this hex.
+     */
+    public void getUnstuckModifier(int elev, PilotingRollData rollTarget) {
+<span class="nc bnc" id="L617" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc" id="L618">            terrain.getUnstuckModifier(elev, rollTarget);</span>
+<span class="nc" id="L619">        }</span>
+<span class="nc" id="L620">    }</span>
+    
+    /** 
+     * True if this hex has a clifftop towards otherHex. This hex
+     * must have the terrain CLIFF_TOP, it must have exits
+     * specified (exits set to active) for the CLIFF_TOP terrain,
+     * and must have an exit in the direction of otherHex.  
+     */
+    public boolean hasCliffTopTowards(IHex otherHex) {
+<span class="nc bnc" id="L629" title="All 2 branches missed.">    	return containsTerrain(Terrains.CLIFF_TOP) </span>
+<span class="nc bnc" id="L630" title="All 2 branches missed.">		&amp;&amp; getTerrain(Terrains.CLIFF_TOP).hasExitsSpecified()</span>
+<span class="nc bnc" id="L631" title="All 2 branches missed.">		&amp;&amp; ((getTerrain(Terrains.CLIFF_TOP).getExits() &amp; (1 &lt;&lt; coords.direction(otherHex.getCoords()))) != 0);</span>
+    }
+
+    /** Returns the position of this hex on the board. */
+    public Coords getCoords() {
+<span class="fc" id="L636">        return coords;</span>
+    }
+
+    /** 
+     * Sets the coords of this hex. DO NOT USE outside board.java!
+     * WILL NOT MOVE THE HEX. Only the position of the hex in the 
+     * board's data[] determines the actual location of the hex. 
+     */
+    public void setCoords(Coords c) {
+<span class="nc" id="L645">        coords = c;</span>
+<span class="nc" id="L646">    }</span>
+
+    @Override
+    public boolean isClearHex() {
+<span class="nc bnc" id="L650" title="All 2 branches missed.">        for (int t = 1; t &lt;= Terrains.BLDG_BASE_COLLAPSED; t++) {</span>
+            // Ignore some terrain types
+<span class="nc bnc" id="L652" title="All 6 branches missed.">            if ((t == Terrains.FLUFF) || (t == Terrains.ARMS) || (t == Terrains.LEGS)) {</span>
+<span class="nc" id="L653">                continue;</span>
+            }
+<span class="nc bnc" id="L655" title="All 2 branches missed.">            if (containsTerrain(t)) {</span>
+<span class="nc" id="L656">                return false;</span>
+            }
+        }
+<span class="nc" id="L659">        return true;</span>
+    }
+
+    @Override 
+    public boolean isValid(@Nullable StringBuffer errBuff) {
+<span class="nc" id="L664">        boolean valid = true;</span>
+        
+        // When no StringBuffer is passed, use a dummy
+        // to avoid numerous null checks
+<span class="nc bnc" id="L668" title="All 2 branches missed.">        if (errBuff == null) {</span>
+<span class="nc" id="L669">            errBuff = new StringBuffer();</span>
+        }
+        
+        // Check individual terrains for validity
+<span class="nc bnc" id="L673" title="All 2 branches missed.">        for (ITerrain terrain : terrains.values()) {</span>
+<span class="nc bnc" id="L674" title="All 2 branches missed.">            if (terrain == null) {</span>
+<span class="nc" id="L675">                valid = false;</span>
+<span class="nc" id="L676">                errBuff.append(&quot;Hex contains a null terrain!\n&quot;);</span>
+<span class="nc" id="L677">                continue;</span>
+            }
+<span class="nc" id="L679">            StringBuffer terrainErr = new StringBuffer();</span>
+<span class="nc bnc" id="L680" title="All 2 branches missed.">            if (!terrain.isValid(terrainErr)) {</span>
+<span class="nc" id="L681">                valid = false;</span>
+<span class="nc bnc" id="L682" title="All 2 branches missed.">                if (errBuff.length() &gt; 0) {</span>
+<span class="nc" id="L683">                    errBuff.append(&quot;\n&quot;);</span>
+                }
+<span class="nc" id="L685">                errBuff.append(terrainErr);</span>
+            }
+<span class="nc" id="L687">        }</span>
+
+        // Rapids
+<span class="nc bnc" id="L690" title="All 2 branches missed.">        if ((containsTerrain(Terrains.RAPIDS))) {</span>
+<span class="nc bnc" id="L691" title="All 2 branches missed.">            if (!containsTerrain(Terrains.WATER)) {</span>
+<span class="nc" id="L692">                valid = false;</span>
+<span class="nc" id="L693">                errBuff.append(&quot;Rapids must occur within water!\n&quot;);</span>
+            }
+<span class="nc bnc" id="L695" title="All 2 branches missed.">            if (this.depth() &lt;1) {</span>
+<span class="nc" id="L696">                valid = false;</span>
+<span class="nc" id="L697">                errBuff.append(&quot;Rapids must occurr in depth 1 or greater!\n&quot;);</span>
+            }
+        }
+
+        // Foliage (Woods and Jungles)
+<span class="nc bnc" id="L702" title="All 4 branches missed.">        if (containsTerrain(Terrains.WOODS) &amp;&amp; containsTerrain(Terrains.JUNGLE)) {</span>
+<span class="nc" id="L703">            valid = false;</span>
+<span class="nc" id="L704">            errBuff.append(&quot;Woods and Jungle cannot appear in the same hex!\n&quot;);</span>
+        }
+<span class="nc bnc" id="L706" title="All 4 branches missed.">        if ((containsTerrain(Terrains.WOODS) || containsTerrain(Terrains.JUNGLE))</span>
+<span class="nc bnc" id="L707" title="All 2 branches missed.">                &amp;&amp; containsTerrain(Terrains.FOLIAGE_ELEV)) {</span>
+<span class="nc" id="L708">            int wl = terrainLevel(Terrains.WOODS);</span>
+<span class="nc" id="L709">            int jl = terrainLevel(Terrains.JUNGLE);</span>
+<span class="nc" id="L710">            int el = terrainLevel(Terrains.FOLIAGE_ELEV);</span>
+            
+<span class="nc bnc" id="L712" title="All 8 branches missed.">            boolean isLightOrHeavy = wl == 1 || jl == 1 || wl == 2 || jl == 2;</span>
+<span class="nc bnc" id="L713" title="All 4 branches missed.">            boolean isUltra = wl == 3 || jl == 3;</span>
+            
+<span class="nc bnc" id="L715" title="All 10 branches missed.">            if (! ((el == 1) || (isLightOrHeavy &amp;&amp; el == 2) || (isUltra &amp;&amp; el == 3))) {</span>
+<span class="nc" id="L716">                valid = false;</span>
+<span class="nc" id="L717">                errBuff.append(&quot;Foliage elevation is wrong, must be 1 or 2 for Light/Heavy and 1 or 3 for Ultra Woods/Jungle!\n&quot;);</span>
+            }
+        }
+<span class="nc bnc" id="L720" title="All 4 branches missed.">        if (!(containsTerrain(Terrains.WOODS) || containsTerrain(Terrains.JUNGLE))</span>
+<span class="nc bnc" id="L721" title="All 2 branches missed.">                &amp;&amp; containsTerrain(Terrains.FOLIAGE_ELEV)) {</span>
+<span class="nc" id="L722">            valid = false;</span>
+<span class="nc" id="L723">            errBuff.append(&quot;Woods and Jungle elevation terrain present without Woods or Jungle!\n&quot;);</span>
+        }
+        
+        // Buildings must have at least BUILDING, BLDG_ELEV and BLDG_CF
+<span class="nc bnc" id="L727" title="All 2 branches missed.">        if (containsAnyTerrainOf(Terrains.BUILDING, Terrains.BLDG_ELEV, Terrains.BLDG_CF, Terrains.BLDG_FLUFF, </span>
+                Terrains.BLDG_ARMOR, Terrains.BLDG_CLASS, Terrains.BLDG_BASE_COLLAPSED, Terrains.BLDG_BASEMENT_TYPE)
+<span class="nc bnc" id="L729" title="All 2 branches missed.">                &amp;&amp; !containsAllTerrainsOf(Terrains.BUILDING, Terrains.BLDG_ELEV, Terrains.BLDG_CF)) {</span>
+<span class="nc" id="L730">            valid = false;</span>
+<span class="nc" id="L731">            errBuff.append(&quot;Incomplete Building! A hex with any building terrain must at least contain &quot;</span>
+                    + &quot;a building type, building elevation and building CF.\n&quot;);
+        }
+
+        // Bridges must have all of BRIDGE, BRIDGE_ELEV and BRIDGE_CF
+<span class="nc bnc" id="L736" title="All 2 branches missed.">        if (containsAnyTerrainOf(Terrains.BRIDGE, Terrains.BRIDGE_ELEV, Terrains.BRIDGE_CF)</span>
+<span class="nc bnc" id="L737" title="All 2 branches missed.">                &amp;&amp; !containsAllTerrainsOf(Terrains.BRIDGE, Terrains.BRIDGE_ELEV, Terrains.BRIDGE_CF)) {</span>
+<span class="nc" id="L738">            valid = false;</span>
+<span class="nc" id="L739">            errBuff.append(&quot;Incomplete Bridge! A hex with any bridge terrain must contain &quot;</span>
+                    + &quot;the bridge type, bridge elevation and the bridge CF.\n&quot;);
+        }
+
+        // Fuel Tanks must have all of FUEL_TANK, _ELEV, _CF and _MAGN
+<span class="nc bnc" id="L744" title="All 2 branches missed.">        if (containsAnyTerrainOf(Terrains.FUEL_TANK, Terrains.FUEL_TANK_CF, </span>
+                Terrains.FUEL_TANK_ELEV, Terrains.FUEL_TANK_MAGN)
+<span class="nc bnc" id="L746" title="All 2 branches missed.">                &amp;&amp; !containsAllTerrainsOf(Terrains.FUEL_TANK, Terrains.FUEL_TANK_CF, </span>
+                        Terrains.FUEL_TANK_ELEV, Terrains.FUEL_TANK_MAGN)) {
+<span class="nc" id="L748">            valid = false;</span>
+<span class="nc" id="L749">            errBuff.append(&quot;Incomplete Fuel Tank! A hex with any fuel tank terrain must contain &quot;</span>
+                    + &quot;the fuel tank type, elevation, CF and the fuel tank magnitude.\n&quot;);
+        }
+        
+<span class="nc bnc" id="L753" title="All 2 branches missed.">        if (containsAllTerrainsOf(Terrains.FUEL_TANK, Terrains.BUILDING)) {</span>
+<span class="nc" id="L754">            valid = false;</span>
+<span class="nc" id="L755">            errBuff.append(&quot;A Hex cannot have both a Building and a Fuel Tank.\n&quot;);</span>
+        }
+
+<span class="nc" id="L758">        return valid;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

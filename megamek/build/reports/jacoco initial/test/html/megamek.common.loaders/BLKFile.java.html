@@ -1,0 +1,1333 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BLKFile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.loaders</a> &gt; <span class="el_source">BLKFile.java</span></div><h1>BLKFile.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2000-2004 Ben Mazur (bmazur@sev.org)
+ * Copyright (C) 2019 The MegaMek Team
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ */
+package megamek.common.loaders;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import megamek.common.*;
+import megamek.common.InfantryBay.PlatoonType;
+import megamek.common.options.IOption;
+import megamek.common.options.PilotOptions;
+import megamek.common.util.BuildingBlock;
+import megamek.common.weapons.bayweapons.BayWeapon;
+import megamek.common.weapons.infantry.InfantryWeapon;
+
+<span class="nc bnc" id="L28" title="All 2 branches missed.">public class BLKFile {</span>
+
+    BuildingBlock dataFile;
+
+    public static final int FUSION = 0;
+    public static final int ICE = 1;
+    public static final int XL = 2;
+    public static final int XXL = 3; // don't ask
+    public static final int LIGHT = 4; // don't ask
+    public static final int COMPACT = 5; // don't ask
+    public static final int FUELCELL = 6;
+    public static final int FISSION = 7;
+    public static final int NONE = 8;
+    public static final int MAGLEV = 9;
+    public static final int STEAM = 10;
+    public static final int BATTERY = 11;
+    public static final int SOLAR = 12;
+    public static final int EXTERNAL = 13;
+    
+    private static final String COMSTAR_BAY = &quot;c*&quot;;
+
+    static final String BLK_EXTRA_SEATS = &quot;extra_seats&quot;;
+    
+    /**
+     * If a vehicular grenade launcher does not have a facing provided, assign a default facing.
+     * For vehicles this is determined by location. For protomechs the only legal location is
+     * the torso, but it may be mounted rear-facing.
+     * 
+     * @param location The location where the VGL is mounted.
+     * @param rear     Whether the VGL is rear-facing.
+     * @return         The facing to assign to the VGL.
+     */
+    protected int defaultVGLFacing(int location, boolean rear) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        return rear ? 3 : 0;</span>
+    }
+
+    public int defaultAeroVGLFacing(int location, boolean rearFacing) {
+<span class="nc bnc" id="L65" title="All 4 branches missed.">        switch (location) {</span>
+            case Aero.LOC_LWING:
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                return rearFacing ? 4 : 5;</span>
+            case Aero.LOC_RWING:
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                return rearFacing ? 2 : 1;</span>
+            case Aero.LOC_AFT:
+<span class="nc" id="L71">                return 4;</span>
+            case Aero.LOC_NOSE:
+            default:
+<span class="nc" id="L74">                return 0;</span>
+        }
+    }
+
+    /** Legacy support for Drone Carrier Control System capacity using additional equipment */
+<span class="nc" id="L79">    int legacyDCCSCapacity = 0;</span>
+    /** Legacy support for MASH capacity using additional equipment */
+<span class="nc" id="L81">    int mashOperatingTheaters = 0;</span>
+
+    /**
+     * Legacy support for variable sized equipment that expands capacity by using an
+     * additional MiscType.
+     *
+     * @param lookup The lookup name
+     */
+    boolean checkLegacyExtraEquipment(String lookup) {
+<span class="nc bnc" id="L90" title="All 3 branches missed.">        switch (lookup) {</span>
+            case &quot;MASH Operation Theater&quot;:
+<span class="nc" id="L92">                mashOperatingTheaters++;</span>
+<span class="nc" id="L93">                return true;</span>
+            case &quot;ISDroneExtra&quot;:
+            case &quot;CLDroneExtra&quot;:
+<span class="nc" id="L96">                legacyDCCSCapacity++;</span>
+<span class="nc" id="L97">                return true;</span>
+            default:
+<span class="nc" id="L99">                return false;</span>
+        }
+    }
+
+    /**
+     * Legacy support for variable equipment that had a separate EquipmentType entry for each possible
+     * size
+     *
+     * @param eqName The equipment lookup name
+     * @return       The size of the equipment
+     */
+    static double getLegacyVariableSize(String eqName) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (eqName.startsWith(&quot;Cargo&quot;)</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">                || eqName.startsWith(&quot;Liquid Storage&quot;)</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                || eqName.startsWith(&quot;Communications Equipment&quot;)) {</span>
+<span class="nc" id="L114">            return Double.parseDouble(eqName.substring(eqName.indexOf(&quot;(&quot;) + 1,</span>
+<span class="nc" id="L115">                    eqName.indexOf(&quot; ton&quot;)));</span>
+        }
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (eqName.startsWith(&quot;CommsGear&quot;)) {</span>
+<span class="nc" id="L118">            return Double.parseDouble(eqName.substring(eqName.indexOf(&quot;:&quot;) + 1));</span>
+        }
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (eqName.startsWith(&quot;Mission Equipment Storage&quot;)) {</span>
+<span class="nc" id="L121">            int pos = eqName.indexOf(&quot;(&quot;);</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            if (pos &gt; 0) {</span>
+<span class="nc" id="L123">                return Double.parseDouble(eqName.substring(pos + 1,</span>
+<span class="nc" id="L124">                        eqName.indexOf(&quot;kg&quot;)).trim());</span>
+            } else {
+                // If the internal name does not include a size, it's the original 20 kg version.
+<span class="nc" id="L127">                return 0.02;</span>
+            }
+        }
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (eqName.startsWith(&quot;Ladder&quot;)) {</span>
+<span class="nc" id="L131">            return Double.parseDouble(eqName.substring(eqName.indexOf(&quot;(&quot;) + 1,</span>
+<span class="nc" id="L132">                    eqName.indexOf(&quot;m)&quot;)));</span>
+        }
+<span class="nc" id="L134">        return 1.0;</span>
+    }
+
+    protected void loadEquipment(Entity t, String sName, int nLoc)
+            throws EntityLoadingException {
+<span class="nc" id="L139">        String[] saEquip = dataFile.getDataAsString(sName + &quot; Equipment&quot;);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (saEquip == null) {</span>
+<span class="nc" id="L141">            return;</span>
+        }
+
+        // prefix is &quot;Clan &quot; or &quot;IS &quot;
+        String prefix;
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (t.isClan()) {</span>
+<span class="nc" id="L147">            prefix = &quot;Clan &quot;;</span>
+        } else {
+<span class="nc" id="L149">            prefix = &quot;IS &quot;;</span>
+        }
+
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (saEquip[0] != null) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">            for (String s : saEquip) {</span>
+<span class="nc" id="L154">                String equipName = s.trim();</span>
+<span class="nc" id="L155">                boolean isOmniMounted = false;</span>
+<span class="nc" id="L156">                boolean isTurreted = false;</span>
+<span class="nc" id="L157">                boolean isPintleTurreted = false;</span>
+<span class="nc" id="L158">                double size = 0.0;</span>
+<span class="nc" id="L159">                int sizeIndex = equipName.toUpperCase().indexOf(&quot;:SIZE:&quot;);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (sizeIndex &gt; 0) {</span>
+<span class="nc" id="L161">                    size = Double.parseDouble(equipName.substring(sizeIndex + 6));</span>
+<span class="nc" id="L162">                    equipName = equipName.substring(0, sizeIndex);</span>
+                }
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;:OMNI&quot;)) {</span>
+<span class="nc" id="L165">                    isOmniMounted = true;</span>
+<span class="nc" id="L166">                    equipName = equipName.substring(0, equipName.length() - 5).trim();</span>
+                }
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(PT)&quot;)) {</span>
+<span class="nc" id="L169">                    isPintleTurreted = true;</span>
+<span class="nc" id="L170">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(ST)&quot;)) {</span>
+<span class="nc" id="L173">                    isTurreted = true;</span>
+<span class="nc" id="L174">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+
+<span class="nc" id="L177">                int facing = -1;</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(FL)&quot;)) {</span>
+<span class="nc" id="L179">                    facing = 5;</span>
+<span class="nc" id="L180">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(FR)&quot;)) {</span>
+<span class="nc" id="L183">                    facing = 1;</span>
+<span class="nc" id="L184">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(RL)&quot;)) {</span>
+<span class="nc" id="L187">                    facing = 4;</span>
+<span class="nc" id="L188">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(RR)&quot;)) {</span>
+<span class="nc" id="L191">                    facing = 2;</span>
+<span class="nc" id="L192">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                if (equipName.toUpperCase().endsWith(&quot;(R)&quot;)) {</span>
+<span class="nc" id="L195">                    facing = 3;</span>
+<span class="nc" id="L196">                    equipName = equipName.substring(0, equipName.length() - 4).trim();</span>
+                }
+<span class="nc" id="L198">                EquipmentType etype = EquipmentType.get(equipName);</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                if (etype == null) {</span>
+                    // try w/ prefix
+<span class="nc" id="L202">                    etype = EquipmentType.get(prefix + equipName);</span>
+                }
+<span class="nc bnc" id="L204" title="All 4 branches missed.">                if ((etype == null) &amp;&amp; checkLegacyExtraEquipment(equipName)) {</span>
+<span class="nc" id="L205">                    continue;</span>
+                }
+
+                // The stealth armor mount is added when the armor type is set
+<span class="nc bnc" id="L209" title="All 4 branches missed.">                if ((etype instanceof MiscType) &amp;&amp; etype.hasFlag(MiscType.F_STEALTH)) {</span>
+<span class="nc" id="L210">                    continue;</span>
+                }
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                if (etype != null) {</span>
+                    try {
+<span class="nc" id="L215">                        Mounted mount = t.addEquipment(etype, nLoc, false,</span>
+                                BattleArmor.MOUNT_LOC_NONE, false, false,
+                                isTurreted, isPintleTurreted, isOmniMounted);
+                        // Need to set facing for VGLs
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                        if ((etype instanceof WeaponType)</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                                &amp;&amp; etype.hasFlag(WeaponType.F_VGL)) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                            if (facing == -1) {</span>
+<span class="nc" id="L222">                                mount.setFacing(defaultVGLFacing(nLoc, false));</span>
+                            } else {
+<span class="nc" id="L224">                                mount.setFacing(facing);</span>
+                            }
+                        }
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                        if (etype.isVariableSize()) {</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                            if (size == 0.0) {</span>
+<span class="nc" id="L229">                                size = getLegacyVariableSize(equipName);</span>
+                            }
+<span class="nc" id="L231">                            mount.setSize(size);</span>
+<span class="nc bnc" id="L232" title="All 6 branches missed.">                        } else if (t.isSupportVehicle() &amp;&amp; (mount.getType() instanceof InfantryWeapon)</span>
+                                &amp;&amp; size &gt; 1) {
+                            // The ammo bin is created by Entity#addEquipment but the size has not
+                            // been set yet, so if the unit carries multiple clips the number of
+                            // shots needs to be adjusted.
+<span class="nc" id="L237">                            mount.setSize(size);</span>
+<span class="nc bnc" id="L238" title="All 4 branches missed.">                            assert(mount.getLinked() != null);</span>
+<span class="nc" id="L239">                            mount.getLinked().setOriginalShots((int) size</span>
+<span class="nc" id="L240">                                * ((InfantryWeapon) mount.getType()).getShots());</span>
+<span class="nc" id="L241">                            mount.getLinked().setShotsLeft(mount.getLinked().getOriginalShots());</span>
+                        }
+<span class="nc" id="L243">                    } catch (LocationFullException ex) {</span>
+<span class="nc" id="L244">                        throw new EntityLoadingException(ex.getMessage());</span>
+<span class="nc" id="L245">                    }</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                } else if (!equipName.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L247">                    t.addFailedEquipment(equipName);</span>
+                }
+            }
+        }
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (mashOperatingTheaters &gt; 0) {</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">            for (Mounted m : t.getMisc()) {</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                if (m.getType().hasFlag(MiscType.F_MASH)) {</span>
+                    // includes one as part of the core component
+<span class="nc" id="L255">                    m.setSize(m.getSize() + mashOperatingTheaters);</span>
+<span class="nc" id="L256">                    break;</span>
+                }
+<span class="nc" id="L258">            }</span>
+        }
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (legacyDCCSCapacity &gt; 0) {</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">            for (Mounted m : t.getMisc()) {</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                if (m.getType().hasFlag(MiscType.F_DRONE_CARRIER_CONTROL)) {</span>
+                    // core system does not include drone capacity
+<span class="nc" id="L264">                    m.setSize(legacyDCCSCapacity);</span>
+<span class="nc" id="L265">                    break;</span>
+                }
+<span class="nc" id="L267">            }</span>
+        }
+<span class="nc" id="L269">    }</span>
+
+    public boolean isMine() {
+<span class="nc" id="L272">        return dataFile.exists(&quot;blockversion&quot;);</span>
+    }
+
+    static int translateEngineCode(int code) {
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        if (code == BLKFile.FUSION) {</span>
+<span class="nc" id="L277">            return Engine.NORMAL_ENGINE;</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        } else if (code == BLKFile.ICE) {</span>
+<span class="nc" id="L279">            return Engine.COMBUSTION_ENGINE;</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        } else if (code == BLKFile.XL) {</span>
+<span class="nc" id="L281">            return Engine.XL_ENGINE;</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        } else if (code == BLKFile.LIGHT) {</span>
+<span class="nc" id="L283">            return Engine.LIGHT_ENGINE;</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        } else if (code == BLKFile.XXL) {</span>
+<span class="nc" id="L285">            return Engine.XXL_ENGINE;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        } else if (code == BLKFile.COMPACT) {</span>
+<span class="nc" id="L287">            return Engine.COMPACT_ENGINE;</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        } else if (code == BLKFile.FUELCELL) {</span>
+<span class="nc" id="L289">            return Engine.FUEL_CELL;</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        } else if (code == BLKFile.FISSION) {</span>
+<span class="nc" id="L291">            return Engine.FISSION;</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        } else if (code == BLKFile.NONE) {</span>
+<span class="nc" id="L293">            return Engine.NONE;</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        } else if (code == BLKFile.MAGLEV) {</span>
+<span class="nc" id="L295">            return Engine.MAGLEV;</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        } else if (code == BLKFile.STEAM) {</span>
+<span class="nc" id="L297">            return Engine.STEAM;</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        } else if (code == BLKFile.BATTERY) {</span>
+<span class="nc" id="L299">            return Engine.BATTERY;</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        } else if (code == BLKFile.SOLAR) {</span>
+<span class="nc" id="L301">            return Engine.SOLAR;</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        } else if (code == BLKFile.EXTERNAL) {</span>
+<span class="nc" id="L303">            return Engine.EXTERNAL;</span>
+        } else {
+<span class="nc" id="L305">            return -1;</span>
+        }
+    }
+
+    public void setFluff(Entity e) {
+
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        if (dataFile.exists(&quot;capabilities&quot;)) {</span>
+<span class="nc" id="L312">            e.getFluff().setCapabilities(dataFile.getDataAsString(&quot;capabilities&quot;)[0]);</span>
+        }
+
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (dataFile.exists(&quot;overview&quot;)) {</span>
+<span class="nc" id="L316">            e.getFluff().setOverview(dataFile.getDataAsString(&quot;overview&quot;)[0]);</span>
+        }
+
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (dataFile.exists(&quot;deployment&quot;)) {</span>
+<span class="nc" id="L320">            e.getFluff().setDeployment(dataFile.getDataAsString(&quot;deployment&quot;)[0]);</span>
+        }
+
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (dataFile.exists(&quot;history&quot;)) {</span>
+<span class="nc" id="L324">            e.getFluff().setHistory(dataFile.getDataAsString(&quot;history&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L327" title="All 2 branches missed.">        if (dataFile.exists(&quot;manufacturer&quot;)) {</span>
+<span class="nc" id="L328">            e.getFluff().setManufacturer(dataFile.getDataAsString(&quot;manufacturer&quot;)[0]);</span>
+        }
+
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        if (dataFile.exists(&quot;primaryFactory&quot;)) {</span>
+<span class="nc" id="L332">            e.getFluff().setPrimaryFactory(dataFile.getDataAsString(&quot;primaryFactory&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        if (dataFile.exists(&quot;systemManufacturers&quot;)) {</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">            for (String line : dataFile.getDataAsString(&quot;systemManufacturers&quot;)) {</span>
+<span class="nc" id="L337">                String[] fields = line.split(&quot;:&quot;);</span>
+<span class="nc" id="L338">                EntityFluff.System comp = EntityFluff.System.parse(fields[0]);</span>
+<span class="nc bnc" id="L339" title="All 4 branches missed.">                if ((null != comp) &amp;&amp; (fields.length &gt; 1)) {</span>
+<span class="nc" id="L340">                    e.getFluff().setSystemManufacturer(comp, fields[1]);</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        if (dataFile.exists(&quot;systemModels&quot;)) {</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">            for (String line : dataFile.getDataAsString(&quot;systemModels&quot;)) {</span>
+<span class="nc" id="L347">                String[] fields = line.split(&quot;:&quot;);</span>
+<span class="nc" id="L348">                EntityFluff.System comp = EntityFluff.System.parse(fields[0]);</span>
+<span class="nc bnc" id="L349" title="All 4 branches missed.">                if ((null != comp) &amp;&amp; (fields.length &gt; 1)) {</span>
+<span class="nc" id="L350">                    e.getFluff().setSystemModel(comp, fields[1]);</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        if (dataFile.exists(&quot;imagepath&quot;)) {</span>
+<span class="nc" id="L356">            e.getFluff().setMMLImagePath(</span>
+<span class="nc" id="L357">                    dataFile.getDataAsString(&quot;imagepath&quot;)[0]);</span>
+        }
+
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        if (dataFile.exists(&quot;notes&quot;)) {</span>
+<span class="nc" id="L361">            e.getFluff().setNotes(dataFile.getDataAsString(&quot;notes&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        if (dataFile.exists(&quot;use&quot;)) {</span>
+<span class="nc" id="L365">            e.getFluff().setUse(dataFile.getDataAsString(&quot;use&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (dataFile.exists(&quot;length&quot;)) {</span>
+<span class="nc" id="L369">            e.getFluff().setLength(dataFile.getDataAsString(&quot;length&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L372" title="All 2 branches missed.">        if (dataFile.exists(&quot;width&quot;)) {</span>
+<span class="nc" id="L373">            e.getFluff().setWidth(dataFile.getDataAsString(&quot;width&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L376" title="All 2 branches missed.">        if (dataFile.exists(&quot;height&quot;)) {</span>
+<span class="nc" id="L377">            e.getFluff().setHeight(dataFile.getDataAsString(&quot;height&quot;)[0]);</span>
+        }
+        
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (dataFile.exists(&quot;source&quot;)) {</span>
+<span class="nc" id="L381">            e.setSource(dataFile.getDataAsString(&quot;source&quot;)[0]);</span>
+        }
+<span class="nc" id="L383">    }</span>
+
+    public void checkManualBV(Entity e) {
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (dataFile.exists(&quot;bv&quot;)) {</span>
+<span class="nc" id="L387">            int bv = dataFile.getDataAsInt(&quot;bv&quot;)[0];</span>
+
+<span class="nc bnc" id="L389" title="All 2 branches missed.">            if (bv != 0) {</span>
+<span class="nc" id="L390">                e.setUseManualBV(true);</span>
+<span class="nc" id="L391">                e.setManualBV(bv);</span>
+            }
+        }
+<span class="nc" id="L394">    }</span>
+
+    public void setTechLevel(Entity e) throws EntityLoadingException {
+<span class="nc bnc" id="L397" title="All 2 branches missed.">        if (!dataFile.exists(&quot;year&quot;)) {</span>
+<span class="nc" id="L398">            throw new EntityLoadingException(&quot;Could not find year block.&quot;);</span>
+        }
+<span class="nc" id="L400">        e.setYear(dataFile.getDataAsInt(&quot;year&quot;)[0]);</span>
+
+<span class="nc bnc" id="L402" title="All 2 branches missed.">        if (!dataFile.exists(&quot;type&quot;)) {</span>
+<span class="nc" id="L403">            throw new EntityLoadingException(&quot;Could not find type block.&quot;);</span>
+        }
+
+<span class="nc bnc" id="L406" title="All 20 branches missed.">        switch (dataFile.getDataAsString(&quot;type&quot;)[0]) {</span>
+            case &quot;IS&quot;:
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                if (e.getYear() == 3025) {</span>
+<span class="nc" id="L409">                    e.setTechLevel(TechConstants.T_INTRO_BOXSET);</span>
+                } else {
+<span class="nc" id="L411">                    e.setTechLevel(TechConstants.T_IS_TW_NON_BOX);</span>
+                }
+<span class="nc" id="L413">                break;</span>
+            case &quot;IS Level 1&quot;:
+<span class="nc" id="L415">                e.setTechLevel(TechConstants.T_INTRO_BOXSET);</span>
+<span class="nc" id="L416">                break;</span>
+            case &quot;IS Level 2&quot;:
+<span class="nc" id="L418">                e.setTechLevel(TechConstants.T_IS_TW_NON_BOX);</span>
+<span class="nc" id="L419">                break;</span>
+            case &quot;IS Level 3&quot;:
+<span class="nc" id="L421">                e.setTechLevel(TechConstants.T_IS_ADVANCED);</span>
+<span class="nc" id="L422">                break;</span>
+            case &quot;IS Level 4&quot;:
+<span class="nc" id="L424">                e.setTechLevel(TechConstants.T_IS_EXPERIMENTAL);</span>
+<span class="nc" id="L425">                break;</span>
+            case &quot;IS Level 5&quot;:
+<span class="nc" id="L427">                e.setTechLevel(TechConstants.T_IS_UNOFFICIAL);</span>
+<span class="nc" id="L428">                break;</span>
+            case &quot;Clan&quot;:
+            case &quot;Clan Level 2&quot;:
+<span class="nc" id="L431">                e.setTechLevel(TechConstants.T_CLAN_TW);</span>
+<span class="nc" id="L432">                break;</span>
+            case &quot;Clan Level 3&quot;:
+<span class="nc" id="L434">                e.setTechLevel(TechConstants.T_CLAN_ADVANCED);</span>
+<span class="nc" id="L435">                break;</span>
+            case &quot;Clan Level 4&quot;:
+<span class="nc" id="L437">                e.setTechLevel(TechConstants.T_CLAN_EXPERIMENTAL);</span>
+<span class="nc" id="L438">                break;</span>
+            case &quot;Clan Level 5&quot;:
+<span class="nc" id="L440">                e.setTechLevel(TechConstants.T_CLAN_UNOFFICIAL);</span>
+<span class="nc" id="L441">                break;</span>
+            case &quot;Mixed (IS Chassis)&quot;:
+<span class="nc" id="L443">                e.setTechLevel(TechConstants.T_IS_TW_NON_BOX);</span>
+<span class="nc" id="L444">                e.setMixedTech(true);</span>
+<span class="nc" id="L445">                break;</span>
+            case &quot;Mixed (IS Chassis) Advanced&quot;:
+<span class="nc" id="L447">                e.setTechLevel(TechConstants.T_IS_ADVANCED);</span>
+<span class="nc" id="L448">                e.setMixedTech(true);</span>
+<span class="nc" id="L449">                break;</span>
+            case &quot;Mixed (IS Chassis) Experimental&quot;:
+<span class="nc" id="L451">                e.setTechLevel(TechConstants.T_IS_EXPERIMENTAL);</span>
+<span class="nc" id="L452">                e.setMixedTech(true);</span>
+<span class="nc" id="L453">                break;</span>
+            case &quot;Mixed (IS Chassis) Unofficial&quot;:
+<span class="nc" id="L455">                e.setTechLevel(TechConstants.T_IS_UNOFFICIAL);</span>
+<span class="nc" id="L456">                e.setMixedTech(true);</span>
+<span class="nc" id="L457">                break;</span>
+            case &quot;Mixed (Clan Chassis)&quot;:
+<span class="nc" id="L459">                e.setTechLevel(TechConstants.T_CLAN_TW);</span>
+<span class="nc" id="L460">                e.setMixedTech(true);</span>
+<span class="nc" id="L461">                break;</span>
+            case &quot;Mixed (Clan Chassis) Advanced&quot;:
+<span class="nc" id="L463">                e.setTechLevel(TechConstants.T_CLAN_ADVANCED);</span>
+<span class="nc" id="L464">                e.setMixedTech(true);</span>
+<span class="nc" id="L465">                break;</span>
+            case &quot;Mixed (Clan Chassis) Experimental&quot;:
+<span class="nc" id="L467">                e.setTechLevel(TechConstants.T_CLAN_EXPERIMENTAL);</span>
+<span class="nc" id="L468">                e.setMixedTech(true);</span>
+<span class="nc" id="L469">                break;</span>
+            case &quot;Mixed (Clan Chassis) Unofficial&quot;:
+<span class="nc" id="L471">                e.setTechLevel(TechConstants.T_CLAN_UNOFFICIAL);</span>
+<span class="nc" id="L472">                e.setMixedTech(true);</span>
+<span class="nc" id="L473">                break;</span>
+            case &quot;Mixed&quot;:
+<span class="nc" id="L475">                throw new EntityLoadingException(&quot;Unsupported tech base: \&quot;Mixed\&quot; is no longer allowed by itself.  You must specify \&quot;Mixed (IS Chassis)\&quot; or \&quot;Mixed (Clan Chassis)\&quot;.&quot;);</span>
+            default:
+<span class="nc" id="L477">                throw new EntityLoadingException(&quot;Unsupported tech level: &quot;</span>
+<span class="nc" id="L478">                        + dataFile.getDataAsString(&quot;type&quot;)[0]);</span>
+        }
+<span class="nc" id="L480">    }</span>
+
+    public static BuildingBlock getBlock(Entity t) {
+<span class="nc" id="L483">        BuildingBlock blk = new BuildingBlock();</span>
+<span class="nc" id="L484">        blk.createNewBlock();</span>
+
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (t instanceof BattleArmor) {</span>
+<span class="nc" id="L487">            blk.writeBlockData(&quot;UnitType&quot;, &quot;BattleArmor&quot;);</span>
+<span class="nc bnc" id="L488" title="All 2 branches missed.">        } else if (t instanceof Protomech) {</span>
+<span class="nc" id="L489">            blk.writeBlockData(&quot;UnitType&quot;, &quot;ProtoMech&quot;);</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">        } else if (t instanceof Mech) {</span>
+<span class="nc" id="L491">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Mech&quot;);</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">        } else if (t instanceof GunEmplacement) {</span>
+<span class="nc" id="L493">            blk.writeBlockData(&quot;UnitType&quot;, &quot;GunEmplacement&quot;);</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        } else if (t instanceof LargeSupportTank) {</span>
+<span class="nc" id="L495">            blk.writeBlockData(&quot;UnitType&quot;, &quot;LargeSupportTank&quot;);</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        } else if (t instanceof SupportTank) {</span>
+<span class="nc" id="L497">            blk.writeBlockData(&quot;UnitType&quot;, &quot;SupportTank&quot;);</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">        } else if (t instanceof SupportVTOL) {</span>
+<span class="nc" id="L499">            blk.writeBlockData(&quot;UnitType&quot;, &quot;SupportVTOL&quot;);</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">        } else if (t instanceof VTOL) {</span>
+<span class="nc" id="L501">            blk.writeBlockData(&quot;UnitType&quot;, &quot;VTOL&quot;);</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">        } else if (t instanceof FixedWingSupport) {</span>
+<span class="nc" id="L503">            blk.writeBlockData(&quot;UnitType&quot;, &quot;FixedWingSupport&quot;);</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        } else if (t instanceof ConvFighter) {</span>
+<span class="nc" id="L505">            blk.writeBlockData(&quot;UnitType&quot;, &quot;ConvFighter&quot;);</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">        } else if (t instanceof Dropship) {</span>
+<span class="nc" id="L507">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Dropship&quot;);</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">        } else if (t instanceof SmallCraft) {</span>
+<span class="nc" id="L509">            blk.writeBlockData(&quot;UnitType&quot;, &quot;SmallCraft&quot;);</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        } else if (t instanceof Warship) {</span>
+<span class="nc" id="L511">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Warship&quot;);</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">        } else if (t instanceof SpaceStation) {</span>
+<span class="nc" id="L513">            blk.writeBlockData(&quot;UnitType&quot;, &quot;SpaceStation&quot;);</span>
+<span class="nc bnc" id="L514" title="All 2 branches missed.">        } else if (t instanceof Jumpship) {</span>
+<span class="nc" id="L515">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Jumpship&quot;);</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        } else if (t instanceof Tank) {</span>
+<span class="nc" id="L517">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Tank&quot;);</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">        } else if (t instanceof Infantry) {</span>
+<span class="nc" id="L519">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Infantry&quot;);</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">        } else if (t instanceof Aero) {</span>
+<span class="nc" id="L521">            blk.writeBlockData(&quot;UnitType&quot;, &quot;Aero&quot;);</span>
+        }
+
+<span class="nc" id="L524">        blk.writeBlockData(&quot;Name&quot;, t.getChassis());</span>
+<span class="nc" id="L525">        blk.writeBlockData(&quot;Model&quot;, t.getModel());</span>
+<span class="nc" id="L526">        blk.writeBlockData(&quot;year&quot;, t.getYear());</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">        if (t.getOriginalBuildYear() &gt;= 0) {</span>
+<span class="nc" id="L528">            blk.writeBlockData(&quot;originalBuildYear&quot;, t.getOriginalBuildYear());</span>
+        }
+        String type;
+<span class="nc bnc" id="L531" title="All 2 branches missed.">        if (t.isMixedTech()) {</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">            if (!t.isClan()) {</span>
+<span class="nc" id="L533">                type = &quot;Mixed (IS Chassis)&quot;;</span>
+            } else {
+<span class="nc" id="L535">                type = &quot;Mixed (Clan Chassis)&quot;;</span>
+            }
+<span class="nc bnc" id="L537" title="All 2 branches missed.">            if ((t.getTechLevel() == TechConstants.T_IS_ADVANCED)</span>
+<span class="nc bnc" id="L538" title="All 2 branches missed.">                    || (t.getTechLevel() == TechConstants.T_CLAN_ADVANCED)) {</span>
+<span class="nc" id="L539">                type += &quot; Advanced&quot;;</span>
+<span class="nc bnc" id="L540" title="All 2 branches missed.">            } else if ((t.getTechLevel() == TechConstants.T_IS_EXPERIMENTAL)</span>
+<span class="nc bnc" id="L541" title="All 2 branches missed.">                    || (t.getTechLevel() == TechConstants.T_CLAN_EXPERIMENTAL)) {</span>
+<span class="nc" id="L542">                type += &quot; Experimental&quot;;</span>
+            }
+<span class="nc bnc" id="L544" title="All 2 branches missed.">            if ((t.getTechLevel() == TechConstants.T_IS_UNOFFICIAL)</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">                    || (t.getTechLevel() == TechConstants.T_CLAN_UNOFFICIAL)) {</span>
+<span class="nc" id="L546">                type += &quot; Unofficial&quot;;</span>
+            }
+        } else {
+<span class="nc bnc" id="L549" title="All 9 branches missed.">            switch (t.getTechLevel()) {</span>
+                case TechConstants.T_INTRO_BOXSET:
+<span class="nc" id="L551">                    type = &quot;IS Level 1&quot;;</span>
+<span class="nc" id="L552">                    break;</span>
+                case TechConstants.T_IS_TW_NON_BOX:
+<span class="nc" id="L554">                    type = &quot;IS Level 2&quot;;</span>
+<span class="nc" id="L555">                    break;</span>
+                case TechConstants.T_IS_ADVANCED:
+<span class="nc" id="L557">                    type = &quot;IS Level 3&quot;;</span>
+<span class="nc" id="L558">                    break;</span>
+                case TechConstants.T_IS_EXPERIMENTAL:
+<span class="nc" id="L560">                    type = &quot;IS Level 4&quot;;</span>
+<span class="nc" id="L561">                    break;</span>
+                case TechConstants.T_IS_UNOFFICIAL:
+                default:
+<span class="nc" id="L564">                    type = &quot;IS Level 5&quot;;</span>
+<span class="nc" id="L565">                    break;</span>
+                case TechConstants.T_CLAN_TW:
+<span class="nc" id="L567">                    type = &quot;Clan Level 2&quot;;</span>
+<span class="nc" id="L568">                    break;</span>
+                case TechConstants.T_CLAN_ADVANCED:
+<span class="nc" id="L570">                    type = &quot;Clan Level 3&quot;;</span>
+<span class="nc" id="L571">                    break;</span>
+                case TechConstants.T_CLAN_EXPERIMENTAL:
+<span class="nc" id="L573">                    type = &quot;Clan Level 4&quot;;</span>
+<span class="nc" id="L574">                    break;</span>
+                case TechConstants.T_CLAN_UNOFFICIAL:
+<span class="nc" id="L576">                    type = &quot;Clan Level 5&quot;;</span>
+                    break;
+            }
+        }
+<span class="nc" id="L580">        blk.writeBlockData(&quot;type&quot;, type);</span>
+
+<span class="nc" id="L582">        blk.writeBlockData(&quot;motion_type&quot;, t.getMovementModeAsString());</span>
+
+<span class="nc" id="L584">        String[] transporter_array = new String[t.getTransports().size()];</span>
+<span class="nc" id="L585">        int index = 0;</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">        for (Transporter transporter : t.getTransports()) {</span>
+<span class="nc" id="L587">            transporter_array[index] = transporter.toString();</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">            if (t.isPodMountedTransport(transporter)) {</span>
+<span class="nc" id="L589">                transporter_array[index] += &quot;:omni&quot;;</span>
+            }
+<span class="nc" id="L591">            index++;</span>
+<span class="nc" id="L592">        }</span>
+<span class="nc" id="L593">        blk.writeBlockData(&quot;transporters&quot;, transporter_array);</span>
+
+<span class="nc bnc" id="L595" title="All 2 branches missed.">        if (!t.isConventionalInfantry()) {</span>
+<span class="nc bnc" id="L596" title="All 2 branches missed.">            if (t instanceof Aero){</span>
+<span class="nc" id="L597">                blk.writeBlockData(&quot;SafeThrust&quot;, t.getOriginalWalkMP());</span>
+            } else {
+<span class="nc" id="L599">                blk.writeBlockData(&quot;cruiseMP&quot;, t.getOriginalWalkMP());</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">                if (t.hasETypeFlag(Entity.ETYPE_PROTOMECH)) {</span>
+<span class="nc" id="L601">                    blk.writeBlockData(&quot;jumpingMP&quot;, t.getOriginalJumpMP());</span>
+<span class="nc" id="L602">                    blk.writeBlockData(&quot;interface_cockpit&quot;,</span>
+<span class="nc" id="L603">                            String.valueOf(((Protomech) t).hasInterfaceCockpit()));</span>
+                }
+            }
+        }
+
+<span class="nc" id="L608">        int numLocs = t.locations();</span>
+<span class="nc bnc" id="L609" title="All 2 branches missed.">        if (!(t instanceof Infantry)) {</span>
+<span class="nc bnc" id="L610" title="All 2 branches missed.">            if (t instanceof Aero){</span>
+<span class="nc bnc" id="L611" title="All 2 branches missed.">                if (t.isFighter()) {</span>
+<span class="nc" id="L612">                    blk.writeBlockData(&quot;cockpit_type&quot;, ((Aero)t).getCockpitType());</span>
+<span class="nc bnc" id="L613" title="All 4 branches missed.">                    if (t.hasETypeFlag(Entity.ETYPE_CONV_FIGHTER) &amp;&amp; ((Aero) t).isVSTOL()) {</span>
+<span class="nc" id="L614">                        blk.writeBlockData(&quot;vstol&quot;, 1);</span>
+                    }
+<span class="nc bnc" id="L616" title="All 4 branches missed.">                } else if ((t instanceof Dropship) &amp;&amp; ((Aero)t).isPrimitive()) {</span>
+<span class="nc" id="L617">                    blk.writeBlockData(&quot;collartype&quot;, ((Dropship)t).getCollarType());</span>
+                }
+<span class="nc" id="L619">                blk.writeBlockData(&quot;heatsinks&quot;, ((Aero)t).getHeatSinks());</span>
+<span class="nc" id="L620">                blk.writeBlockData(&quot;sink_type&quot;, ((Aero)t).getHeatType());</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">                if (((Aero)t).getPodHeatSinks() &gt; 0) {</span>
+<span class="nc" id="L622">                    blk.writeBlockData(&quot;omnipodheatsinks&quot;, ((Aero)t).getPodHeatSinks());</span>
+                }
+<span class="nc" id="L624">                blk.writeBlockData(&quot;fuel&quot;, ((Aero)t).getFuel());</span>
+            }
+<span class="nc bnc" id="L626" title="All 2 branches missed.">            if(t.hasEngine()) {</span>
+<span class="nc" id="L627">                int engineCode = BLKFile.FUSION;</span>
+<span class="nc bnc" id="L628" title="All 13 branches missed.">                switch (t.getEngine().getEngineType()) {</span>
+                    case Engine.COMBUSTION_ENGINE:
+<span class="nc" id="L630">                        engineCode = BLKFile.ICE;</span>
+<span class="nc" id="L631">                        break;</span>
+                    case Engine.LIGHT_ENGINE:
+<span class="nc" id="L633">                        engineCode = BLKFile.LIGHT;</span>
+<span class="nc" id="L634">                        break;</span>
+                    case Engine.XL_ENGINE:
+<span class="nc" id="L636">                        engineCode = BLKFile.XL;</span>
+<span class="nc" id="L637">                        break;</span>
+                    case Engine.XXL_ENGINE:
+<span class="nc" id="L639">                        engineCode = BLKFile.XXL;</span>
+<span class="nc" id="L640">                        break;</span>
+                    case Engine.FUEL_CELL:
+<span class="nc" id="L642">                        engineCode = BLKFile.FUELCELL;</span>
+<span class="nc" id="L643">                        break;</span>
+                    case Engine.FISSION:
+<span class="nc" id="L645">                        engineCode = BLKFile.FISSION;</span>
+<span class="nc" id="L646">                        break;</span>
+                    case Engine.NONE:
+<span class="nc" id="L648">                        engineCode = BLKFile.NONE;</span>
+<span class="nc" id="L649">                        break;</span>
+                    case Engine.MAGLEV:
+<span class="nc" id="L651">                        engineCode = BLKFile.MAGLEV;</span>
+<span class="nc" id="L652">                        break;</span>
+                    case Engine.STEAM:
+<span class="nc" id="L654">                        engineCode = BLKFile.STEAM;</span>
+<span class="nc" id="L655">                        break;</span>
+                    case Engine.BATTERY:
+<span class="nc" id="L657">                        engineCode = BLKFile.BATTERY;</span>
+<span class="nc" id="L658">                        break;</span>
+                    case Engine.SOLAR:
+<span class="nc" id="L660">                        engineCode = BLKFile.SOLAR;</span>
+<span class="nc" id="L661">                        break;</span>
+                    case Engine.EXTERNAL:
+<span class="nc" id="L663">                        engineCode = BLKFile.EXTERNAL;</span>
+                        break;
+                }
+<span class="nc" id="L666">                blk.writeBlockData(&quot;engine_type&quot;, engineCode);</span>
+<span class="nc bnc" id="L667" title="All 2 branches missed.">                if (t.getEngine().isClan() != t.isClan()) {</span>
+<span class="nc" id="L668">                    blk.writeBlockData(&quot;clan_engine&quot;, Boolean.toString(t.getEngine().isClan()));</span>
+                }
+            }
+<span class="nc bnc" id="L671" title="All 4 branches missed.">            if (!t.hasPatchworkArmor() &amp;&amp; (t.getArmorType(1) != 0)) {</span>
+<span class="nc" id="L672">                blk.writeBlockData(&quot;armor_type&quot;, t.getArmorType(1));</span>
+<span class="nc" id="L673">                blk.writeBlockData(&quot;armor_tech&quot;, t.getArmorTechLevel(1));</span>
+<span class="nc bnc" id="L674" title="All 2 branches missed.">            } else if (t.hasPatchworkArmor()) {</span>
+<span class="nc" id="L675">                blk.writeBlockData(&quot;armor_type&quot;,</span>
+                        EquipmentType.T_ARMOR_PATCHWORK);
+<span class="nc bnc" id="L677" title="All 2 branches missed.">                for (int i = 1; i &lt; t.locations(); i++) {</span>
+<span class="nc" id="L678">                    blk.writeBlockData(t.getLocationName(i) + &quot;_armor_type&quot;, t.getArmorType(i));</span>
+<span class="nc" id="L679">                    blk.writeBlockData(t.getLocationName(i) + &quot;_armor_tech&quot;,</span>
+<span class="nc" id="L680">                            TechConstants.getTechName(t.getArmorTechLevel(i)));</span>
+                }
+            }
+<span class="nc bnc" id="L683" title="All 2 branches missed.">            if (t.getStructureType() != 0) {</span>
+<span class="nc" id="L684">                blk.writeBlockData(&quot;internal_type&quot;, t.getStructureType());</span>
+            }
+<span class="nc bnc" id="L686" title="All 2 branches missed.">            if (t.isOmni()) {</span>
+<span class="nc" id="L687">                blk.writeBlockData(&quot;omni&quot;, 1);</span>
+            }
+            
+            int[] armor_array;
+<span class="nc bnc" id="L691" title="All 2 branches missed.">            if (t.hasETypeFlag(Entity.ETYPE_AERO)) {</span>
+<span class="nc bnc" id="L692" title="All 2 branches missed.">                if (t.hasETypeFlag(Entity.ETYPE_JUMPSHIP)) {</span>
+<span class="nc" id="L693">                    armor_array = new int[6];</span>
+                } else {
+<span class="nc" id="L695">                    armor_array = new int[4];</span>
+                }
+<span class="nc bnc" id="L697" title="All 2 branches missed.">                for (int i = 0; i &lt; armor_array.length; i++) {</span>
+<span class="nc" id="L698">                    armor_array[i] = t.getOArmor(i);</span>
+                }
+            } else {
+<span class="nc" id="L701">                armor_array = new int[numLocs - 1];</span>
+<span class="nc bnc" id="L702" title="All 2 branches missed.">                for (int i = 1; i &lt; numLocs; i++) {</span>
+<span class="nc" id="L703">                    armor_array[i - 1] = t.getOArmor(i);</span>
+                }
+            }
+<span class="nc" id="L706">            blk.writeBlockData(&quot;armor&quot;, armor_array);</span>
+        }
+
+        // Write out armor_type and armor_tech entries for BA
+<span class="nc bnc" id="L710" title="All 2 branches missed.">        if (t instanceof BattleArmor) {</span>
+<span class="nc" id="L711">            blk.writeBlockData(&quot;armor_type&quot;, t.getArmorType(1));</span>
+<span class="nc" id="L712">            blk.writeBlockData(&quot;armor_tech&quot;, t.getArmorTechLevel(1));</span>
+        }
+
+<span class="nc" id="L715">        Vector&lt;Vector&lt;String&gt;&gt; eq = new Vector&lt;&gt;(numLocs);</span>
+
+<span class="nc bnc" id="L717" title="All 2 branches missed.">        for (int i = 0; i &lt; numLocs; i++) {</span>
+<span class="nc" id="L718">            eq.add(new Vector&lt;&gt;());</span>
+        }
+<span class="nc bnc" id="L720" title="All 2 branches missed.">        for (Mounted m : t.getEquipment()) {</span>
+            // Ignore Mounteds that represent a WeaponGroup
+            // BA anti-personnel weapons are written just after the mount
+<span class="nc bnc" id="L723" title="All 4 branches missed.">            if (m.isWeaponGroup() || m.isAPMMounted()){</span>
+<span class="nc" id="L724">                continue;</span>
+            }
+
+            // Ignore ammo for one-shot launchers
+<span class="nc bnc" id="L728" title="All 4 branches missed.">            if ((m.getLinkedBy() != null) &amp;&amp; (m.getLinkedBy().isOneShot())) {</span>
+<span class="nc" id="L729">                continue;</span>
+            }
+            
+<span class="nc bnc" id="L732" title="All 2 branches missed.">            if (m.getType() instanceof BayWeapon) {</span>
+<span class="nc" id="L733">                int loc = m.getLocation();</span>
+<span class="nc bnc" id="L734" title="All 2 branches missed.">                if (loc == Entity.LOC_NONE) {</span>
+<span class="nc" id="L735">                    continue;</span>
+                }
+<span class="nc" id="L737">                boolean rear = m.isRearMounted();</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">                for (int i = 0; i &lt; m.getBayWeapons().size(); i++) {</span>
+<span class="nc" id="L739">                    Mounted w = t.getEquipment(m.getBayWeapons().get(i));</span>
+<span class="nc" id="L740">                    String name = w.getType().getInternalName();</span>
+<span class="nc bnc" id="L741" title="All 2 branches missed.">                    if (i == 0) {</span>
+<span class="nc" id="L742">                        name = &quot;(B) &quot; + name;</span>
+                    }
+<span class="nc bnc" id="L744" title="All 2 branches missed.">                    if (rear) {</span>
+<span class="nc" id="L745">                        name = &quot;(R) &quot; + name;</span>
+                    }
+<span class="nc" id="L747">                    eq.get(loc).add(name);</span>
+                }
+<span class="nc bnc" id="L749" title="All 2 branches missed.">                for (Integer aNum : m.getBayAmmo()) {</span>
+<span class="nc" id="L750">                    Mounted a = t.getEquipment(aNum);</span>
+<span class="nc" id="L751">                    String name = a.getType().getInternalName();</span>
+<span class="nc" id="L752">                    name += &quot;:&quot; + a.getBaseShotsLeft();</span>
+<span class="nc bnc" id="L753" title="All 2 branches missed.">                    if (rear) {</span>
+<span class="nc" id="L754">                        name = &quot;(R) &quot; + name;</span>
+                    }
+<span class="nc" id="L756">                    eq.get(loc).add(name);</span>
+<span class="nc" id="L757">                }</span>
+<span class="nc" id="L758">                continue;</span>
+            }
+
+<span class="nc bnc" id="L761" title="All 4 branches missed.">            if (t.usesWeaponBays() &amp;&amp; ((m.getType() instanceof WeaponType)</span>
+<span class="nc bnc" id="L762" title="All 2 branches missed.">                    || (m.getType() instanceof AmmoType))) {</span>
+<span class="nc" id="L763">                continue;</span>
+            }
+
+<span class="nc" id="L766">            String name = encodeEquipmentLine(m);</span>
+<span class="nc" id="L767">            int loc = m.getLocation();</span>
+<span class="nc bnc" id="L768" title="All 2 branches missed.">            if (loc != Entity.LOC_NONE) {</span>
+<span class="nc" id="L769">                eq.get(loc).add(name);</span>
+            }
+<span class="nc bnc" id="L771" title="All 4 branches missed.">            if ((m.getLinked() != null) &amp;&amp; m.getLinked().isAPMMounted()) {</span>
+<span class="nc" id="L772">                eq.get(loc).add(encodeEquipmentLine(m.getLinked()));</span>
+            }
+<span class="nc" id="L774">        }</span>
+<span class="nc bnc" id="L775" title="All 2 branches missed.">        for (int i = 0; i &lt; numLocs; i++) {</span>
+<span class="nc bnc" id="L776" title="All 4 branches missed.">            if (!(t.isConventionalInfantry() &amp;&amp; (i == Infantry.LOC_INFANTRY))) {</span>
+<span class="nc" id="L777">                blk.writeBlockData(t.getLocationName(i) + &quot; Equipment&quot;, eq.get(i));</span>
+            }
+        }
+<span class="nc bnc" id="L780" title="All 4 branches missed.">        if (!t.hasPatchworkArmor() &amp;&amp; t.hasBARArmor(1)) {</span>
+<span class="nc" id="L781">            blk.writeBlockData(&quot;barrating&quot;, t.getBARRating(1));</span>
+        }
+        
+<span class="nc bnc" id="L784" title="All 2 branches missed.">        if (t.isSupportVehicle()) {</span>
+<span class="nc" id="L785">            blk.writeBlockData(&quot;structural_tech_rating&quot;, t.getStructuralTechRating());</span>
+<span class="nc" id="L786">            blk.writeBlockData(&quot;engine_tech_rating&quot;, t.getEngineTechRating());</span>
+<span class="nc" id="L787">            blk.writeBlockData(&quot;armor_tech_rating&quot;, t.getArmorTechRating());</span>
+        }
+        
+<span class="nc bnc" id="L790" title="All 4 branches missed.">        if (t.hasETypeFlag(Entity.ETYPE_SMALL_CRAFT) || t.hasETypeFlag(Entity.ETYPE_JUMPSHIP)) {</span>
+<span class="nc" id="L791">            blk.writeBlockData(&quot;structural_integrity&quot;, ((Aero)t).get0SI());</span>
+        }
+
+<span class="nc bnc" id="L794" title="All 2 branches missed.">        if (t.getFluff().getCapabilities().trim().length() &gt; 0) {</span>
+<span class="nc" id="L795">            blk.writeBlockData(&quot;capabilities&quot;, t.getFluff().getCapabilities());</span>
+        }
+
+<span class="nc bnc" id="L798" title="All 2 branches missed.">        if (t.getFluff().getOverview().trim().length() &gt; 0) {</span>
+<span class="nc" id="L799">            blk.writeBlockData(&quot;overview&quot;, t.getFluff().getOverview());</span>
+        }
+
+<span class="nc bnc" id="L802" title="All 2 branches missed.">        if (t.getFluff().getDeployment().trim().length() &gt; 0) {</span>
+<span class="nc" id="L803">            blk.writeBlockData(&quot;deployment&quot;, t.getFluff().getDeployment());</span>
+        }
+
+<span class="nc bnc" id="L806" title="All 2 branches missed.">        if (t.getFluff().getHistory().trim().length() &gt; 0) {</span>
+<span class="nc" id="L807">            blk.writeBlockData(&quot;history&quot;, t.getFluff().getHistory());</span>
+        }
+
+<span class="nc bnc" id="L810" title="All 2 branches missed.">        if (t.getFluff().getManufacturer().trim().length() &gt; 0) {</span>
+<span class="nc" id="L811">            blk.writeBlockData(&quot;manufacturer&quot;, t.getFluff().getManufacturer());</span>
+        }
+
+<span class="nc bnc" id="L814" title="All 2 branches missed.">        if (t.getFluff().getPrimaryFactory().trim().length() &gt; 0) {</span>
+<span class="nc" id="L815">            blk.writeBlockData(&quot;primaryFactory&quot;, t.getFluff().getPrimaryFactory());</span>
+        }
+        
+<span class="nc" id="L818">        List&lt;String&gt; list = t.getFluff().createSystemManufacturersList();</span>
+<span class="nc bnc" id="L819" title="All 2 branches missed.">        if (!list.isEmpty()) {</span>
+<span class="nc" id="L820">            blk.writeBlockData(&quot;systemManufacturers&quot;, list);</span>
+        }
+
+<span class="nc" id="L823">        list = t.getFluff().createSystemModelsList();</span>
+<span class="nc bnc" id="L824" title="All 2 branches missed.">        if (!list.isEmpty()) {</span>
+<span class="nc" id="L825">            blk.writeBlockData(&quot;systemModels&quot;, list);</span>
+        }
+
+<span class="nc bnc" id="L828" title="All 2 branches missed.">        if (t.getFluff().getMMLImagePath().trim().length() &gt; 0) {</span>
+<span class="nc" id="L829">            blk.writeBlockData(&quot;imagepath&quot;, t.getFluff().getMMLImagePath());</span>
+        }
+
+<span class="nc bnc" id="L832" title="All 2 branches missed.">        if (t.getFluff().getNotes().trim().length() &gt; 0) {</span>
+<span class="nc" id="L833">            blk.writeBlockData(&quot;notes&quot;, t.getFluff().getNotes());</span>
+        }
+
+<span class="nc bnc" id="L836" title="All 2 branches missed.">        if (t.getFluff().getUse().trim().length() &gt; 0) {</span>
+<span class="nc" id="L837">            blk.writeBlockData(&quot;use&quot;, t.getFluff().getUse());</span>
+        }
+
+<span class="nc bnc" id="L840" title="All 2 branches missed.">        if (t.getFluff().getLength().trim().length() &gt; 0) {</span>
+<span class="nc" id="L841">            blk.writeBlockData(&quot;length&quot;, t.getFluff().getLength());</span>
+        }
+
+<span class="nc bnc" id="L844" title="All 2 branches missed.">        if (t.getFluff().getWidth().trim().length() &gt; 0) {</span>
+<span class="nc" id="L845">            blk.writeBlockData(&quot;width&quot;, t.getFluff().getWidth());</span>
+        }
+
+<span class="nc bnc" id="L848" title="All 2 branches missed.">        if (t.getFluff().getHeight().trim().length() &gt; 0) {</span>
+<span class="nc" id="L849">            blk.writeBlockData(&quot;height&quot;, t.getFluff().getHeight());</span>
+        }
+
+<span class="nc bnc" id="L852" title="All 2 branches missed.">        if (t.getSource().trim().length() &gt; 0) {</span>
+<span class="nc" id="L853">            blk.writeBlockData(&quot;source&quot;, t.getSource());</span>
+        }
+
+<span class="nc bnc" id="L856" title="All 2 branches missed.">        if (t instanceof BattleArmor) {</span>
+<span class="nc" id="L857">            BattleArmor ba = (BattleArmor) t;</span>
+<span class="nc bnc" id="L858" title="All 2 branches missed.">            if (ba.getChassisType() == BattleArmor.CHASSIS_TYPE_BIPED) {</span>
+<span class="nc" id="L859">                blk.writeBlockData(&quot;chassis&quot;, &quot;biped&quot;);</span>
+
+<span class="nc bnc" id="L861" title="All 2 branches missed.">            } else if (ba.getChassisType() == BattleArmor.CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L862">                blk.writeBlockData(&quot;chassis&quot;, &quot;quad&quot;);</span>
+<span class="nc bnc" id="L863" title="All 2 branches missed.">                if (ba.getTurretCapacity() &gt; 0) {</span>
+<span class="nc" id="L864">                    blk.writeBlockData(&quot;turret&quot;,</span>
+<span class="nc bnc" id="L865" title="All 2 branches missed.">                            (ba.hasModularTurretMount()? &quot;Modular:&quot; : &quot;Standard:&quot;) + ba.getTurretCapacity());</span>
+                }
+            }
+<span class="nc bnc" id="L868" title="All 2 branches missed.">            if (ba.isExoskeleton()) {</span>
+<span class="nc" id="L869">                blk.writeBlockData(&quot;exoskeleton&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc" id="L871">            blk.writeBlockData(&quot;jumpingMP&quot;, ba.getOriginalJumpMP());</span>
+<span class="nc" id="L872">            blk.writeBlockData(&quot;armor&quot;, new int[] { ba.getArmor(1) });</span>
+<span class="nc" id="L873">            blk.writeBlockData(&quot;Trooper Count&quot;, (int) t.getWeight());</span>
+<span class="nc" id="L874">            blk.writeBlockData(&quot;weightclass&quot;, ba.getWeightClass());</span>
+<span class="nc bnc" id="L875" title="All 2 branches missed.">        } else if (t instanceof Infantry) {</span>
+<span class="nc" id="L876">            Infantry infantry = (Infantry) t;</span>
+<span class="nc" id="L877">            blk.writeBlockData(&quot;squad_size&quot;, infantry.getSquadSize());</span>
+<span class="nc" id="L878">            blk.writeBlockData(&quot;squadn&quot;, infantry.getSquadN());</span>
+<span class="nc bnc" id="L879" title="All 2 branches missed.">            if (infantry.getSecondaryN() &gt; 0) {</span>
+<span class="nc" id="L880">                blk.writeBlockData(&quot;secondn&quot;, infantry.getSecondaryN());</span>
+            }
+<span class="nc bnc" id="L882" title="All 2 branches missed.">            if (null != infantry.getPrimaryWeapon()) {</span>
+<span class="nc" id="L883">                blk.writeBlockData(&quot;Primary&quot;, infantry.getPrimaryWeapon()</span>
+<span class="nc" id="L884">                        .getInternalName());</span>
+            }
+<span class="nc bnc" id="L886" title="All 2 branches missed.">            if (null != infantry.getSecondaryWeapon()) {</span>
+<span class="nc" id="L887">                blk.writeBlockData(&quot;Secondary&quot;, infantry.getSecondaryWeapon()</span>
+<span class="nc" id="L888">                        .getInternalName());</span>
+            }
+            
+<span class="nc bnc" id="L891" title="All 2 branches missed.">            if (infantry.canMakeAntiMekAttacks()) {</span>
+<span class="nc" id="L892">                blk.writeBlockData(&quot;antimek&quot;, (infantry.getAntiMekSkill() + &quot;&quot;));</span>
+            }
+            
+<span class="nc" id="L895">            EquipmentType et = infantry.getArmorKit();</span>
+<span class="nc bnc" id="L896" title="All 2 branches missed.">            if (et != null) {</span>
+<span class="nc" id="L897">                blk.writeBlockData(&quot;armorKit&quot;, et.getInternalName());</span>
+            }
+<span class="nc bnc" id="L899" title="All 2 branches missed.">            if (infantry.getArmorDamageDivisor() != 1) {</span>
+<span class="nc" id="L900">                blk.writeBlockData(&quot;armordivisor&quot;,</span>
+<span class="nc" id="L901">                        Double.toString(infantry.getArmorDamageDivisor()));</span>
+            }
+<span class="nc bnc" id="L903" title="All 2 branches missed.">            if (infantry.isArmorEncumbering()) {</span>
+<span class="nc" id="L904">                blk.writeBlockData(&quot;encumberingarmor&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L906" title="All 2 branches missed.">            if (infantry.hasSpaceSuit()) {</span>
+<span class="nc" id="L907">                blk.writeBlockData(&quot;spacesuit&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L909" title="All 2 branches missed.">            if (infantry.hasDEST()) {</span>
+<span class="nc" id="L910">                blk.writeBlockData(&quot;dest&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L912" title="All 2 branches missed.">            if (infantry.hasSneakCamo()) {</span>
+<span class="nc" id="L913">                blk.writeBlockData(&quot;sneakcamo&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L915" title="All 2 branches missed.">            if (infantry.hasSneakIR()) {</span>
+<span class="nc" id="L916">                blk.writeBlockData(&quot;sneakir&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L918" title="All 2 branches missed.">            if (infantry.hasSneakECM()) {</span>
+<span class="nc" id="L919">                blk.writeBlockData(&quot;sneakecm&quot;, &quot;true&quot;);</span>
+            }
+<span class="nc bnc" id="L921" title="All 2 branches missed.">            if (infantry.hasSpecialization()) {</span>
+<span class="nc" id="L922">                blk.writeBlockData(&quot;specialization&quot;, infantry.getSpecializations());</span>
+            }
+<span class="nc" id="L924">            ArrayList&lt;String&gt; augmentations = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L925">            for (Enumeration&lt;IOption&gt; e = infantry.getCrew().getOptions(PilotOptions.MD_ADVANTAGES);</span>
+<span class="nc bnc" id="L926" title="All 2 branches missed.">                    e.hasMoreElements();) {</span>
+<span class="nc" id="L927">                final IOption o = e.nextElement();</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">                if (o.booleanValue()) {</span>
+<span class="nc" id="L929">                    augmentations.add(o.getName());</span>
+                }
+<span class="nc" id="L931">            }</span>
+<span class="nc bnc" id="L932" title="All 2 branches missed.">            if (augmentations.size() &gt; 0) {</span>
+<span class="nc" id="L933">                blk.writeBlockData(&quot;augmentation&quot;, augmentations.toArray(new String[augmentations.size()]));</span>
+            }
+<span class="nc" id="L935">        } else {</span>
+<span class="nc" id="L936">            blk.writeBlockData(&quot;tonnage&quot;, t.getWeight());</span>
+        }
+
+<span class="nc bnc" id="L939" title="All 2 branches missed.">        if (t.getUseManualBV()) {</span>
+<span class="nc" id="L940">            blk.writeBlockData(&quot;bv&quot;, t.getManualBV());</span>
+        }
+
+<span class="nc bnc" id="L943" title="All 4 branches missed.">        if ((t instanceof Tank) &amp;&amp; t.isOmni()) {</span>
+<span class="nc" id="L944">            Tank tank = (Tank) t;</span>
+<span class="nc bnc" id="L945" title="All 2 branches missed.">            if (tank.getBaseChassisTurretWeight() &gt;= 0) {</span>
+<span class="nc" id="L946">                blk.writeBlockData(&quot;baseChassisTurretWeight&quot;,</span>
+<span class="nc" id="L947">                        tank.getBaseChassisTurretWeight());</span>
+            }
+<span class="nc bnc" id="L949" title="All 2 branches missed.">            if (tank.getBaseChassisTurret2Weight() &gt;= 0) {</span>
+<span class="nc" id="L950">                blk.writeBlockData(&quot;baseChassisTurret2Weight&quot;,</span>
+<span class="nc" id="L951">                        tank.getBaseChassisTurret2Weight());</span>
+            }
+<span class="nc bnc" id="L953" title="All 2 branches missed.">            if (tank.getBaseChassisSponsonPintleWeight() &gt;= 0) {</span>
+<span class="nc" id="L954">                blk.writeBlockData(&quot;baseChassisSponsonPintleWeight&quot;,</span>
+<span class="nc" id="L955">                        tank.getBaseChassisSponsonPintleWeight());</span>
+            }
+        }
+
+<span class="nc bnc" id="L959" title="All 4 branches missed.">        if (t.isSupportVehicle() &amp;&amp; t.isOmni()) {</span>
+<span class="nc" id="L960">            blk.writeBlockData(&quot;baseChassisFireConWeight&quot;,</span>
+<span class="nc" id="L961">                    t.getBaseChassisFireConWeight());</span>
+        }
+
+<span class="nc bnc" id="L964" title="All 2 branches missed.">        if (t instanceof Tank) {</span>
+<span class="nc" id="L965">            Tank tank = (Tank) t;</span>
+<span class="nc bnc" id="L966" title="All 2 branches missed.">            if (tank.isSupportVehicle()) {</span>
+<span class="nc" id="L967">                blk.writeBlockData(&quot;fuel&quot;, tank.getFuelTonnage());</span>
+            }
+<span class="nc bnc" id="L969" title="All 2 branches missed.">            if (tank.getEngine().getEngineType() == Engine.COMBUSTION_ENGINE) {</span>
+<span class="nc" id="L970">                blk.writeBlockData(&quot;fuelType&quot;, tank.getICEFuelType().toString());</span>
+            }
+<span class="nc bnc" id="L972" title="All 2 branches missed.">            if (tank.hasNoControlSystems()) {</span>
+<span class="nc" id="L973">                blk.writeBlockData(&quot;hasNoControlSystems&quot;, 1);</span>
+            }
+<span class="nc bnc" id="L975" title="All 4 branches missed.">            if (!t.isSupportVehicle() &amp;&amp; t.isTrailer()) {</span>
+<span class="nc" id="L976">                blk.writeBlockData(&quot;trailer&quot;, 1);</span>
+            }
+<span class="nc bnc" id="L978" title="All 2 branches missed.">            if (tank.getExtraCrewSeats() &gt; 0) {</span>
+<span class="nc" id="L979">                blk.writeBlockData(BLK_EXTRA_SEATS, tank.getExtraCrewSeats());</span>
+            }
+        }
+        
+<span class="nc bnc" id="L983" title="All 2 branches missed.">        if (t instanceof SmallCraft) {</span>
+<span class="nc" id="L984">            SmallCraft sc = (SmallCraft) t;</span>
+<span class="nc" id="L985">            blk.writeBlockData(&quot;designtype&quot;, sc.getDesignType());</span>
+<span class="nc" id="L986">            blk.writeBlockData(&quot;crew&quot;, sc.getNCrew());</span>
+<span class="nc" id="L987">            blk.writeBlockData(&quot;officers&quot;, sc.getNOfficers());</span>
+<span class="nc" id="L988">            blk.writeBlockData(&quot;gunners&quot;, sc.getNGunners());</span>
+<span class="nc" id="L989">            blk.writeBlockData(&quot;passengers&quot;, sc.getNPassenger());</span>
+<span class="nc" id="L990">            blk.writeBlockData(&quot;marines&quot;, sc.getNMarines());</span>
+<span class="nc" id="L991">            blk.writeBlockData(&quot;battlearmor&quot;, sc.getNBattleArmor());</span>
+<span class="nc" id="L992">            blk.writeBlockData(&quot;otherpassenger&quot;, sc.getNOtherPassenger());</span>
+<span class="nc" id="L993">            blk.writeBlockData(&quot;life_boat&quot;, sc.getLifeBoats());</span>
+<span class="nc" id="L994">            blk.writeBlockData(&quot;escape_pod&quot;, sc.getEscapePods());</span>
+        }
+
+<span class="nc bnc" id="L997" title="All 2 branches missed.">        if (t instanceof Warship) {</span>
+<span class="nc" id="L998">            Warship ws = (Warship) t;</span>
+<span class="nc" id="L999">            blk.writeBlockData(&quot;kf_core&quot;, ws.getDriveCoreType());</span>
+<span class="nc bnc" id="L1000" title="All 2 branches missed.">            if (ws.getDriveCoreType() == Warship.DRIVE_CORE_PRIMITIVE) {</span>
+<span class="nc" id="L1001">                blk.writeBlockData(&quot;jump_range&quot;, ws.getJumpRange());</span>
+            }
+<span class="nc bnc" id="L1003" title="All 2 branches missed.">        } else if ((t instanceof SpaceStation)</span>
+<span class="nc bnc" id="L1004" title="All 2 branches missed.">                &amp;&amp; ((SpaceStation) t).isModular()) {</span>
+<span class="nc" id="L1005">            blk.writeBlockData(&quot;modular&quot;, 1);</span>
+        }
+        
+<span class="nc bnc" id="L1008" title="All 2 branches missed.">        if (t instanceof Jumpship) {</span>
+<span class="nc" id="L1009">            Jumpship js = (Jumpship) t;</span>
+<span class="nc bnc" id="L1010" title="All 2 branches missed.">            if (js.hasHPG()) {</span>
+<span class="nc" id="L1011">                blk.writeBlockData(&quot;hpg&quot;, 1);</span>
+            }
+<span class="nc bnc" id="L1013" title="All 2 branches missed.">            if (js.hasLF()) {</span>
+<span class="nc" id="L1014">                blk.writeBlockData(&quot;lithium-fusion&quot;, 1);</span>
+            }
+<span class="nc bnc" id="L1016" title="All 2 branches missed.">            blk.writeBlockData(&quot;sail&quot;, js.hasSail()? 1 : 0);</span>
+<span class="nc bnc" id="L1017" title="All 2 branches missed.">            if (js.getTotalGravDeck() &gt; 0) {</span>
+<span class="nc" id="L1018">                blk.writeBlockData(&quot;grav_decks&quot;, (Vector&lt;String&gt;)js.getGravDecks().stream()</span>
+<span class="nc" id="L1019">                        .map(String::valueOf)</span>
+<span class="nc" id="L1020">                        .collect(Collectors.toCollection(Vector::new)));</span>
+            }
+<span class="nc" id="L1022">            blk.writeBlockData(&quot;crew&quot;, js.getNCrew());</span>
+<span class="nc" id="L1023">            blk.writeBlockData(&quot;officers&quot;, js.getNOfficers());</span>
+<span class="nc" id="L1024">            blk.writeBlockData(&quot;gunners&quot;, js.getNGunners());</span>
+<span class="nc" id="L1025">            blk.writeBlockData(&quot;passengers&quot;, js.getNPassenger());</span>
+<span class="nc" id="L1026">            blk.writeBlockData(&quot;marines&quot;, js.getNMarines());</span>
+<span class="nc" id="L1027">            blk.writeBlockData(&quot;battlearmor&quot;, js.getNBattleArmor());</span>
+<span class="nc" id="L1028">            blk.writeBlockData(&quot;life_boat&quot;, js.getLifeBoats());</span>
+<span class="nc" id="L1029">            blk.writeBlockData(&quot;escape_pod&quot;, js.getEscapePods());</span>
+        }
+<span class="nc" id="L1031">        return blk;</span>
+    }
+
+    private static String encodeEquipmentLine(Mounted m) {
+<span class="nc" id="L1035">        String name = m.getType().getInternalName();</span>
+<span class="nc bnc" id="L1036" title="All 2 branches missed.">        if (m.isRearMounted()) {</span>
+<span class="nc" id="L1037">            name = &quot;(R) &quot; + name;</span>
+        }
+<span class="nc bnc" id="L1039" title="All 2 branches missed.">        if (m.isSponsonTurretMounted()) {</span>
+<span class="nc" id="L1040">            name = name + &quot;(ST)&quot;;</span>
+        }
+<span class="nc bnc" id="L1042" title="All 2 branches missed.">        if (m.isMechTurretMounted()) {</span>
+<span class="nc" id="L1043">            name = name + &quot;(T)&quot;;</span>
+        }
+<span class="nc bnc" id="L1045" title="All 2 branches missed.">        if (m.isPintleTurretMounted()) {</span>
+<span class="nc" id="L1046">            name = name + &quot;(PT)&quot;;</span>
+        }
+<span class="nc bnc" id="L1048" title="All 2 branches missed.">        if (m.isDWPMounted()) {</span>
+<span class="nc" id="L1049">            name += &quot;:DWP&quot;;</span>
+        }
+<span class="nc bnc" id="L1051" title="All 2 branches missed.">        if (m.isSquadSupportWeapon()) {</span>
+<span class="nc" id="L1052">            name += &quot;:SSWM&quot;;</span>
+        }
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">        if (m.isAPMMounted()) {</span>
+<span class="nc" id="L1055">            name += &quot;:APM&quot;;</span>
+        }
+<span class="nc bnc" id="L1057" title="All 2 branches missed.">        if (m.isOmniPodMounted()) {</span>
+<span class="nc" id="L1058">            name += &quot;:OMNI&quot;;</span>
+        }
+<span class="nc bnc" id="L1060" title="All 2 branches missed.">        if (m.getBaMountLoc() == BattleArmor.MOUNT_LOC_BODY) {</span>
+<span class="nc" id="L1061">            name += &quot;:Body&quot;;</span>
+        }
+<span class="nc bnc" id="L1063" title="All 2 branches missed.">        if (m.getBaMountLoc() == BattleArmor.MOUNT_LOC_LARM) {</span>
+<span class="nc" id="L1064">            name += &quot;:LA&quot;;</span>
+        }
+<span class="nc bnc" id="L1066" title="All 2 branches missed.">        if (m.getBaMountLoc() == BattleArmor.MOUNT_LOC_RARM) {</span>
+<span class="nc" id="L1067">            name += &quot;:RA&quot;;</span>
+        }
+<span class="nc bnc" id="L1069" title="All 2 branches missed.">        if (m.getBaMountLoc() == BattleArmor.MOUNT_LOC_TURRET) {</span>
+<span class="nc" id="L1070">            name += &quot;:TU&quot;;</span>
+        }
+        // For BattleArmor and ProtoMechs, we need to save how many shots are in this
+        //  location but they have different formats, yay!
+<span class="nc bnc" id="L1074" title="All 4 branches missed.">        if ((m.getEntity() instanceof BattleArmor) &amp;&amp; (m.getType() instanceof AmmoType)) {</span>
+<span class="nc" id="L1075">            name += &quot;:Shots&quot; + m.getBaseShotsLeft() + &quot;#&quot;;</span>
+<span class="nc bnc" id="L1076" title="All 4 branches missed.">        } else if (m.getEntity() instanceof Protomech &amp;&amp; (m.getType() instanceof AmmoType)) {</span>
+<span class="nc" id="L1077">            name += &quot; (&quot; + m.getBaseShotsLeft() + &quot;)&quot;;</span>
+<span class="nc bnc" id="L1078" title="All 2 branches missed.">        } else if (m.getType().isVariableSize()</span>
+<span class="nc bnc" id="L1079" title="All 4 branches missed.">                || (m.getEntity().isSupportVehicle() &amp;&amp; (m.getType() instanceof InfantryWeapon))) {</span>
+<span class="nc" id="L1080">            name += &quot;:SIZE:&quot; + m.getSize();</span>
+        }
+<span class="nc" id="L1082">        return name;</span>
+    }
+
+    public static void encode(String fileName, Entity t) {
+<span class="nc" id="L1086">        BuildingBlock blk = BLKFile.getBlock(t);</span>
+<span class="nc" id="L1087">        blk.writeBlockFile(fileName);</span>
+<span class="nc" id="L1088">    }</span>
+
+    protected void addTransports(Entity e) {
+<span class="nc bnc" id="L1091" title="All 2 branches missed.">        if (dataFile.exists(&quot;transporters&quot;)) {</span>
+<span class="nc" id="L1092">            String[] transporters = dataFile.getDataAsString(&quot;transporters&quot;);</span>
+<span class="nc" id="L1093">            HashSet&lt;Integer&gt; usedBayNumbers = new HashSet&lt;&gt;();</span>
+            
+            // Walk the array of transporters.
+<span class="nc bnc" id="L1096" title="All 2 branches missed.">            for (String transporter : transporters) {</span>
+<span class="nc" id="L1097">                transporter = transporter.toLowerCase();</span>
+<span class="nc" id="L1098">                boolean isPod = transporter.endsWith(&quot;:omni&quot;);</span>
+<span class="nc" id="L1099">                transporter = transporter.replace(&quot;:omni&quot;, &quot;&quot;);</span>
+<span class="nc" id="L1100">                boolean hasARTS = transporter.startsWith(&quot;arts&quot;);</span>
+<span class="nc bnc" id="L1101" title="All 2 branches missed.">                if (hasARTS) {</span>
+<span class="nc" id="L1102">                    transporter = transporter.substring(4);</span>
+                }
+
+                // TroopSpace:
+<span class="nc bnc" id="L1106" title="All 2 branches missed.">                if (transporter.startsWith(&quot;troopspace:&quot;)) {</span>
+                    // Everything after the ':' should be the space's size.
+<span class="nc" id="L1108">                    double fsize = Double.parseDouble(transporter.substring(11));</span>
+<span class="nc" id="L1109">                    e.addTransporter(new TroopSpace(fsize), isPod);</span>
+<span class="nc bnc" id="L1110" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;cargobay:&quot;)) {</span>
+<span class="nc" id="L1111">                    String numbers = transporter.substring(9);</span>
+<span class="nc" id="L1112">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1113">                    e.addTransporter(new CargoBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1114" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;liquidcargobay:&quot;)) {</span>
+<span class="nc" id="L1115">                    String numbers = transporter.substring(15);</span>
+<span class="nc" id="L1116">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1117">                    e.addTransporter(new LiquidCargoBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1118" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;insulatedcargobay:&quot;)) {</span>
+<span class="nc" id="L1119">                    String numbers = transporter.substring(18);</span>
+<span class="nc" id="L1120">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1121">                    e.addTransporter(new InsulatedCargoBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1122" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;refrigeratedcargobay:&quot;)) {</span>
+<span class="nc" id="L1123">                    String numbers = transporter.substring(21);</span>
+<span class="nc" id="L1124">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1125">                    e.addTransporter(new RefrigeratedCargoBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1126" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;livestockcargobay:&quot;)) {</span>
+<span class="nc" id="L1127">                    String numbers = transporter.substring(18);</span>
+<span class="nc" id="L1128">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1129">                    e.addTransporter(new LivestockCargoBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1130" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;asfbay:&quot;)) {</span>
+<span class="nc" id="L1131">                    String numbers = transporter.substring(7);</span>
+<span class="nc" id="L1132">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1133">                    e.addTransporter(new ASFBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber(), hasARTS), isPod);</span>
+<span class="nc bnc" id="L1134" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;smallcraftbay:&quot;)) {</span>
+<span class="nc" id="L1135">                    String numbers = transporter.substring(14);</span>
+<span class="nc" id="L1136">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1137">                    e.addTransporter(new SmallCraftBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber(), hasARTS), isPod);</span>
+<span class="nc bnc" id="L1138" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;mechbay:&quot;)) {</span>
+<span class="nc" id="L1139">                    String numbers = transporter.substring(8);</span>
+<span class="nc" id="L1140">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1141">                    e.addTransporter(new MechBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1142" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;lightvehiclebay:&quot;)) {</span>
+<span class="nc" id="L1143">                    String numbers = transporter.substring(16);</span>
+<span class="nc" id="L1144">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1145">                    e.addTransporter(new LightVehicleBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1146" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;heavyvehiclebay:&quot;)) {</span>
+<span class="nc" id="L1147">                    String numbers = transporter.substring(16);</span>
+<span class="nc" id="L1148">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1149">                    e.addTransporter(new HeavyVehicleBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1150" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;superheavyvehiclebay:&quot;)) {</span>
+<span class="nc" id="L1151">                    String numbers = transporter.substring(21);</span>
+<span class="nc" id="L1152">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1153">                    e.addTransporter(new SuperHeavyVehicleBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1154" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;infantrybay:&quot;)) {</span>
+<span class="nc" id="L1155">                    String numbers = transporter.substring(12);</span>
+<span class="nc" id="L1156">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1157">                    e.addTransporter(new InfantryBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber(), pbi.getPlatoonType()), isPod);</span>
+<span class="nc bnc" id="L1158" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;battlearmorbay:&quot;)) {</span>
+<span class="nc" id="L1159">                    String numbers = transporter.substring(15);</span>
+<span class="nc" id="L1160">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1161">                    e.addTransporter(new BattleArmorBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber(),</span>
+<span class="nc" id="L1162">                            e.isClan(), pbi.isComstarBay()), isPod);</span>
+<span class="nc bnc" id="L1163" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;bay:&quot;)) {</span>
+<span class="nc" id="L1164">                    String numbers = transporter.substring(4);</span>
+<span class="nc" id="L1165">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1166">                    e.addTransporter(new Bay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1167" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;protomechbay:&quot;)) {</span>
+<span class="nc" id="L1168">                    String numbers = transporter.substring(13);</span>
+<span class="nc" id="L1169">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1170">                    e.addTransporter(new ProtomechBay(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber()), isPod);</span>
+<span class="nc bnc" id="L1171" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;dropshuttlebay:&quot;)) {</span>
+<span class="nc" id="L1172">                    String numbers = transporter.substring(&quot;dropshuttlebay:&quot;.length());</span>
+<span class="nc" id="L1173">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1174">                    e.addTransporter(new DropshuttleBay(pbi.getDoors(), pbi.getBayNumber(), pbi.getFacing()), isPod);</span>
+<span class="nc bnc" id="L1175" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;navalrepairpressurized:&quot;)) {</span>
+<span class="nc" id="L1176">                    String numbers = transporter.substring(&quot;navalrepairpressurized:&quot;.length());</span>
+<span class="nc" id="L1177">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1178">                    e.addTransporter(new NavalRepairFacility(pbi.getSize(), pbi.getDoors(), pbi.getBayNumber(),</span>
+<span class="nc" id="L1179">                            pbi.getFacing(), true, hasARTS), isPod);</span>
+<span class="nc bnc" id="L1180" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;navalrepairunpressurized:&quot;)) {</span>
+<span class="nc" id="L1181">                    String numbers = transporter.substring(&quot;navalrepairunpressurized:&quot;.length());</span>
+<span class="nc" id="L1182">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1183">                    e.addTransporter(new NavalRepairFacility(pbi.getSize(), pbi.getDoors(),</span>
+<span class="nc" id="L1184">                            pbi.getBayNumber(), pbi.getFacing(), false, hasARTS), isPod);</span>
+<span class="nc bnc" id="L1185" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;reinforcedrepairfacility:&quot;)) {</span>
+<span class="nc" id="L1186">                    String numbers = transporter.substring(&quot;reinforcedrepairfacility:&quot;.length());</span>
+<span class="nc" id="L1187">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1188">                    e.addTransporter(new ReinforcedRepairFacility(pbi.getSize(), pbi.getDoors(),</span>
+<span class="nc" id="L1189">                            pbi.getBayNumber(), pbi.getFacing()), isPod);</span>
+<span class="nc bnc" id="L1190" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;crewquarters:&quot;)) {</span>
+<span class="nc" id="L1191">                    String numbers = transporter.substring(13);</span>
+<span class="nc" id="L1192">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1193">                    e.addTransporter(new CrewQuartersCargoBay(pbi.getSize(), pbi.getDoors()), isPod);</span>
+<span class="nc bnc" id="L1194" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;steeragequarters:&quot;)) {</span>
+<span class="nc" id="L1195">                    String numbers = transporter.substring(17);</span>
+<span class="nc" id="L1196">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1197">                    e.addTransporter(new SteerageQuartersCargoBay(pbi.getSize(), pbi.getDoors()), isPod);</span>
+<span class="nc bnc" id="L1198" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;2ndclassquarters:&quot;)) {</span>
+<span class="nc" id="L1199">                    String numbers = transporter.substring(17);</span>
+<span class="nc" id="L1200">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1201">                    e.addTransporter(new SecondClassQuartersCargoBay(pbi.getSize(), pbi.getDoors()), isPod);</span>
+<span class="nc bnc" id="L1202" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;1stclassquarters:&quot;)) {</span>
+<span class="nc" id="L1203">                    String numbers = transporter.substring(17);</span>
+<span class="nc" id="L1204">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1205">                    e.addTransporter(new FirstClassQuartersCargoBay(pbi.getSize(), pbi.getDoors()), isPod);</span>
+<span class="nc bnc" id="L1206" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;pillionseats:&quot;)) {</span>
+<span class="nc" id="L1207">                    String numbers = transporter.substring(13);</span>
+<span class="nc" id="L1208">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1209">                    e.addTransporter(new PillionSeatCargoBay(pbi.getSize()), isPod);</span>
+<span class="nc bnc" id="L1210" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;standardseats:&quot;)) {</span>
+<span class="nc" id="L1211">                    String numbers = transporter.substring(14);</span>
+<span class="nc" id="L1212">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1213">                    e.addTransporter(new StandardSeatCargoBay(pbi.getSize()), isPod);</span>
+<span class="nc bnc" id="L1214" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;ejectionseats:&quot;)) {</span>
+<span class="nc" id="L1215">                    String numbers = transporter.substring(&quot;ejectionseats:&quot;.length());</span>
+<span class="nc" id="L1216">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1217">                    e.addTransporter(new EjectionSeatCargoBay(pbi.getSize()), isPod);</span>
+<span class="nc bnc" id="L1218" title="All 2 branches missed.">                } else if (transporter.startsWith(&quot;dockingcollar&quot;)) {</span>
+                    //Add values for collars so they can be parsed and assigned a 'bay' number
+<span class="nc" id="L1220">                    String numbers = &quot;1.0:0&quot;;</span>
+<span class="nc" id="L1221">                    ParsedBayInfo pbi = new ParsedBayInfo(numbers, usedBayNumbers);</span>
+<span class="nc" id="L1222">                    e.addTransporter(new DockingCollar(1,pbi.getBayNumber()));</span>
+                }
+
+            } // Handle the next transportation component.
+
+        } // End has-transporters
+<span class="nc" id="L1228">    }</span>
+    
+    /**
+     * Class that holds data relating to transport bays
+     * and functionality to parse .blk file transport bay entries
+     * @author NickAragua
+     *
+     */
+    public static class ParsedBayInfo {
+        private double size;
+        private int doors;
+<span class="fc" id="L1239">        private int bayNumber = -1;</span>
+<span class="fc" id="L1240">        private PlatoonType platoonType = InfantryBay.PlatoonType.FOOT;</span>
+        private boolean isComstarBay;
+<span class="fc" id="L1242">        private int facing = Entity.LOC_NONE;</span>
+        
+<span class="fc" id="L1244">        public ParsedBayInfo(String numbers, HashSet&lt;Integer&gt; usedBayNumbers) {</span>
+            // expected format of &quot;numbers&quot; string:
+            // a:b:c:d
+            // a is the size of the bay, in tons or # of units and is required
+            // b is the number of doors in the bay, and is required
+            // c is the bay number OR an indicator that this bay is a comstar bay OR an indicator of the kind of infantry bay it is, and is optional
+            // d is like c except that it's not going to be the bay number
+            
+<span class="fc" id="L1252">            String[] temp = numbers.split(Bay.FIELD_SEPARATOR);</span>
+<span class="fc" id="L1253">            size = Double.parseDouble(temp[0]);</span>
+<span class="fc" id="L1254">            doors = Integer.parseInt(temp[1]);</span>
+            
+            // the bay type indicator will be either the third or fourth item, but the bay number always comes before it
+            // so we make sure to pick the last item in the array
+<span class="fc" id="L1258">            String potentialBayTypeIndicator = &quot;&quot;;</span>
+<span class="fc" id="L1259">            boolean bayNumberPresent = false;</span>
+            
+<span class="fc bfc" id="L1261" title="All 2 branches covered.">            if(temp.length == 3) {</span>
+<span class="fc" id="L1262">                potentialBayTypeIndicator = temp[2];</span>
+<span class="fc bfc" id="L1263" title="All 2 branches covered.">            } else if (temp.length == 4) {</span>
+<span class="fc" id="L1264">                potentialBayTypeIndicator = temp[3];</span>
+<span class="fc" id="L1265">                bayNumberPresent = true; // a 4-length array indicates that the bay number is in the third element</span>
+            }
+                        
+<span class="fc bfc" id="L1268" title="All 2 branches covered.">            if(!potentialBayTypeIndicator.isEmpty()) {</span>
+                // normally a great time for a switch statement, but we're using equalsignorecase for the comparator
+<span class="fc bfc" id="L1270" title="All 2 branches covered.">                if(potentialBayTypeIndicator.equalsIgnoreCase(COMSTAR_BAY)) {</span>
+<span class="fc" id="L1271">                    isComstarBay = true;</span>
+<span class="fc bfc" id="L1272" title="All 2 branches covered.">                } else if (potentialBayTypeIndicator.equalsIgnoreCase(&quot;jump&quot;)) {</span>
+<span class="fc" id="L1273">                    platoonType = InfantryBay.PlatoonType.JUMP;</span>
+<span class="fc bfc" id="L1274" title="All 2 branches covered.">                } else if (potentialBayTypeIndicator.equalsIgnoreCase(&quot;foot&quot;)) {</span>
+<span class="fc" id="L1275">                    platoonType = InfantryBay.PlatoonType.FOOT;</span>
+<span class="fc bfc" id="L1276" title="All 2 branches covered.">                } else if (potentialBayTypeIndicator.equalsIgnoreCase(&quot;motorized&quot;)) {</span>
+<span class="fc" id="L1277">                    platoonType = InfantryBay.PlatoonType.MOTORIZED;</span>
+<span class="fc bfc" id="L1278" title="All 2 branches covered.">                } else if (potentialBayTypeIndicator.equalsIgnoreCase(&quot;mechanized&quot;)) {</span>
+<span class="fc" id="L1279">                    platoonType = InfantryBay.PlatoonType.MECHANIZED;</span>
+<span class="pc bpc" id="L1280" title="1 of 2 branches missed.">                } else if (potentialBayTypeIndicator.startsWith(Bay.FACING_PREFIX)) {</span>
+<span class="fc" id="L1281">                    facing = Integer.parseInt(potentialBayTypeIndicator.replace(Bay.FACING_PREFIX, &quot;&quot;));</span>
+                } else {
+                    // if we looked at the 
+<span class="nc bnc" id="L1284" title="All 2 branches missed.">                    bayNumberPresent = temp.length == 3; </span>
+                }
+            }
+            
+            // if we are looking for a bay number
+            // and a bay number is present, parse it
+<span class="pc bpc" id="L1290" title="1 of 4 branches missed.">            if(usedBayNumbers != null &amp;&amp; bayNumberPresent) {</span>
+<span class="fc" id="L1291">                bayNumber = Integer.parseInt(temp[2]);</span>
+            }
+
+            // if a bay number was not specified, assign one
+            // if a bay number was specified but is a duplicate, assign a different one
+<span class="fc" id="L1296">            int newBay = 1;</span>
+<span class="pc bpc" id="L1297" title="1 of 4 branches missed.">            if(bayNumber == -1 || usedBayNumbers.contains(bayNumber)) {</span>
+<span class="fc bfc" id="L1298" title="All 2 branches covered.">                while(usedBayNumbers.contains(newBay)) {</span>
+<span class="fc" id="L1299">                    newBay++;</span>
+                }
+                
+<span class="fc" id="L1302">                bayNumber = newBay;</span>
+            }
+            
+<span class="fc" id="L1305">            usedBayNumbers.add(bayNumber);</span>
+<span class="fc" id="L1306">        }</span>
+        
+        public double getSize() {
+<span class="fc" id="L1309">            return size;</span>
+        }
+        
+        public int getDoors() {
+<span class="fc" id="L1313">            return doors;</span>
+        }
+        
+        public int getBayNumber() {
+<span class="fc" id="L1317">            return bayNumber;</span>
+        }
+        
+        public PlatoonType getPlatoonType() {
+<span class="fc" id="L1321">            return platoonType;</span>
+        }
+        
+        public boolean isComstarBay() {
+<span class="fc" id="L1325">            return isComstarBay;</span>
+        }
+        
+        public int getFacing() {
+<span class="fc" id="L1329">            return facing;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

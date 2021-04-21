@@ -1,0 +1,2590 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.bot</a> &gt; <span class="el_source">TestBot.java</span></div><h1>TestBot.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek -
+ * Copyright (C) 2000,2001,2002,2003,2004,2005 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ */
+
+package megamek.client.bot;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+import java.util.Vector;
+
+import megamek.client.bot.MoveOption.DamageInfo;
+import megamek.common.AmmoType;
+import megamek.common.BattleArmor;
+import megamek.common.Compute;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.EntityMovementType;
+import megamek.common.EquipmentType;
+import megamek.common.IAimingModes;
+import megamek.common.IHex;
+import megamek.common.Infantry;
+import megamek.common.Mech;
+import megamek.common.Minefield;
+import megamek.common.MiscType;
+import megamek.common.Mounted;
+import megamek.common.MovePath;
+import megamek.common.MovePath.MoveStepType;
+import megamek.common.Protomech;
+import megamek.common.TargetRoll;
+import megamek.common.Terrains;
+import megamek.common.ToHitData;
+import megamek.common.WeaponType;
+import megamek.common.actions.ChargeAttackAction;
+import megamek.common.actions.DfaAttackAction;
+import megamek.common.actions.EntityAction;
+import megamek.common.actions.TorsoTwistAction;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.common.containers.PlayerIDandList;
+import megamek.common.event.GamePlayerChatEvent;
+import megamek.common.options.OptionsConstants;
+import megamek.common.pathfinder.BoardClusterTracker;
+
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">public class TestBot extends BotClient {</span>
+
+<span class="nc" id="L59">    public CEntity.Table centities = new CEntity.Table(this);</span>
+<span class="nc" id="L60">    protected ChatProcessor chatp = new ChatProcessor();</span>
+<span class="nc" id="L61">    protected int ignore = 10;</span>
+<span class="nc" id="L62">    boolean debug = false;</span>
+<span class="nc" id="L63">    private int enemies_moved = 0;</span>
+<span class="nc" id="L64">    private GALance old_moves = null;</span>
+
+    public TestBot(String name, String host, int port) {
+<span class="nc" id="L67">        super(name, host, port);</span>
+<span class="nc" id="L68">        ignore = config.getIgnoreLevel();</span>
+<span class="nc" id="L69">        debug = config.isDebug();</span>
+<span class="nc" id="L70">    }</span>
+
+    @Override
+    public void initialize() {
+<span class="nc" id="L74">        boardClusterTracker = new BoardClusterTracker();</span>
+<span class="nc" id="L75">    }</span>
+
+    @Override
+    public PhysicalOption calculatePhysicalTurn() {
+<span class="nc" id="L79">        return PhysicalCalculator.calculatePhysicalTurn(this);</span>
+    }
+
+    /**
+     * Used by the function calculateMoveTurn to run each entities movement
+     * calculation in a separate thread.
+     *
+     * @author Mike Kiscaden
+     */
+    public class CalculateEntityMove implements Runnable {
+        private Entity entity;
+        private MoveOption[] result;
+
+<span class="nc" id="L92">        CalculateEntityMove(Entity entity) {</span>
+<span class="nc" id="L93">            this.entity = entity;</span>
+<span class="nc" id="L94">        }</span>
+
+        public void run() {
+<span class="nc" id="L97">            result = calculateMove(entity);</span>
+<span class="nc" id="L98">        }</span>
+
+        public Entity getEntity() {
+<span class="nc" id="L101">            return entity;</span>
+        }
+
+        public MoveOption[] getResult() {
+<span class="nc" id="L105">            return result;</span>
+        }
+
+    }
+
+    @Override
+    public MovePath calculateMoveTurn() {
+<span class="nc" id="L112">        long enter = System.currentTimeMillis();</span>
+<span class="nc" id="L113">        int initiative = 0;</span>
+<span class="nc" id="L114">        MoveOption min = null;</span>
+
+<span class="nc" id="L116">        System.out.println(&quot;beginning movement calculations...&quot;);</span>
+
+        // first check and that someone else has moved so we don't replan
+<span class="nc" id="L119">        Object[] enemy_array = getEnemyEntities().toArray();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        for (int j = 0; j &lt; enemy_array.length; j++) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (!((Entity) enemy_array[j]).isSelectableThisTurn()) {</span>
+<span class="nc" id="L122">                initiative++;</span>
+            }
+        }
+        // if nobody's moved and we have a valid move waiting, use that
+<span class="nc bnc" id="L126" title="All 4 branches missed.">        if ((initiative == enemies_moved) &amp;&amp; (old_moves != null)) {</span>
+<span class="nc" id="L127">            min = old_moves.getResult();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if ((min == null)</span>
+<span class="nc bnc" id="L129" title="All 4 branches missed.">                || !min.isMoveLegal()</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                || (min.isPhysical &amp;&amp; centities.get(min</span>
+<span class="nc" id="L131">                                                            .getPhysicalTargetId()).isPhysicalTarget)) {</span>
+<span class="nc" id="L132">                old_moves = null;</span>
+<span class="nc" id="L133">                System.out</span>
+<span class="nc" id="L134">                        .println(&quot;recalculating moves since the old move was invalid&quot;);</span>
+<span class="nc" id="L135">                return calculateMoveTurn();</span>
+            }
+        } else {
+<span class="nc" id="L138">            enemies_moved = initiative;</span>
+<span class="nc" id="L139">            ArrayList&lt;MoveOption[]&gt; possible = new ArrayList&lt;MoveOption[]&gt;();</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            for (Entity entity : game.getEntitiesVector()) {</span>
+
+                // ignore loaded and off-board units
+<span class="nc bnc" id="L144" title="All 4 branches missed.">                if ((entity.getPosition() == null) || entity.isOffBoard()) {</span>
+<span class="nc" id="L145">                    continue;</span>
+                }
+
+<span class="nc" id="L148">                CEntity cen = centities.get(entity);</span>
+<span class="nc" id="L149">                cen.refresh();</span>
+<span class="nc" id="L150">                firstPass(cen);</span>
+<span class="nc" id="L151">            }</span>
+
+<span class="nc" id="L153">            Iterator&lt;Entity&gt; i = getEntitiesOwned().iterator();</span>
+<span class="nc" id="L154">            boolean short_circuit = false;</span>
+
+<span class="nc" id="L156">            List&lt;Thread&gt; threads = new ArrayList&lt;Thread&gt;();</span>
+<span class="nc" id="L157">            List&lt;CalculateEntityMove&gt; tasks = new ArrayList&lt;CalculateEntityMove&gt;();</span>
+<span class="nc bnc" id="L158" title="All 4 branches missed.">            while (i.hasNext() &amp;&amp; !short_circuit) {</span>
+<span class="nc" id="L159">                Entity entity = i.next();</span>
+
+                // ignore loaded units
+                // (not really necessary unless bot manages to load units)
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                if (entity.getPosition() == null) {</span>
+<span class="nc" id="L164">                    continue;</span>
+                }
+
+                // if we can't move this entity right now, ignore it
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                if (!game.getTurn().isValidEntity(entity, game)) {</span>
+<span class="nc" id="L169">                    continue;</span>
+                }
+
+<span class="nc" id="L172">                CalculateEntityMove task = new CalculateEntityMove(entity);</span>
+<span class="nc" id="L173">                tasks.add(task);</span>
+<span class="nc" id="L174">                Thread worker = new Thread(task);</span>
+<span class="nc" id="L175">                worker.setName(&quot;Entity:&quot; + entity.getId());</span>
+<span class="nc" id="L176">                worker.start();</span>
+<span class="nc" id="L177">                threads.add(worker);</span>
+
+<span class="nc" id="L179">            }</span>
+<span class="nc" id="L180">            int running = 0;</span>
+<span class="nc" id="L181">            synchronized (this) {</span>
+                do {
+<span class="nc" id="L183">                    running = 0;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                    for (Thread thread : threads) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                        if (thread.isAlive()) {</span>
+<span class="nc" id="L186">                            running++;</span>
+                        }
+<span class="nc" id="L188">                    }</span>
+                    try {
+<span class="nc" id="L190">                        Thread.sleep(5000);</span>
+<span class="nc" id="L191">                    } catch (InterruptedException e1) {</span>
+<span class="nc" id="L192">                        System.out</span>
+<span class="nc" id="L193">                                .println(&quot;Interrupted waiting for Bot to move.&quot;);</span>
+<span class="nc" id="L194">                        e1.printStackTrace();</span>
+<span class="nc" id="L195">                    } // Technically we should be using wait() but its not</span>
+                    // waking up reliably.
+<span class="nc bnc" id="L197" title="All 2 branches missed.">                    if (running &gt; 0) {</span>
+<span class="nc" id="L198">                        sendChat(&quot;Calculating the move for &quot; + running</span>
+                                 + &quot; units. &quot;);
+                    } else {
+<span class="nc" id="L201">                        sendChat(&quot;Finalizing move.&quot;);</span>
+                    }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                } while (running &gt; 0);</span>
+<span class="nc" id="L204">            }</span>
+            // Threads are done running. Process the results.
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            for (CalculateEntityMove task : tasks) {</span>
+<span class="nc" id="L207">                MoveOption[] result = task.getResult();</span>
+<span class="nc" id="L208">                CEntity cen = centities.get(task.getEntity());</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">                if (game.getOptions().booleanOption(OptionsConstants.BASE_SKIP_INELIGABLE_MOVEMENT)</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                    &amp;&amp; cen.getEntity().isImmobile()) {</span>
+<span class="nc" id="L211">                    cen.moved = true;</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                } else if (result == null) {</span>
+<span class="nc" id="L213">                    short_circuit = true;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                } else if (!cen.moved) {</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                    if (result.length &lt; 6) {</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                        min = result.length &gt; 0 ? (MoveOption) result[0] : null;</span>
+<span class="nc" id="L217">                        short_circuit = true;</span>
+                    }
+<span class="nc" id="L219">                    possible.add(result);</span>
+                }
+<span class="nc" id="L221">            }</span>
+
+            // should ignore mechs that are not engaged
+            // and only do the below when there are 2 or mechs left to move
+<span class="nc bnc" id="L225" title="All 2 branches missed.">            if (!short_circuit) {</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">                if ((getEntitiesOwned().size() &gt; 1) &amp;&amp; (possible.size() &gt; 0)) {</span>
+<span class="nc" id="L227">                    GALance lance = new GALance(this, possible, 50, 80);</span>
+<span class="nc" id="L228">                    lance.evolve();</span>
+<span class="nc" id="L229">                    min = lance.getResult();</span>
+<span class="nc" id="L230">                    old_moves = lance;</span>
+<span class="nc bnc" id="L231" title="All 4 branches missed.">                } else if (possible.size() &gt; 0 &amp;&amp; (possible.get(0) != null)</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">                           &amp;&amp; (possible.get(0).length &gt; 0)) {</span>
+<span class="nc" id="L233">                    min = possible.get(0)[0];</span>
+                }
+            }
+        }
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (min == null) {</span>
+<span class="nc" id="L238">            min = new MoveOption(game, centities.get(getFirstEntityNum()));</span>
+        }
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        for (Object element : enemy_array) {</span>
+<span class="nc" id="L241">            Entity en = (Entity) element;</span>
+
+            // ignore loaded units
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            if (en.getPosition() == null) {</span>
+<span class="nc" id="L245">                continue;</span>
+            }
+
+<span class="nc" id="L248">            CEntity enemy = centities.get(en);</span>
+<span class="nc" id="L249">            int enemy_hit_arc = CEntity.getThreatHitArc(</span>
+<span class="nc" id="L250">                    enemy.current.getFinalCoords(),</span>
+<span class="nc" id="L251">                    enemy.current.getFinalFacing(), min.getFinalCoords());</span>
+<span class="nc" id="L252">            MoveOption.DamageInfo di = min.damageInfos.get(enemy);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">            if (di != null) {</span>
+<span class="nc" id="L254">                enemy.expected_damage[enemy_hit_arc] += di.min_damage;</span>
+            }
+<span class="nc bnc" id="L256" title="All 2 branches missed.">            if (enemy.expected_damage[enemy_hit_arc] &gt; 0) {</span>
+<span class="nc" id="L257">                enemy.hasTakenDamage = true;</span>
+            }
+        }
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if (min.isPhysical) {</span>
+<span class="nc" id="L261">            centities.get(min.getPhysicalTargetId()).isPhysicalTarget = true;</span>
+        }
+<span class="nc" id="L263">        System.out.println(min);</span>
+<span class="nc" id="L264">        min.getCEntity().current = min;</span>
+<span class="nc" id="L265">        min.getCEntity().last = min;</span>
+<span class="nc" id="L266">        min.getCEntity().moved = true;</span>
+
+<span class="nc" id="L268">        long exit = System.currentTimeMillis();</span>
+<span class="nc" id="L269">        System.out.println(&quot;move turn took &quot; + (exit - enter) + &quot; ms&quot;);</span>
+
+        // If this unit has a jammed RAC, and it has only walked,
+        // add an unjam action
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (min.getLastStep() != null) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">            if (min.getCEntity().entity.canUnjamRAC()) {</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">                if ((min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_WALK)</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                    || (min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_VTOL_WALK)</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                    || (min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_NONE)) {</span>
+                    // Cycle through all available weapons, only unjam if the
+                    // jam(med)
+                    // RACs count for a significant portion of possible damage
+<span class="nc" id="L281">                    int rac_damage = 0;</span>
+<span class="nc" id="L282">                    int other_damage = 0;</span>
+<span class="nc" id="L283">                    int clearance_range = 0;</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                    for (Mounted equip : min.getCEntity().entity</span>
+<span class="nc" id="L285">                            .getWeaponList()) {</span>
+<span class="nc" id="L286">                        WeaponType test_weapon = new WeaponType();</span>
+
+<span class="nc" id="L288">                        test_weapon = (WeaponType) equip.getType();</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">                        if (((test_weapon.getAmmoType() == AmmoType.T_AC_ROTARY)</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">                             || (game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_UAC_TWOROLLS)</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">                                 &amp;&amp; ((test_weapon.getAmmoType() == AmmoType.T_AC_ULTRA)</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                                     || (test_weapon.getAmmoType() == AmmoType.T_AC_ULTRA_THB))))</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">                            &amp;&amp; (equip.isJammed() == true)) {</span>
+<span class="nc" id="L294">                            rac_damage = rac_damage + (4 * (test_weapon.getDamage()));</span>
+                        } else {
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                            if (equip.canFire()) {</span>
+<span class="nc" id="L297">                                other_damage += test_weapon.getDamage();</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                                if (test_weapon.getMediumRange() &gt; clearance_range) {</span>
+<span class="nc" id="L299">                                    clearance_range = test_weapon.getMediumRange();</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L303">                    }</span>
+                    // Even if the jammed RAC doesn't make up a significant
+                    // portion
+                    // of the units damage, its still better to have it
+                    // functional
+                    // If nothing is &quot;close&quot; then unjam anyways
+<span class="nc" id="L309">                    int check_range = 100;</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">                    for (Entity enemy : game.getEntitiesVector()) {</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">                        if ((min.getCEntity().entity.getPosition() != null)</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                            &amp;&amp; (enemy.getPosition() != null)</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">                            &amp;&amp; (enemy.isEnemyOf(min.getCEntity().entity))) {</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">                            if (enemy.isVisibleToEnemy()) {</span>
+<span class="nc" id="L315">                                if (min.getCEntity().entity.getPosition()</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">                                                           .distance(enemy.getPosition()) &lt; check_range) {</span>
+<span class="nc" id="L317">                                    check_range = min.getCEntity().entity</span>
+<span class="nc" id="L318">                                            .getPosition().distance(</span>
+<span class="nc" id="L319">                                                    enemy.getPosition());</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L323">                    }</span>
+<span class="nc bnc" id="L324" title="All 4 branches missed.">                    if ((rac_damage &gt;= other_damage)</span>
+                        || (check_range &lt; clearance_range)) {
+<span class="nc" id="L326">                        min.addStep(MoveStepType.UNJAM_RAC);</span>
+                    }
+                }
+            }
+        }
+
+<span class="nc" id="L332">        return min;</span>
+    }
+
+    public MoveOption[] calculateMove(Entity entity) {
+<span class="nc" id="L336">        List&lt;Entity&gt; enemy_array = myEnemies(entity);</span>
+<span class="nc" id="L337">        ArrayList&lt;Entity&gt; entities = new ArrayList&lt;Entity&gt;(</span>
+<span class="nc" id="L338">                game.getEntitiesVector());</span>
+<span class="nc" id="L339">        CEntity self = centities.get(entity);</span>
+        MoveOption[] move_array;
+<span class="nc" id="L341">        int friends = entities.size() - enemy_array.size();</span>
+
+<span class="nc" id="L343">        move_array = secondPass(self, friends, enemy_array, entities);</span>
+        // top balanced
+<span class="nc" id="L345">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(1,</span>
+                                                                             1), 50);
+        // top damage
+<span class="nc" id="L348">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(</span>
+                .5, 1), 50);
+
+<span class="nc" id="L351">        move_array = thirdPass(self, enemy_array);</span>
+
+        // top balanced
+<span class="nc" id="L354">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(1,</span>
+                                                                             1), 30);
+        // top damage
+<span class="nc" id="L357">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(</span>
+                .5, 1), 30);
+
+        // reduce self threat, and add bonus for terrain
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        for (MoveOption option : self.pass.values()) {</span>
+<span class="nc" id="L362">            option.setState();</span>
+<span class="nc" id="L363">            option.self_damage *= .5;</span>
+<span class="nc" id="L364">            option.self_threat *= .5;</span>
+            // TODO: should scale to the unit bv
+<span class="nc" id="L366">            double terrain = 2 * ((double) Compute.getTargetTerrainModifier(</span>
+<span class="nc" id="L367">                    game, option.getEntity()).getValue());</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">            if (debug) {</span>
+<span class="nc" id="L369">                option.tv.add(terrain + &quot; Terrain Adjusment &quot; + &quot;\n&quot;);</span>
+            }
+<span class="nc" id="L371">            option.self_threat -= terrain;</span>
+<span class="nc" id="L372">        }</span>
+
+<span class="nc" id="L374">        move_array = fourthPass(self, enemy_array);</span>
+        // top balanced
+<span class="nc" id="L376">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(1,</span>
+                                                                             1), 20);
+        // top damage
+<span class="nc" id="L379">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(</span>
+                .5, 1), 20);
+
+        // reduce transient damage estimates
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        for (MoveOption option : self.pass.values()) {</span>
+<span class="nc" id="L384">            option.self_threat *= .5;</span>
+<span class="nc" id="L385">            option.self_damage *= .5;</span>
+<span class="nc" id="L386">        }</span>
+
+<span class="nc" id="L388">        move_array = fifthPass(self, enemy_array);</span>
+
+        /*******************************************************************************************
+         * Return top twenty moves to the lance algorithm
+         ******************************************************************************************/
+<span class="nc" id="L393">        MoveOption[] result = new MoveOption[Math.min(move_array.length, 20)];</span>
+<span class="nc" id="L394">        int offset = 0;</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">        for (int i = 0; i &lt; Math.min(move_array.length, 20); i++) {</span>
+<span class="nc" id="L396">            MoveOption next = move_array[i];</span>
+<span class="nc bnc" id="L397" title="All 6 branches missed.">            if (next.isPhysical</span>
+                &amp;&amp; (self.range_damages[CEntity.RANGE_SHORT] &gt; 5)
+                &amp;&amp; next.doomed) {
+<span class="nc bnc" id="L400" title="All 2 branches missed.">                if ((offset + 20) &lt; move_array.length) {</span>
+<span class="nc" id="L401">                    next = move_array[offset + 20];</span>
+<span class="nc" id="L402">                    offset++;</span>
+                }
+            }
+<span class="nc" id="L405">            result[i] = next;</span>
+        }
+<span class="nc" id="L407">        return result;</span>
+    }
+
+    private List&lt;Entity&gt; myEnemies(Entity me) {
+<span class="nc" id="L411">        List&lt;Entity&gt; possibles = game.getValidTargets(me);</span>
+<span class="nc" id="L412">        List&lt;Entity&gt; retVal = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">        for (Entity ent : possibles) {</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">            if (ent.isEnemyOf(me)) {</span>
+<span class="nc" id="L415">                retVal.add(ent);</span>
+            }
+<span class="nc" id="L417">        }</span>
+<span class="nc" id="L418">        return retVal;</span>
+    }
+
+    /**
+     * ************************************************************************
+     * first pass, filter moves based upon present case
+     * ************************************************************************
+     */
+    private void firstPass(CEntity self) {
+<span class="nc" id="L427">        List&lt;Entity&gt; enemies = getEnemyEntities();</span>
+        MoveOption[] move_array;
+<span class="nc bnc" id="L429" title="All 4 branches missed.">        if (self.getEntity().isSelectableThisTurn() &amp;&amp; !self.moved) {</span>
+<span class="nc" id="L430">            move_array = self.getAllMoves(this).values()</span>
+<span class="nc" id="L431">                             .toArray(new MoveOption[0]);</span>
+        } else {
+<span class="nc" id="L433">            move_array = new MoveOption[]{self.current};</span>
+        }
+<span class="nc" id="L435">        System.out.println(self.getEntity().getShortName() + &quot; has &quot;</span>
+                           + move_array.length + &quot; moves&quot;);
+<span class="nc bnc" id="L437" title="All 2 branches missed.">        for (MoveOption option : move_array) {</span>
+<span class="nc" id="L438">            option.setState();</span>
+<span class="nc" id="L439">            boolean aptPiloting = option.getEntity().hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">            for (int e = 0; e &lt; enemies.size(); e++) { // for each enemy</span>
+<span class="nc" id="L441">                Entity en = enemies.get(e);</span>
+
+                // ignore loaded units
+<span class="nc bnc" id="L444" title="All 2 branches missed.">                if (en.getPosition() == null) {</span>
+<span class="nc" id="L445">                    continue;</span>
+                }
+
+<span class="nc" id="L448">                CEntity enemy = centities.get(en);</span>
+<span class="nc" id="L449">                int[] modifiers = option.getModifiers(enemy.getEntity());</span>
+<span class="nc bnc" id="L450" title="All 4 branches missed.">                if ((modifiers[MoveOption.DEFENCE_MOD] == TargetRoll.IMPOSSIBLE)</span>
+                    &amp;&amp; (modifiers[MoveOption.ATTACK_MOD] == TargetRoll.IMPOSSIBLE)) {
+<span class="nc" id="L452">                    continue;</span>
+                }
+<span class="nc" id="L454">                int enemy_hit_arc = CEntity</span>
+<span class="nc" id="L455">                        .getThreatHitArc(enemy.current.getFinalCoords(),</span>
+<span class="nc" id="L456">                                         enemy.current.getFinalFacing(),</span>
+<span class="nc" id="L457">                                         option.getFinalCoords());</span>
+<span class="nc" id="L458">                int self_hit_arc = CEntity.getThreatHitArc(</span>
+<span class="nc" id="L459">                        option.getFinalCoords(), option.getFinalFacing(),</span>
+<span class="nc" id="L460">                        enemy.current.getFinalCoords());</span>
+<span class="nc bnc" id="L461" title="All 4 branches missed.">                if (!enemy.getEntity().isImmobile()</span>
+                    &amp;&amp; (modifiers[MoveOption.DEFENCE_MOD] != TargetRoll.IMPOSSIBLE)) {
+<span class="nc" id="L463">                    self.engaged = true;</span>
+<span class="nc" id="L464">                    int mod = modifiers[MoveOption.DEFENCE_MOD];</span>
+<span class="nc" id="L465">                    double max = option.getMaxModifiedDamage(enemy.current,</span>
+                                                             mod, modifiers[MoveOption.DEFENCE_PC]);
+<span class="nc bnc" id="L467" title="All 2 branches missed.">                    if (en.isSelectableThisTurn()) {</span>
+<span class="nc" id="L468">                        enemy.current.addStep(MoveStepType.TURN_RIGHT);</span>
+<span class="nc" id="L469">                        max = Math.max(option.getMaxModifiedDamage(</span>
+                                enemy.current, mod + 1,
+                                modifiers[MoveOption.DEFENCE_PC]), max);
+<span class="nc" id="L472">                        enemy.current.removeLastStep();</span>
+<span class="nc" id="L473">                        enemy.current.addStep(MoveStepType.TURN_LEFT);</span>
+<span class="nc" id="L474">                        max = Math.max(option.getMaxModifiedDamage(</span>
+                                enemy.current, mod + 1,
+                                modifiers[MoveOption.DEFENCE_PC]), max);
+                        // return to original facing
+<span class="nc" id="L478">                        enemy.current.removeLastStep();</span>
+                    }
+<span class="nc" id="L480">                    max = self.getThreatUtility(max, self_hit_arc);</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">                    if (enemy.getEntity().isProne()) {</span>
+<span class="nc" id="L482">                        max *= enemy.base_psr_odds;</span>
+                    }
+<span class="nc" id="L484">                    MoveOption.DamageInfo di = option</span>
+<span class="nc" id="L485">                            .getDamageInfo(enemy, true);</span>
+<span class="nc" id="L486">                    di.threat = max;</span>
+<span class="nc" id="L487">                    di.max_threat = max;</span>
+<span class="nc" id="L488">                    option.threat += max;</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">                    if (debug) {</span>
+<span class="nc" id="L490">                        option.tv.add(max + &quot; Threat &quot; + e + &quot;\n&quot;);</span>
+                    }
+                }
+                /*
+                 * As a first approximation, take the maximum to a single target
+                 */
+<span class="nc bnc" id="L496" title="All 2 branches missed.">                if (!option.isPhysical) {</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">                    if (modifiers[MoveOption.ATTACK_MOD] != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L498">                        self.engaged = true;</span>
+<span class="nc" id="L499">                        double max = enemy.current.getMaxModifiedDamage(option,</span>
+                                                                        modifiers[0], modifiers[MoveOption.ATTACK_PC]);
+<span class="nc" id="L501">                        max = enemy.getThreatUtility(max, enemy_hit_arc);</span>
+<span class="nc" id="L502">                        MoveOption.DamageInfo di = option.getDamageInfo(enemy,</span>
+                                                                        true);
+<span class="nc" id="L504">                        di.damage = max;</span>
+<span class="nc" id="L505">                        di.min_damage = max;</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">                        if (debug) {</span>
+<span class="nc" id="L507">                            option.tv.add(max + &quot; Damage &quot; + e + &quot;\n&quot;);</span>
+                        }
+<span class="nc" id="L509">                        option.damage = Math.max(max, option.damage);</span>
+<span class="nc" id="L510">                    }</span>
+                } else {
+<span class="nc" id="L512">                    CEntity target = centities</span>
+<span class="nc" id="L513">                            .get(option.getPhysicalTargetId());</span>
+                    try {
+<span class="nc" id="L515">                        if (target.getEntity().getId() == enemy.getEntity()</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">                                                               .getId()) {</span>
+<span class="nc bnc" id="L517" title="All 2 branches missed.">                            if (!target.isPhysicalTarget) {</span>
+<span class="nc" id="L518">                                ToHitData toHit = null;</span>
+<span class="nc" id="L519">                                double self_threat = 0;</span>
+<span class="nc" id="L520">                                double damage = 0;</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">                                if (option.isJumping()</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">                                    &amp;&amp; option.getEntity().canDFA()) {</span>
+<span class="nc" id="L523">                                    self.current.setState();</span>
+<span class="nc" id="L524">                                    toHit = DfaAttackAction.toHit(game, option</span>
+<span class="nc" id="L525">                                            .getEntity().getId(), target</span>
+<span class="nc" id="L526">                                                                          .getEntity(), option);</span>
+<span class="nc" id="L527">                                    damage = 2 * DfaAttackAction.getDamageFor(option.getEntity(),</span>
+<span class="nc" id="L528">                                            target.getEntity().isConventionalInfantry());</span>
+<span class="nc" id="L529">                                    self_threat = (option</span>
+<span class="nc" id="L530">                                                           .getCEntity()</span>
+<span class="nc" id="L531">                                                           .getThreatUtility(</span>
+<span class="nc" id="L532">                                                                   DfaAttackAction.getDamageTakenBy(option</span>
+<span class="nc" id="L533">                                                                                                            .getEntity()),</span>
+                                                                   ToHitData.SIDE_REAR
+                                                                            ) * Compute
+<span class="nc" id="L536">                                            .oddsAbove(toHit.getValue(), aptPiloting)) / 100;</span>
+<span class="nc" id="L537">                                    self_threat += option.getCEntity()</span>
+<span class="nc" id="L538">                                                         .getThreatUtility(</span>
+<span class="nc" id="L539">                                                                 .1 * self.getEntity()</span>
+<span class="nc" id="L540">                                                                          .getWeight(),</span>
+                                                                 ToHitData.SIDE_REAR
+                                                                          );
+<span class="nc" id="L543">                                    self_threat *= 100 / option.getCEntity()</span>
+<span class="nc" id="L544">                                                               .getEntity().getWeight();</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">                                } else if (option.getEntity().canCharge()) {</span>
+<span class="nc" id="L546">                                    self.current.setState();</span>
+<span class="nc" id="L547">                                    toHit = new ChargeAttackAction(</span>
+<span class="nc" id="L548">                                            option.getEntity(),</span>
+<span class="nc" id="L549">                                            target.getEntity()).toHit(game,</span>
+                                                                      option);
+<span class="nc" id="L551">                                    damage = ChargeAttackAction.getDamageFor(</span>
+<span class="nc" id="L552">                                            option.getEntity(),</span>
+<span class="nc" id="L553">                                            target.getEntity(), false,</span>
+<span class="nc" id="L554">                                            option.getHexesMoved());</span>
+<span class="nc" id="L555">                                    self_threat = option</span>
+<span class="nc" id="L556">                                                          .getCEntity()</span>
+<span class="nc" id="L557">                                                          .getThreatUtility(</span>
+                                                                  ChargeAttackAction
+<span class="nc" id="L559">                                                                          .getDamageTakenBy(</span>
+<span class="nc" id="L560">                                                                                  option.getEntity(),</span>
+<span class="nc" id="L561">                                                                                  target.getEntity()),</span>
+                                                                  ToHitData.SIDE_FRONT
+                                                                           )
+<span class="nc" id="L564">                                                  * (Compute.oddsAbove(toHit.getValue(), aptPiloting) / 100);</span>
+<span class="nc" id="L565">                                    option.setState();</span>
+                                } else {
+<span class="nc" id="L567">                                    toHit = new ToHitData(</span>
+                                            TargetRoll.IMPOSSIBLE, &quot;&quot;);
+                                }
+<span class="nc" id="L570">                                damage = (target.getThreatUtility(damage,</span>
+<span class="nc" id="L571">                                                                  toHit.getSideTable()) * Compute.oddsAbove(toHit.getValue(), aptPiloting)) / 100;</span>
+                                // charging is a good tactic against larger
+                                // mechs
+<span class="nc bnc" id="L574" title="All 2 branches missed.">                                if (!option.isJumping()) {</span>
+<span class="nc" id="L575">                                    damage *= Math.sqrt((double) enemy.bv</span>
+                                                        / (double) self.bv);
+                                }
+                                // these are always risky, just don't on 11 or
+                                // 12
+<span class="nc bnc" id="L580" title="All 2 branches missed.">                                if (toHit.getValue() &gt; 10) {</span>
+<span class="nc" id="L581">                                    damage = 0;</span>
+                                }
+                                // 7 or less is good
+<span class="nc bnc" id="L584" title="All 2 branches missed.">                                if (toHit.getValue() &lt; 8) {</span>
+<span class="nc" id="L585">                                    damage *= 1.5;</span>
+                                }
+                                // this is all you are good for
+<span class="nc bnc" id="L588" title="All 2 branches missed.">                                if (self.range_damages[CEntity.RANGE_SHORT] &lt; 5) {</span>
+<span class="nc" id="L589">                                    damage *= 2;</span>
+                                }
+<span class="nc" id="L591">                                MoveOption.DamageInfo di = option</span>
+<span class="nc" id="L592">                                        .getDamageInfo(enemy, true);</span>
+<span class="nc" id="L593">                                di.damage = damage;</span>
+<span class="nc" id="L594">                                di.min_damage = damage;</span>
+<span class="nc" id="L595">                                option.damage = damage;</span>
+<span class="nc" id="L596">                                option.movement_threat += self_threat;</span>
+<span class="nc" id="L597">                            } else {</span>
+<span class="nc" id="L598">                                option.threat += Integer.MAX_VALUE;</span>
+                            }
+                        }
+<span class="nc" id="L601">                    } catch (Exception e1) {</span>
+<span class="nc" id="L602">                        e1.printStackTrace();</span>
+<span class="nc" id="L603">                        option.threat += Integer.MAX_VALUE;</span>
+<span class="nc" id="L604">                    }</span>
+                }
+            } // -- end while of each enemy
+<span class="nc" id="L607">            self.current.setState();</span>
+        } // -- end while of first pass
+        // top balanced
+<span class="nc" id="L610">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(1,</span>
+                                                                             1), 100);
+        // top damage
+<span class="nc" id="L613">        filterMoves(move_array, self.pass, new MoveOption.WeightedComparator(</span>
+                .5, 1), 100);
+<span class="nc" id="L615">    }</span>
+
+    /**
+     * ********************************************************************
+     * Second pass, combination moves/firing based only on the present case,
+     * since only one mech moves at a time
+     * ********************************************************************
+     */
+    private MoveOption[] secondPass(CEntity self, int friends,
+                                    List&lt;Entity&gt; enemy_array, ArrayList&lt;Entity&gt; entities) {
+<span class="nc" id="L625">        MoveOption[] move_array = self.pass.values().toArray(new MoveOption[0]);</span>
+<span class="nc" id="L626">        self.pass.clear();</span>
+<span class="nc bnc" id="L627" title="All 4 branches missed.">        for (int j = 0; (j &lt; move_array.length) &amp;&amp; (friends &gt; 2); j++) {</span>
+<span class="nc" id="L628">            MoveOption option = move_array[j];</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">            for (int e = 0; e &lt; enemy_array.size(); e++) {</span>
+<span class="nc" id="L630">                Entity en = enemy_array.get(e);</span>
+<span class="nc" id="L631">                CEntity enemy = centities.get(en);</span>
+<span class="nc bnc" id="L632" title="All 2 branches missed.">                for (Entity other : entities) {</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">                    if (other.isEnemyOf(self.entity)) {</span>
+<span class="nc" id="L634">                        continue;</span>
+                    }
+<span class="nc" id="L636">                    MoveOption foption = centities.get(other).current;</span>
+<span class="nc" id="L637">                    double threat_divisor = 1;</span>
+<span class="nc" id="L638">                    MoveOption.DamageInfo di = option</span>
+<span class="nc" id="L639">                            .getDamageInfo(enemy, true);</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">                    if (foption.getDamageInfo(enemy, false) != null) {</span>
+<span class="nc bnc" id="L641" title="All 2 branches missed.">                        option.damage += (enemy.canMove() ? .1 : .2)</span>
+                                         * di.damage;
+<span class="nc bnc" id="L643" title="All 2 branches missed.">                        threat_divisor += foption.getCEntity().canMove() ? .4</span>
+<span class="nc" id="L644">                                                                         : .6;</span>
+                    }
+<span class="nc" id="L646">                    option.threat -= di.threat;</span>
+<span class="nc" id="L647">                    di.threat /= threat_divisor;</span>
+<span class="nc" id="L648">                    option.threat += di.threat;</span>
+<span class="nc" id="L649">                }</span>
+            }
+        }
+<span class="nc" id="L652">        return move_array;</span>
+    }
+
+    /**
+     * ********************************************************************
+     * third pass, (not so bad) oppurtunistic planner gives preference to good
+     * ranges/defensive positions based upon the mech characterization
+     * ********************************************************************
+     */
+    private MoveOption[] thirdPass(CEntity self, List&lt;Entity&gt; enemy_array) {
+<span class="nc" id="L662">        MoveOption[] move_array = self.pass.values().toArray(new MoveOption[0]);</span>
+<span class="nc" id="L663">        self.pass.clear();</span>
+
+<span class="nc bnc" id="L665" title="All 2 branches missed.">        for (MoveOption option : move_array) {</span>
+<span class="nc" id="L666">            option.setState();</span>
+<span class="nc" id="L667">            double adjustment = 0;</span>
+<span class="nc" id="L668">            double temp_adjustment = 0;</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">            for (int e = 0; e &lt; enemy_array.size(); e++) { // for each enemy</span>
+<span class="nc" id="L670">                Entity en = enemy_array.get(e);</span>
+<span class="nc" id="L671">                CEntity enemy = centities.get(en);</span>
+<span class="nc" id="L672">                int current_range = self.current.getFinalCoords().distance(</span>
+<span class="nc" id="L673">                        enemy.current.getFinalCoords());</span>
+<span class="nc" id="L674">                int range = option.getFinalCoords().distance(</span>
+<span class="nc" id="L675">                        enemy.current.getFinalCoords());</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">                if (range &gt; self.long_range) {</span>
+<span class="nc bnc" id="L677" title="All 2 branches missed.">                    temp_adjustment += (!(range &lt; enemy.long_range) ? .5 : 1)</span>
+                                       * (1 + self.range_damages[self.range])
+<span class="nc" id="L679">                                       * (Math.max(</span>
+                            range
+                            - self.long_range
+<span class="nc" id="L682">                            - (.5 * Math.max(self.jumpMP,</span>
+                                             .8 * self.runMP)), 0
+                                                  ));
+                }
+<span class="nc bnc" id="L686" title="All 10 branches missed.">                if (((self.range == CEntity.RANGE_SHORT) &amp;&amp; ((current_range &gt; 5) || (range &gt; 9)))</span>
+                    || ((self.range_damages[CEntity.RANGE_SHORT] &lt; 4) &amp;&amp; (current_range &gt; 10))) {
+<span class="nc bnc" id="L688" title="All 2 branches missed.">                    temp_adjustment += ((enemy.range &gt; CEntity.RANGE_SHORT) ? .5</span>
+<span class="nc" id="L689">                                                                            : 1)</span>
+<span class="nc" id="L690">                                       * (Math.max(</span>
+                            1 + self.range_damages[CEntity.RANGE_SHORT],
+                            5))
+<span class="nc" id="L693">                                       * Math.max(</span>
+                            range
+<span class="nc" id="L695">                            - (.5 * Math.max(self.jumpMP,</span>
+                                             .8 * self.runMP)), 0
+                                                 );
+<span class="nc bnc" id="L698" title="All 2 branches missed.">                } else if (self.range == CEntity.RANGE_MEDIUM) {</span>
+<span class="nc bnc" id="L699" title="All 4 branches missed.">                    temp_adjustment += (((current_range &lt; 6) || (current_range &gt; 12)) ? 1</span>
+<span class="nc" id="L700">                                                                                      : .25)</span>
+<span class="nc bnc" id="L701" title="All 2 branches missed.">                                       * ((enemy.range &gt; CEntity.RANGE_SHORT) ? .5 : 1)</span>
+                                       * (1 + self.range_damages[CEntity.RANGE_MEDIUM])
+<span class="nc" id="L703">                                       * Math.abs(range</span>
+<span class="nc" id="L704">                                                  - (.5 * Math.max(self.jumpMP,</span>
+                                                                   .8 * self.runMP)));
+<span class="nc bnc" id="L706" title="All 2 branches missed.">                } else if (option.damage &lt; (.25 * self.range_damages[CEntity.RANGE_LONG])) {</span>
+<span class="nc bnc" id="L707" title="All 2 branches missed.">                    temp_adjustment += ((range &lt; 10) ? .25 : 1)</span>
+<span class="nc" id="L708">                                       * (Math.max(</span>
+                            1 + self.range_damages[CEntity.RANGE_LONG],
+                            3)) * (1 / (1 + option.threat));
+                }
+<span class="nc" id="L712">                adjustment += Math.sqrt((temp_adjustment * enemy.bv) / self.bv);</span>
+                // I would always like to face the opponent
+<span class="nc bnc" id="L714" title="All 2 branches missed.">                if (!(enemy.getEntity().isProne() || enemy.getEntity()</span>
+<span class="nc bnc" id="L715" title="All 2 branches missed.">                                                          .isImmobile())</span>
+<span class="nc bnc" id="L716" title="All 2 branches missed.">                    &amp;&amp; (CEntity.getThreatHitArc(option.getFinalCoords(),</span>
+<span class="nc" id="L717">                                                option.getFinalFacing(), enemy.getEntity()</span>
+<span class="nc" id="L718">                                                                              .getPosition()</span>
+                                               ) != ToHitData.SIDE_FRONT)) {
+<span class="nc" id="L720">                    int fa = CEntity.getFiringAngle(option.getFinalCoords(),</span>
+<span class="nc" id="L721">                                                    option.getFinalFacing(), enemy.getEntity()</span>
+<span class="nc" id="L722">                                                                                  .getPosition()</span>
+                                                   );
+<span class="nc bnc" id="L724" title="All 4 branches missed.">                    if ((fa &gt; 90) &amp;&amp; (fa &lt; 270)) {</span>
+<span class="nc" id="L725">                        int distance = option.getFinalCoords().distance(</span>
+<span class="nc" id="L726">                                enemy.current.getFinalCoords());</span>
+<span class="nc" id="L727">                        double mod = 1;</span>
+<span class="nc bnc" id="L728" title="All 4 branches missed.">                        if ((fa &gt; 130) &amp;&amp; (fa &lt; 240)) {</span>
+<span class="nc" id="L729">                            mod = 2;</span>
+                        }
+                        // big formula that says don't do it
+<span class="nc bnc" id="L732" title="All 2 branches missed.">                        mod *= (((Math.max(self.jumpMP, .8 * self.runMP) &lt; 5) ? 2</span>
+<span class="nc" id="L733">                                                                              : 1)</span>
+                                * ((double) self.bv / (double) 50) * Math
+<span class="nc" id="L735">                                .sqrt(((double) self.bv) / enemy.bv))</span>
+                               / (((double) distance / 6) + 1);
+<span class="nc" id="L737">                        option.self_threat += mod;</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">                        if (debug) {</span>
+<span class="nc" id="L739">                            option.tv.add(mod + &quot; &quot; + fa + &quot; Back to enemy\n&quot;);</span>
+                        }
+                    }
+                }
+            }
+<span class="nc" id="L744">            adjustment *= (self.overall_armor_percent * self.strategy.attack)</span>
+<span class="nc" id="L745">                          / enemy_array.size();</span>
+            // fix for hiding in level 2 water
+            // To a greedy bot, it always seems nice to stay in here...
+<span class="nc" id="L748">            IHex h = game.getBoard().getHex(option.getFinalCoords());</span>
+<span class="nc bnc" id="L749" title="All 2 branches missed.">            if (h.containsTerrain(Terrains.WATER)</span>
+<span class="nc" id="L750">                &amp;&amp; (h.surface() &gt; (self.getEntity().getElevation() + ((option</span>
+<span class="nc bnc" id="L751" title="All 4 branches missed.">                    .getFinalProne()) ? 0 : 1)))) {</span>
+<span class="nc" id="L752">                double mod = ((self.getEntity().heat + option</span>
+<span class="nc bnc" id="L753" title="All 2 branches missed.">                        .getMovementheatBuildup()) &lt;= 7) ? 100 : 30;</span>
+<span class="nc" id="L754">                adjustment += self.bv / mod;</span>
+            }
+            // add them in now, then re-add them later
+<span class="nc bnc" id="L757" title="All 2 branches missed.">            if (self.range &gt; CEntity.RANGE_SHORT) {</span>
+<span class="nc" id="L758">                int ele_dif = game.getBoard().getHex(option.getFinalCoords())</span>
+<span class="nc" id="L759">                                  .getLevel()</span>
+<span class="nc" id="L760">                              - game.getBoard().getHex(self.current.getFinalCoords())</span>
+<span class="nc" id="L761">                                    .getLevel();</span>
+<span class="nc" id="L762">                adjustment -= (Math.max(ele_dif, 0) + 1)</span>
+<span class="nc" id="L763">                              * ((double) Compute.getTargetTerrainModifier(game,</span>
+<span class="nc" id="L764">                                                                           option.getEntity()).getValue() + 1);</span>
+            }
+
+            // close the range if nothing else and healthy
+<span class="nc bnc" id="L768" title="All 4 branches missed.">            if ((option.damage &lt; (.25 * self.range_damages[self.range]))</span>
+                &amp;&amp; (adjustment &lt; self.range_damages[self.range])) {
+<span class="nc bnc" id="L770" title="All 2 branches missed.">                for (int e = 0; e &lt; enemy_array.size(); e++) {</span>
+<span class="nc" id="L771">                    Entity en = enemy_array.get(e);</span>
+<span class="nc" id="L772">                    CEntity enemy = centities.get(en);</span>
+<span class="nc" id="L773">                    int range = option.getFinalCoords().distance(</span>
+<span class="nc" id="L774">                            enemy.current.getFinalCoords());</span>
+<span class="nc bnc" id="L775" title="All 2 branches missed.">                    if (range &gt; 5) {</span>
+<span class="nc" id="L776">                        adjustment += (Math.pow(self.overall_armor_percent, 2) * Math</span>
+<span class="nc" id="L777">                                .sqrt(((double) (range - 4) * enemy.bv)</span>
+                                      / self.bv))
+<span class="nc" id="L779">                                      / enemy_array.size();</span>
+                    }
+                }
+            }
+
+<span class="nc bnc" id="L784" title="All 2 branches missed.">            if (option.damage &lt; (.25 * (1 + self.range_damages[self.range]))) {</span>
+<span class="nc" id="L785">                option.self_threat += 2 * adjustment;</span>
+<span class="nc bnc" id="L786" title="All 2 branches missed.">            } else if (option.damage &lt; (.5 * (1 + self.range_damages[self.range]))) {</span>
+<span class="nc" id="L787">                option.self_threat += adjustment;</span>
+            }
+<span class="nc bnc" id="L789" title="All 2 branches missed.">            if (debug) {</span>
+<span class="nc" id="L790">                option.tv.add(option.self_threat</span>
+                              + &quot; Initial Damage Adjustment &quot; + &quot;\n&quot;);
+            }
+        }
+
+<span class="nc" id="L795">        return move_array;</span>
+    }
+
+    // pass should contains 30 ~ 60
+
+    /**
+     * ********************************************************************
+     * fourth pass, speculation on top moves use averaging to filter
+     * ********************************************************************
+     */
+    private MoveOption[] fourthPass(CEntity self, List&lt;Entity&gt; enemy_array) {
+<span class="nc" id="L806">        MoveOption[] move_array = self.pass.values().toArray(new MoveOption[0]);</span>
+<span class="nc" id="L807">        self.pass.clear();</span>
+<span class="nc bnc" id="L808" title="All 2 branches missed.">        for (int e = 0; e &lt; enemy_array.size(); e++) { // for each enemy</span>
+<span class="nc" id="L809">            Entity en = enemy_array.get(e);</span>
+<span class="nc" id="L810">            CEntity enemy = centities.get(en);</span>
+            // engage in speculation on &quot;best choices&quot; when you loose iniative
+<span class="nc bnc" id="L812" title="All 2 branches missed.">            if (enemy.canMove()) {</span>
+<span class="nc" id="L813">                ArrayList&lt;MoveOption&gt; enemy_move_array = enemy.pass.getArray();</span>
+<span class="nc" id="L814">                ArrayList&lt;MoveOption&gt; to_check = new ArrayList&lt;MoveOption&gt;();</span>
+                // check some enemy moves
+<span class="nc bnc" id="L816" title="All 2 branches missed.">                for (MoveOption element : move_array) {</span>
+<span class="nc" id="L817">                    MoveOption option = null;</span>
+<span class="nc" id="L818">                    to_check.clear();</span>
+<span class="nc" id="L819">                    option = element;</span>
+<span class="nc" id="L820">                    option.setState();</span>
+                    // check for damning hexes specifically
+                    // could also look at intervening defensive
+<span class="nc" id="L823">                    ArrayList&lt;Coords&gt; coord = new ArrayList&lt;Coords&gt;();</span>
+<span class="nc" id="L824">                    Coords back = option.getFinalCoords().translated(</span>
+<span class="nc" id="L825">                            (option.getFinalFacing() + 3) % 6);</span>
+<span class="nc" id="L826">                    coord.add(back);</span>
+<span class="nc" id="L827">                    coord.add(back.translated((option.getFinalFacing() + 2) % 6));</span>
+<span class="nc" id="L828">                    coord.add(back.translated((option.getFinalFacing() + 4) % 6));</span>
+<span class="nc" id="L829">                    coord.add(option.getFinalCoords().translated(</span>
+<span class="nc" id="L830">                            (option.getFinalFacing())));</span>
+<span class="nc" id="L831">                    coord.add(option.getFinalCoords().translated(</span>
+<span class="nc" id="L832">                            (option.getFinalFacing() + 1) % 6));</span>
+<span class="nc" id="L833">                    coord.add(option.getFinalCoords().translated(</span>
+<span class="nc" id="L834">                            (option.getFinalFacing() + 2) % 6));</span>
+<span class="nc" id="L835">                    coord.add(option.getFinalCoords().translated(</span>
+<span class="nc" id="L836">                            (option.getFinalFacing() + 4) % 6));</span>
+<span class="nc" id="L837">                    coord.add(option.getFinalCoords().translated(</span>
+<span class="nc" id="L838">                            (option.getFinalFacing() + 5) % 6));</span>
+<span class="nc" id="L839">                    Iterator&lt;Coords&gt; ci = coord.iterator();</span>
+<span class="nc bnc" id="L840" title="All 2 branches missed.">                    while (ci.hasNext()) {</span>
+<span class="nc" id="L841">                        Coords test = ci.next();</span>
+<span class="nc" id="L842">                        List&lt;MoveOption&gt; c = enemy.findMoves(test, this);</span>
+<span class="nc bnc" id="L843" title="All 2 branches missed.">                        if (c.size() != 0) {</span>
+<span class="nc" id="L844">                            to_check.addAll(c);</span>
+                        }
+<span class="nc" id="L846">                    }</span>
+<span class="nc" id="L847">                    int range = option.getFinalCoords().distance(</span>
+<span class="nc" id="L848">                            enemy.current.getFinalCoords());</span>
+<span class="nc" id="L849">                    int compare = 0;</span>
+<span class="nc bnc" id="L850" title="All 2 branches missed.">                    if ((enemy.long_range) &gt; (range - Math.max(enemy.jumpMP,</span>
+                                                               enemy.runMP))) {
+<span class="nc" id="L852">                        compare = 30;</span>
+<span class="nc bnc" id="L853" title="All 2 branches missed.">                    } else if (enemy.long_range &gt; range) {</span>
+<span class="nc" id="L854">                        compare = 10;</span>
+                    }
+<span class="nc" id="L856">                    double mod = enemies_moved / getEnemyEntities().size();</span>
+<span class="nc" id="L857">                    compare *= (1 + mod);</span>
+<span class="nc" id="L858">                    for (int k = 0; (k &lt;= compare)</span>
+<span class="nc bnc" id="L859" title="All 4 branches missed.">                                    &amp;&amp; (k &lt; enemy_move_array.size()); k++) {</span>
+<span class="nc bnc" id="L860" title="All 2 branches missed.">                        if (enemy_move_array.size() &lt; compare) {</span>
+<span class="nc" id="L861">                            to_check.add(enemy_move_array.get(k));</span>
+                        } else {
+<span class="nc" id="L863">                            int value = Compute.randomInt(enemy_move_array</span>
+<span class="nc" id="L864">                                                                  .size());</span>
+<span class="nc bnc" id="L865" title="All 2 branches missed.">                            if ((value % 2) == 1) {</span>
+<span class="nc" id="L866">                                to_check.add(enemy_move_array.get(value));</span>
+                            } else {
+<span class="nc" id="L868">                                to_check.add(enemy_move_array.get(k));</span>
+                            }
+                        }
+                    }
+<span class="nc" id="L872">                    Iterator&lt;MoveOption&gt; eo = to_check.iterator();</span>
+<span class="nc bnc" id="L873" title="All 2 branches missed.">                    while (eo.hasNext()) {</span>
+<span class="nc" id="L874">                        MoveOption enemy_option = eo.next();</span>
+<span class="nc" id="L875">                        double max_threat = 0;</span>
+<span class="nc" id="L876">                        double max_damage = 0;</span>
+<span class="nc" id="L877">                        enemy_option.setState();</span>
+<span class="nc" id="L878">                        int enemy_hit_arc = CEntity.getThreatHitArc(</span>
+<span class="nc" id="L879">                                enemy_option.getFinalCoords(),</span>
+<span class="nc" id="L880">                                enemy_option.getFinalFacing(),</span>
+<span class="nc" id="L881">                                option.getFinalCoords());</span>
+<span class="nc" id="L882">                        int self_hit_arc = CEntity.getThreatHitArc(</span>
+<span class="nc" id="L883">                                enemy_option.getFinalCoords(),</span>
+<span class="nc" id="L884">                                enemy_option.getFinalFacing(),</span>
+<span class="nc" id="L885">                                option.getFinalCoords());</span>
+<span class="nc bnc" id="L886" title="All 2 branches missed.">                        if (enemy_option.isJumping()) {</span>
+<span class="nc" id="L887">                            enemy_hit_arc = Compute.ARC_FORWARD;</span>
+                        }
+<span class="nc" id="L889">                        int[] modifiers = option.getModifiers(enemy_option</span>
+<span class="nc" id="L890">                                                                      .getEntity());</span>
+<span class="nc bnc" id="L891" title="All 2 branches missed.">                        if (modifiers[1] != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L892">                            self.engaged = true;</span>
+<span class="nc bnc" id="L893" title="All 2 branches missed.">                            if (!enemy_option.isJumping()) {</span>
+<span class="nc" id="L894">                                max_threat = option.getMaxModifiedDamage(</span>
+                                        enemy_option, modifiers[1],
+                                        modifiers[MoveOption.DEFENCE_PC]);
+                            } else {
+<span class="nc" id="L898">                                boolean enemyAptGunnery = enemy.getEntity().hasAbility(OptionsConstants.PILOT_APTITUDE_GUNNERY);</span>
+<span class="nc" id="L899">                                max_threat = .8 * enemy</span>
+<span class="nc" id="L900">                                        .getModifiedDamage(</span>
+<span class="nc bnc" id="L901" title="All 2 branches missed.">                                                (modifiers[MoveOption.DEFENCE_PC] == 1) ? CEntity.TT</span>
+<span class="nc" id="L902">                                                                                        : ToHitData.SIDE_FRONT,</span>
+                                                enemy_option
+<span class="nc" id="L904">                                                        .getFinalCoords()</span>
+<span class="nc" id="L905">                                                        .distance(</span>
+<span class="nc" id="L906">                                                                option.getFinalCoords()),</span>
+                                                modifiers[1], enemyAptGunnery);
+                            }
+<span class="nc" id="L909">                            max_threat = self.getThreatUtility(max_threat,</span>
+                                                               self_hit_arc);
+                        }
+<span class="nc bnc" id="L912" title="All 2 branches missed.">                        if (modifiers[0] != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L913">                            self.engaged = true;</span>
+<span class="nc" id="L914">                            max_damage = enemy_option.getMaxModifiedDamage(</span>
+                                    option, modifiers[0],
+                                    modifiers[MoveOption.ATTACK_PC]);
+<span class="nc" id="L917">                            max_damage = enemy.getThreatUtility(max_damage,</span>
+                                                                enemy_hit_arc);
+<span class="nc bnc" id="L919" title="All 2 branches missed.">                            if (option.isPhysical) {</span>
+<span class="nc" id="L920">                                if (centities.get(option.getPhysicalTargetId())</span>
+<span class="nc" id="L921">                                             .getEntity().getId() == enemy</span>
+<span class="nc bnc" id="L922" title="All 2 branches missed.">                                            .getEntity().getId()) {</span>
+<span class="nc" id="L923">                                    max_damage = option.getDamage(enemy);</span>
+                                } else {
+<span class="nc" id="L925">                                    max_damage = 0;</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L929">                        MoveOption.DamageInfo di = option.getDamageInfo(enemy,</span>
+                                                                        true);
+<span class="nc" id="L931">                        di.max_threat = Math.max(max_threat, di.max_threat);</span>
+<span class="nc" id="L932">                        di.min_damage = Math.min(di.min_damage, max_damage);</span>
+<span class="nc bnc" id="L933" title="All 2 branches missed.">                        if ((max_threat - max_damage) &gt; (di.threat - di.damage)) {</span>
+<span class="nc" id="L934">                            di.threat = max_threat;</span>
+<span class="nc" id="L935">                            di.damage = max_damage;</span>
+<span class="nc bnc" id="L936" title="All 2 branches missed.">                            if (debug) {</span>
+<span class="nc" id="L937">                                option.tv.add(max_threat + &quot; Spec Threat &quot; + e</span>
+                                              + &quot;\n&quot;);
+<span class="nc" id="L939">                                option.tv.add(max_damage + &quot; Spec Damage &quot; + e</span>
+                                              + &quot;\n&quot;);
+                            }
+                        }
+<span class="nc" id="L943">                    }</span>
+                    // update estimates
+<span class="nc" id="L945">                    option.damage = 0;</span>
+<span class="nc" id="L946">                    option.threat = 0;</span>
+<span class="nc bnc" id="L947" title="All 2 branches missed.">                    for (CEntity cen : option.damageInfos.keySet()) {</span>
+                        // rescale
+<span class="nc" id="L949">                        MoveOption.DamageInfo di = option.getDamageInfo(cen,</span>
+                                                                        true);
+<span class="nc" id="L951">                        di.min_damage /= cen.strategy.target;</span>
+<span class="nc" id="L952">                        di.damage /= cen.strategy.target;</span>
+<span class="nc" id="L953">                        option.damage += (di.min_damage + di.damage) / 2;</span>
+
+                        // my threat is average of absolute worst, and expected
+<span class="nc" id="L956">                        option.threat = Math.max(option.threat, di.max_threat</span>
+                                                                + di.threat) / 2;
+<span class="nc" id="L958">                        di.threat = (di.max_threat + (2 * di.threat)) / 3;</span>
+<span class="nc" id="L959">                    }</span>
+                }
+                // restore enemy
+<span class="nc" id="L962">                enemy.current.setState();</span>
+            }
+<span class="nc" id="L964">            self.current.setState();</span>
+        } // --end move speculation
+<span class="nc" id="L966">        return move_array;</span>
+    }
+
+    // pass should now be 20 ~ 40
+
+    /**
+     * ********************************************************************
+     * fifth pass, final damage and threat approximation --prevents moves that
+     * from the previous pass would cause the mech to die
+     * ********************************************************************
+     */
+    private MoveOption[] fifthPass(CEntity self, List&lt;Entity&gt; enemy_array) {
+<span class="nc" id="L978">        MoveOption[] move_array = self.pass.values().toArray(new MoveOption[0]);</span>
+<span class="nc" id="L979">        self.pass.clear();</span>
+
+<span class="nc bnc" id="L981" title="All 2 branches missed.">        if (self.engaged) {</span>
+<span class="nc bnc" id="L982" title="All 2 branches missed.">            for (MoveOption option : move_array) {</span>
+<span class="nc" id="L983">                option.setState();</span>
+<span class="nc" id="L984">                GAAttack temp = this.bestAttack(option);</span>
+<span class="nc bnc" id="L985" title="All 2 branches missed.">                if (temp != null) {</span>
+<span class="nc" id="L986">                    option.damage = (option.damage + temp</span>
+<span class="nc" id="L987">                            .getFittestChromosomesFitness()) / 2;</span>
+                } else {
+<span class="nc" id="L989">                    option.damage /= 2;</span>
+                }
+<span class="nc bnc" id="L991" title="All 2 branches missed.">                for (int e = 0; e &lt; enemy_array.size(); e++) { // for each</span>
+                    // enemy
+<span class="nc" id="L993">                    Entity en = enemy_array.get(e);</span>
+<span class="nc" id="L994">                    CEntity enemy = centities.get(en);</span>
+<span class="nc bnc" id="L995" title="All 2 branches missed.">                    if (!enemy.canMove()) {</span>
+<span class="nc" id="L996">                        option.setThreat(</span>
+                                enemy,
+<span class="nc" id="L998">                                (option.getThreat(enemy) + attackUtility(</span>
+                                        enemy.current, self)) / 2
+                                        );
+<span class="nc bnc" id="L1001" title="All 2 branches missed.">                        if (debug) {</span>
+<span class="nc" id="L1002">                            option.tv.add(option.getThreat(enemy)</span>
+                                          + &quot; Revised Threat &quot; + e + &quot; \n&quot;);
+                        }
+<span class="nc bnc" id="L1005" title="All 2 branches missed.">                        if (!option.isPhysical) {</span>
+<span class="nc bnc" id="L1006" title="All 2 branches missed.">                            if (temp != null) {</span>
+<span class="nc" id="L1007">                                option.setDamage(enemy, (option</span>
+<span class="nc" id="L1008">                                                                 .getDamage(enemy) + temp</span>
+<span class="nc" id="L1009">                                                                 .getDamageUtility(enemy)) / 2);</span>
+                            } else {
+                                // probably zero, but just in case
+<span class="nc" id="L1012">                                option.setDamage(enemy,</span>
+<span class="nc" id="L1013">                                                 option.getMinDamage(enemy));</span>
+                            }
+<span class="nc bnc" id="L1015" title="All 2 branches missed.">                            if (debug) {</span>
+<span class="nc" id="L1016">                                option.tv.add(option.getDamage(enemy)</span>
+                                              + &quot; Revised Damage &quot; + e + &quot; \n&quot;);
+                            }
+                            // this needs to be reworked
+<span class="nc bnc" id="L1020" title="All 2 branches missed.">                            if (option.getFinalCoords().distance(</span>
+<span class="nc" id="L1021">                                    enemy.current.getFinalCoords()) == 1) {</span>
+<span class="nc" id="L1022">                                PhysicalOption p = PhysicalCalculator</span>
+<span class="nc" id="L1023">                                        .getBestPhysicalAttack(</span>
+<span class="nc" id="L1024">                                                option.getEntity(),</span>
+<span class="nc" id="L1025">                                                enemy.getEntity(), game);</span>
+<span class="nc bnc" id="L1026" title="All 2 branches missed.">                                if (p != null) {</span>
+<span class="nc" id="L1027">                                    option.setDamage(enemy,</span>
+<span class="nc" id="L1028">                                                     option.getDamage(enemy)</span>
+                                                     + p.expectedDmg
+                                                    );
+<span class="nc bnc" id="L1031" title="All 2 branches missed.">                                    if (debug) {</span>
+<span class="nc" id="L1032">                                        option.tv.add(p.expectedDmg</span>
+                                                      + &quot; Physical Damage &quot; + e
+                                                      + &quot; \n&quot;);
+                                    }
+                                }
+<span class="nc" id="L1037">                                p = PhysicalCalculator.getBestPhysicalAttack(</span>
+<span class="nc" id="L1038">                                        enemy.getEntity(), option.getEntity(),</span>
+                                        game);
+<span class="nc bnc" id="L1040" title="All 2 branches missed.">                                if (p != null) {</span>
+<span class="nc" id="L1041">                                    option.setThreat(enemy,</span>
+<span class="nc" id="L1042">                                                     option.getThreat(enemy)</span>
+                                                     + (.5 * p.expectedDmg)
+                                                    );
+<span class="nc bnc" id="L1045" title="All 2 branches missed.">                                    if (debug) {</span>
+<span class="nc" id="L1046">                                        option.tv.add((.5 * p.expectedDmg)</span>
+                                                      + &quot; Physical Threat &quot; + e
+                                                      + &quot; \n&quot;);
+                                    }
+                                }
+<span class="nc" id="L1051">                            }</span>
+                        }
+<span class="nc bnc" id="L1053" title="All 2 branches missed.">                    } else if (!option.isPhysical) { // enemy can move (not</span>
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">                        if (temp != null) {</span>
+<span class="nc" id="L1055">                            option.setDamage(enemy, ((2 * option</span>
+<span class="nc" id="L1056">                                    .getDamage(enemy)) + temp</span>
+<span class="nc" id="L1057">                                                             .getDamageUtility(enemy)) / 3);</span>
+                        } else {
+<span class="nc" id="L1059">                            option.setDamage(enemy, option.getMinDamage(enemy));</span>
+                        }
+                    } else {
+                        // get a more accurate estimate
+<span class="nc" id="L1063">                        option.setDamage(</span>
+                                enemy,
+<span class="nc" id="L1065">                                option.getDamage(enemy)</span>
+<span class="nc" id="L1066">                                / Math.sqrt((double) enemy.bv</span>
+                                            / (double) self.bv)
+                                        );
+<span class="nc" id="L1069">                        option.damage = option.getDamage(enemy);</span>
+                    }
+                }
+<span class="nc" id="L1072">                option.threat = 0;</span>
+<span class="nc bnc" id="L1073" title="All 2 branches missed.">                for (DamageInfo damageInfo : option.damageInfos.values()) {</span>
+<span class="nc" id="L1074">                    option.threat += damageInfo.threat;</span>
+<span class="nc" id="L1075">                }</span>
+<span class="nc bnc" id="L1076" title="All 2 branches missed.">                if (debug) {</span>
+<span class="nc" id="L1077">                    option.tv.add(option.threat + &quot; Revised Threat Utility\n&quot;);</span>
+<span class="nc" id="L1078">                    option.tv.add(option.damage + &quot; Revised Damage Utility\n&quot;);</span>
+                }
+            }
+        }
+<span class="nc" id="L1082">        Arrays.&lt;MoveOption&gt;sort(move_array, new MoveOption.WeightedComparator(</span>
+                1, 1));
+<span class="nc" id="L1084">        self.current.setState();</span>
+
+<span class="nc" id="L1086">        return move_array;</span>
+    }
+
+    private void filterMoves(MoveOption[] move_array, MoveOption.Table pass,
+                             MoveOption.WeightedComparator comp, int filter) {
+<span class="nc" id="L1091">        Arrays.sort(move_array, comp);</span>
+
+        // top 100 utility, mostly conservative
+<span class="nc bnc" id="L1094" title="All 4 branches missed.">        for (int i = 0; (i &lt; filter) &amp;&amp; (i &lt; move_array.length); i++) {</span>
+<span class="nc" id="L1095">            pass.put(move_array[i]);</span>
+        }
+<span class="nc" id="L1097">    }</span>
+
+    @Override
+    protected void initFiring() {
+<span class="nc" id="L1101">        ArrayList&lt;Entity&gt; entities = new ArrayList&lt;Entity&gt;(</span>
+<span class="nc" id="L1102">                game.getEntitiesVector());</span>
+<span class="nc bnc" id="L1103" title="All 2 branches missed.">        for (int i = 0; i &lt; entities.size(); i++) {</span>
+<span class="nc" id="L1104">            Entity entity = entities.get(i);</span>
+<span class="nc" id="L1105">            CEntity centity = centities.get(entity);</span>
+<span class="nc" id="L1106">            centity.reset();</span>
+<span class="nc" id="L1107">            centity.enemy_num = i;</span>
+        }
+<span class="nc bnc" id="L1109" title="All 2 branches missed.">        for (Entity entity : getEnemyEntities()) {</span>
+<span class="nc" id="L1110">            CEntity centity = centities.get(entity);</span>
+<span class="nc bnc" id="L1111" title="All 4 branches missed.">            if (entity.isMakingDfa() || entity.isCharging()) {</span>
+                // try to prevent a physical attack from happening
+                // but should take into account the toHit of the attack
+<span class="nc" id="L1114">                centity.strategy.target = 2.5;</span>
+            }
+<span class="nc" id="L1116">        }</span>
+<span class="nc" id="L1117">    }</span>
+
+    protected ArrayList&lt;AttackOption&gt; calculateWeaponAttacks(Entity en,
+                                                             Mounted mw, boolean best_only) {
+<span class="nc" id="L1121">        int from = en.getId();</span>
+<span class="nc" id="L1122">        int weaponID = en.getEquipmentNum(mw);</span>
+<span class="nc" id="L1123">        int spin_mode = 0;</span>
+        int starg_mod;
+<span class="nc" id="L1125">        ArrayList&lt;AttackOption&gt; result = new ArrayList&lt;AttackOption&gt;();</span>
+<span class="nc" id="L1126">        List&lt;Entity&gt; ents = myEnemies(en);</span>
+        WeaponAttackAction wep_test;
+        WeaponType spinner;
+<span class="nc" id="L1129">        AttackOption a = null;</span>
+<span class="nc" id="L1130">        AttackOption max = new AttackOption(null, null, 0, null, 1, </span>
+<span class="nc" id="L1131">                en.hasAbility(OptionsConstants.PILOT_APTITUDE_GUNNERY));</span>
+<span class="nc bnc" id="L1132" title="All 2 branches missed.">        for (Entity e : ents) {</span>
+<span class="nc" id="L1133">            CEntity enemy = centities.get(e);</span>
+            // long entry = System.currentTimeMillis();
+<span class="nc" id="L1135">            ToHitData th = WeaponAttackAction.toHit(game, from, e, weaponID, false);</span>
+            // long exit = System.currentTimeMillis();
+            // if (exit != entry)
+            // System.out.println(&quot;Weapon attack toHit took &quot;+(exit-entry));
+<span class="nc bnc" id="L1139" title="All 2 branches missed.">            if ((th.getValue() != TargetRoll.IMPOSSIBLE)</span>
+<span class="nc bnc" id="L1140" title="All 2 branches missed.">                &amp;&amp; !(th.getValue() &gt;= 13)) {</span>
+                double expectedDmg;
+
+<span class="nc" id="L1143">                wep_test = new WeaponAttackAction(from, e.getId(), weaponID);</span>
+
+                // If this is an Ultra or Rotary cannon, check for spin up
+<span class="nc" id="L1146">                spinner = (WeaponType) mw.getType();</span>
+<span class="nc bnc" id="L1147" title="All 2 branches missed.">                if ((spinner.getAmmoType() == AmmoType.T_AC_ULTRA)</span>
+<span class="nc bnc" id="L1148" title="All 2 branches missed.">                    || (spinner.getAmmoType() == AmmoType.T_AC_ULTRA_THB)</span>
+<span class="nc bnc" id="L1149" title="All 2 branches missed.">                    || (spinner.getAmmoType() == AmmoType.T_AC_ROTARY)) {</span>
+<span class="nc" id="L1150">                    spin_mode = Compute.spinUpCannon(game, wep_test);</span>
+<span class="nc" id="L1151">                    super.sendModeChange(from, weaponID, spin_mode);</span>
+                }
+
+                // Ammo cycler runs each valid ammo type through the weapon
+                // while calling for expected damage on each type; best type
+                // by damage is loaded
+
+<span class="nc" id="L1158">                expectedDmg = Compute.getAmmoAdjDamage(game, wep_test);</span>
+
+                // Get the secondary target modifier for this weapon/target
+                // combo
+
+<span class="nc" id="L1163">                starg_mod = 1;</span>
+
+<span class="nc bnc" id="L1165" title="All 2 branches missed.">                if (en.getFacing() != -1) {</span>
+<span class="nc bnc" id="L1166" title="All 2 branches missed.">                    if (en.canChangeSecondaryFacing()) {</span>
+
+<span class="nc bnc" id="L1168" title="All 2 branches missed.">                        if (!Compute.isInArc(en.getPosition(),</span>
+<span class="nc" id="L1169">                                             en.getSecondaryFacing(), e, en.getForwardArc())) {</span>
+<span class="nc" id="L1170">                            starg_mod = 2;</span>
+                        }
+                    } else {
+<span class="nc bnc" id="L1173" title="All 2 branches missed.">                        if (!Compute.isInArc(en.getPosition(), en.getFacing(),</span>
+<span class="nc" id="L1174">                                             e, en.getForwardArc())) {</span>
+<span class="nc" id="L1175">                            starg_mod = 2;</span>
+                        }
+
+                    }
+                }
+
+                // For good measure, infantry cannot attack multiple targets
+<span class="nc bnc" id="L1182" title="All 2 branches missed.">                if (en.isConventionalInfantry()) {</span>
+<span class="nc" id="L1183">                    starg_mod = 13;</span>
+                }
+
+<span class="nc" id="L1186">                a = new AttackOption(enemy, mw, expectedDmg, th, starg_mod,</span>
+<span class="nc" id="L1187">                                     en.hasAbility(OptionsConstants.PILOT_APTITUDE_GUNNERY));</span>
+<span class="nc bnc" id="L1188" title="All 2 branches missed.">                if (a.value &gt; max.value) {</span>
+<span class="nc bnc" id="L1189" title="All 2 branches missed.">                    if (best_only) {</span>
+<span class="nc" id="L1190">                        max = a;</span>
+                    } else {
+<span class="nc" id="L1192">                        result.add(0, a);</span>
+                    }
+                } else {
+<span class="nc" id="L1195">                    result.add(a);</span>
+                }
+            }
+<span class="nc" id="L1198">        }</span>
+<span class="nc bnc" id="L1199" title="All 4 branches missed.">        if (best_only &amp;&amp; (max.target != null)) {</span>
+<span class="nc" id="L1200">            result.add(max);</span>
+        }
+<span class="nc bnc" id="L1202" title="All 2 branches missed.">        if (result.size() &gt; 0) {</span>
+<span class="nc" id="L1203">            result.add(new AttackOption(null, mw, 0, null, 1, en.hasAbility(OptionsConstants.PILOT_APTITUDE_GUNNERY)));</span>
+        }
+<span class="nc" id="L1205">        return result;</span>
+    }
+
+    public GAAttack bestAttack(MoveOption es) {
+<span class="nc" id="L1209">        return bestAttack(es, null, 2);</span>
+    }
+
+    public GAAttack bestAttack(MoveOption es, CEntity target, int search_level) {
+<span class="nc" id="L1213">        Entity en = es.getEntity();</span>
+<span class="nc" id="L1214">        int attacks[] = new int[4];</span>
+<span class="nc" id="L1215">        ArrayList&lt;AttackOption&gt; c = new ArrayList&lt;AttackOption&gt;();</span>
+<span class="nc" id="L1216">        ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; front = new ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;();</span>
+<span class="nc" id="L1217">        ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; left = new ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;();</span>
+<span class="nc" id="L1218">        ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; right = new ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;();</span>
+<span class="nc" id="L1219">        ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; rear = new ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;();</span>
+<span class="nc" id="L1220">        GAAttack result = null;</span>
+<span class="nc" id="L1221">        int o_facing = en.getFacing();</span>
+<span class="nc" id="L1222">        double front_la_dmg = 0;</span>
+<span class="nc" id="L1223">        double front_ra_dmg = 0;</span>
+<span class="nc" id="L1224">        double left_la_dmg = 0;</span>
+<span class="nc" id="L1225">        double left_ra_dmg = 0;</span>
+<span class="nc" id="L1226">        double right_la_dmg = 0;</span>
+<span class="nc" id="L1227">        double right_ra_dmg = 0;</span>
+<span class="nc" id="L1228">        PhysicalOption best_front_po = new PhysicalOption(en);</span>
+<span class="nc" id="L1229">        PhysicalOption best_left_po = new PhysicalOption(en);</span>
+<span class="nc" id="L1230">        PhysicalOption best_right_po = new PhysicalOption(en);</span>
+
+        // Get best physical attack
+<span class="nc bnc" id="L1233" title="All 2 branches missed.">        for (Mounted mw : en.getWeaponList()) {</span>
+
+            // If this weapon is in the same arm as a
+            // brush off attack skip to next weapon.
+<span class="nc" id="L1237">            c = calculateWeaponAttacks(en, mw, true);</span>
+
+            // Get best physical attack
+<span class="nc" id="L1240">            best_front_po = PhysicalCalculator.getBestPhysical(en, game);</span>
+
+<span class="nc bnc" id="L1242" title="All 4 branches missed.">            if ((best_front_po != null) &amp;&amp; (en instanceof Mech)) {</span>
+
+                // If this weapon is in the same arm as a brush off attack
+                // skip to next weapon
+
+<span class="nc bnc" id="L1247" title="All 4 branches missed.">                if (((best_front_po.type == PhysicalOption.BRUSH_LEFT) || (best_front_po.type == PhysicalOption</span>
+                        .BRUSH_BOTH))
+<span class="nc bnc" id="L1249" title="All 2 branches missed.">                    &amp;&amp; (mw.getLocation() == Mech.LOC_LARM)) {</span>
+<span class="nc" id="L1250">                    continue;</span>
+                }
+<span class="nc bnc" id="L1252" title="All 4 branches missed.">                if (((best_front_po.type == PhysicalOption.BRUSH_RIGHT) || (best_front_po.type == PhysicalOption</span>
+                        .BRUSH_BOTH))
+<span class="nc bnc" id="L1254" title="All 2 branches missed.">                    &amp;&amp; (mw.getLocation() == Mech.LOC_RARM)) {</span>
+<span class="nc" id="L1255">                    continue;</span>
+                }
+
+                // Total the damage of all weapons fired from each arm
+<span class="nc bnc" id="L1259" title="All 4 branches missed.">                if (((best_front_po.type == PhysicalOption.PUNCH_LEFT) || (best_front_po.type == PhysicalOption</span>
+                        .PUNCH_BOTH))
+<span class="nc bnc" id="L1261" title="All 2 branches missed.">                    &amp;&amp; (mw.getLocation() == Mech.LOC_LARM)) {</span>
+<span class="nc bnc" id="L1262" title="All 2 branches missed.">                    if (c.size() &gt; 0) {</span>
+<span class="nc" id="L1263">                        front_la_dmg += c.get(c.size() - 2).value;</span>
+                    }
+                }
+<span class="nc bnc" id="L1266" title="All 4 branches missed.">                if (((best_front_po.type == PhysicalOption.PUNCH_RIGHT) || (best_front_po.type == PhysicalOption</span>
+                        .PUNCH_BOTH))
+<span class="nc bnc" id="L1268" title="All 2 branches missed.">                    &amp;&amp; (mw.getLocation() == Mech.LOC_RARM)) {</span>
+<span class="nc bnc" id="L1269" title="All 2 branches missed.">                    if (c.size() &gt; 0) {</span>
+<span class="nc" id="L1270">                        front_ra_dmg += c.get(c.size() - 2).value;</span>
+                    }
+                }
+                // If this weapon is a push attack and an arm mounted
+                // weapon skip to next weapon
+
+<span class="nc bnc" id="L1276" title="All 2 branches missed.">                if ((best_front_po.type == PhysicalOption.PUSH_ATTACK)</span>
+<span class="nc bnc" id="L1277" title="All 2 branches missed.">                    &amp;&amp; ((mw.getLocation() == Mech.LOC_LARM) || (mw</span>
+<span class="nc bnc" id="L1278" title="All 2 branches missed.">                                                                        .getLocation() == Mech.LOC_RARM))) {</span>
+<span class="nc" id="L1279">                    continue;</span>
+                }
+            }
+
+            // If this weapon is in the same arm as a punch
+            // attack, add the damage to the running total.
+<span class="nc bnc" id="L1285" title="All 2 branches missed.">            if (c.size() &gt; 0) {</span>
+<span class="nc" id="L1286">                front.add(c);</span>
+<span class="nc" id="L1287">                attacks[0] = Math.max(attacks[0], c.size());</span>
+            }
+<span class="nc bnc" id="L1289" title="All 4 branches missed.">            if (!es.getFinalProne() &amp;&amp; en.canChangeSecondaryFacing()) {</span>
+<span class="nc" id="L1290">                en.setSecondaryFacing((o_facing + 5) % 6);</span>
+<span class="nc" id="L1291">                c = calculateWeaponAttacks(en, mw, true);</span>
+<span class="nc bnc" id="L1292" title="All 2 branches missed.">                if (c.size() &gt; 0) {</span>
+                    // Get best physical attack
+<span class="nc" id="L1294">                    best_left_po = PhysicalCalculator.getBestPhysical(en, game);</span>
+<span class="nc bnc" id="L1295" title="All 4 branches missed.">                    if ((best_left_po != null) &amp;&amp; (en instanceof Mech)) {</span>
+<span class="nc bnc" id="L1296" title="All 4 branches missed.">                        if (((best_left_po.type == PhysicalOption.PUNCH_LEFT) || (best_left_po.type == PhysicalOption</span>
+                                .PUNCH_BOTH))
+<span class="nc bnc" id="L1298" title="All 2 branches missed.">                            &amp;&amp; (mw.getLocation() == Mech.LOC_LARM)) {</span>
+<span class="nc" id="L1299">                            left_la_dmg += c.get(c.size() - 2).value;</span>
+                        }
+<span class="nc bnc" id="L1301" title="All 4 branches missed.">                        if (((best_left_po.type == PhysicalOption.PUNCH_RIGHT) || (best_left_po.type ==</span>
+                                                                                   PhysicalOption.PUNCH_BOTH))
+<span class="nc bnc" id="L1303" title="All 2 branches missed.">                            &amp;&amp; (mw.getLocation() == Mech.LOC_RARM)) {</span>
+<span class="nc" id="L1304">                            left_ra_dmg += c.get(c.size() - 2).value;</span>
+                        }
+                    }
+<span class="nc" id="L1307">                    left.add(c);</span>
+<span class="nc" id="L1308">                    attacks[1] = Math.max(attacks[1], c.size());</span>
+                }
+<span class="nc" id="L1310">                en.setSecondaryFacing((o_facing + 1) % 6);</span>
+<span class="nc" id="L1311">                c = calculateWeaponAttacks(en, mw, true);</span>
+<span class="nc bnc" id="L1312" title="All 2 branches missed.">                if (c.size() &gt; 0) {</span>
+                    // Get best physical attack
+<span class="nc" id="L1314">                    best_right_po = PhysicalCalculator</span>
+<span class="nc" id="L1315">                            .getBestPhysical(en, game);</span>
+<span class="nc bnc" id="L1316" title="All 4 branches missed.">                    if ((best_right_po != null) &amp;&amp; (en instanceof Mech)) {</span>
+<span class="nc bnc" id="L1317" title="All 4 branches missed.">                        if (((best_right_po.type == PhysicalOption.PUNCH_LEFT) || (best_right_po.type ==</span>
+                                                                                   PhysicalOption.PUNCH_BOTH))
+<span class="nc bnc" id="L1319" title="All 2 branches missed.">                            &amp;&amp; (mw.getLocation() == Mech.LOC_LARM)) {</span>
+<span class="nc" id="L1320">                            right_la_dmg += c.get(c.size() - 2).value;</span>
+                        }
+<span class="nc bnc" id="L1322" title="All 4 branches missed.">                        if (((best_right_po.type == PhysicalOption.PUNCH_RIGHT) || (best_right_po.type ==</span>
+                                                                                    PhysicalOption.PUNCH_BOTH))
+<span class="nc bnc" id="L1324" title="All 2 branches missed.">                            &amp;&amp; (mw.getLocation() == Mech.LOC_RARM)) {</span>
+<span class="nc" id="L1325">                            right_ra_dmg += c.get(c.size() - 2).value;</span>
+                        }
+                    }
+<span class="nc" id="L1328">                    right.add(c);</span>
+<span class="nc" id="L1329">                    attacks[2] = Math.max(attacks[2], c.size());</span>
+                }
+<span class="nc" id="L1331">                en.setSecondaryFacing((o_facing + 3) % 6);</span>
+<span class="nc" id="L1332">                c = calculateWeaponAttacks(en, mw, true);</span>
+<span class="nc bnc" id="L1333" title="All 2 branches missed.">                if (c.size() &gt; 0) {</span>
+<span class="nc" id="L1334">                    rear.add(c);</span>
+<span class="nc" id="L1335">                    attacks[3] = Math.max(attacks[3], c.size());</span>
+                }
+            } else {
+<span class="nc" id="L1338">                attacks[1] = 0;</span>
+<span class="nc" id="L1339">                attacks[2] = 0;</span>
+            }
+<span class="nc" id="L1341">            en.setSecondaryFacing(o_facing);</span>
+<span class="nc" id="L1342">        }</span>
+
+<span class="nc" id="L1344">        fireOrPhysicalCheck(best_front_po, en, front, front_la_dmg,</span>
+                            front_ra_dmg);
+
+<span class="nc" id="L1347">        ArrayList&lt;ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;&gt; arcs = new ArrayList&lt;ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt;&gt;();</span>
+<span class="nc" id="L1348">        arcs.add(front);</span>
+<span class="nc bnc" id="L1349" title="All 4 branches missed.">        if (!es.getFinalProne() &amp;&amp; en.canChangeSecondaryFacing()) {</span>
+<span class="nc" id="L1350">            fireOrPhysicalCheck(best_left_po, en, left, left_la_dmg,</span>
+                                left_ra_dmg);
+<span class="nc" id="L1352">            arcs.add(left);</span>
+<span class="nc" id="L1353">            fireOrPhysicalCheck(best_right_po, en, right, right_la_dmg,</span>
+                                right_ra_dmg);
+<span class="nc" id="L1355">            arcs.add(right);</span>
+            // Meks and protos can't twist all the way around.
+<span class="nc bnc" id="L1357" title="All 4 branches missed.">            if (!(en instanceof Mech) &amp;&amp; !(en instanceof Protomech)) {</span>
+<span class="nc" id="L1358">                arcs.add(rear);</span>
+            }
+        }
+<span class="nc bnc" id="L1361" title="All 2 branches missed.">        for (int i = 0; i &lt; arcs.size(); i++) {</span>
+<span class="nc" id="L1362">            ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; v = arcs.get(i);</span>
+<span class="nc bnc" id="L1363" title="All 2 branches missed.">            if (v.size() &gt; 0) {</span>
+<span class="nc" id="L1364">                GAAttack test = new GAAttack(this, centities.get(en), v,</span>
+<span class="nc" id="L1365">                                             Math.max((v.size() + attacks[i]) * search_level,</span>
+                                                      20 * search_level), 30 * search_level,
+<span class="nc" id="L1367">                                             en.isEnemyOf(getEntitiesOwned().get(0))</span>
+                );
+<span class="nc" id="L1369">                test.setFiringArc(i);</span>
+<span class="nc" id="L1370">                test.evolve();</span>
+<span class="nc bnc" id="L1371" title="All 2 branches missed.">                if (target != null) {</span>
+<span class="nc bnc" id="L1372" title="All 2 branches missed.">                    if ((result == null)</span>
+<span class="nc" id="L1373">                        || (test.getDamageUtility(target) &gt; result</span>
+<span class="nc bnc" id="L1374" title="All 2 branches missed.">                            .getDamageUtility(target))) {</span>
+<span class="nc" id="L1375">                        result = test;</span>
+                    }
+<span class="nc bnc" id="L1377" title="All 2 branches missed.">                } else if ((result == null)</span>
+<span class="nc" id="L1378">                           || (test.getFittestChromosomesFitness() &gt; result</span>
+<span class="nc bnc" id="L1379" title="All 2 branches missed.">                        .getFittestChromosomesFitness())) {</span>
+<span class="nc" id="L1380">                    result = test;</span>
+                }
+            }
+        }
+<span class="nc" id="L1384">        return result;</span>
+    }
+
+    /**
+     * If the best attack is a punch, then check each punch damage against the
+     * weapons damage from the appropriate arm; if the punch does more damage,
+     * drop the weapons in that arm to 0 expected damage Repeat this for left
+     * and right twists
+     *
+     * @param best_po
+     * @param entity
+     * @param attackOptions
+     * @param la_dmg
+     * @param ra_dmg
+     */
+    private void fireOrPhysicalCheck(PhysicalOption best_po, Entity entity,
+                                     ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; attackOptions, double la_dmg,
+                                     double ra_dmg) {
+        ArrayList&lt;AttackOption&gt; c;
+<span class="nc bnc" id="L1403" title="All 4 branches missed.">        if ((best_po != null) &amp;&amp; (entity instanceof Mech)) {</span>
+<span class="nc bnc" id="L1404" title="All 2 branches missed.">            if (best_po.type == PhysicalOption.PUNCH_LEFT) {</span>
+<span class="nc bnc" id="L1405" title="All 2 branches missed.">                if ((la_dmg &lt; best_po.expectedDmg)</span>
+<span class="nc bnc" id="L1406" title="All 2 branches missed.">                    &amp;&amp; (attackOptions.size() &gt; 0)) {</span>
+<span class="nc bnc" id="L1407" title="All 2 branches missed.">                    for (int i = 0; i &lt; attackOptions.size(); i++) {</span>
+<span class="nc" id="L1408">                        c = attackOptions.get(i);</span>
+<span class="nc bnc" id="L1409" title="All 2 branches missed.">                        for (int j = 0; j &lt; c.size(); j++) {</span>
+<span class="nc bnc" id="L1410" title="All 2 branches missed.">                            if (c.get(j).weapon.getLocation() == Mech.LOC_LARM) {</span>
+<span class="nc" id="L1411">                                c.get(j).expected = 0;</span>
+<span class="nc" id="L1412">                                c.get(j).primary_expected = 0;</span>
+                            }
+                        }
+                    }
+                }
+            }
+<span class="nc bnc" id="L1418" title="All 2 branches missed.">            if (best_po.type == PhysicalOption.PUNCH_RIGHT) {</span>
+<span class="nc bnc" id="L1419" title="All 2 branches missed.">                if ((ra_dmg &lt; best_po.expectedDmg)</span>
+<span class="nc bnc" id="L1420" title="All 2 branches missed.">                    &amp;&amp; (attackOptions.size() &gt; 0)) {</span>
+<span class="nc bnc" id="L1421" title="All 2 branches missed.">                    for (int i = 0; i &lt; attackOptions.size(); i++) {</span>
+<span class="nc" id="L1422">                        c = attackOptions.get(i);</span>
+<span class="nc bnc" id="L1423" title="All 2 branches missed.">                        for (int j = 0; j &lt; c.size(); j++) {</span>
+<span class="nc bnc" id="L1424" title="All 2 branches missed.">                            if (c.get(j).weapon.getLocation() == Mech.LOC_RARM) {</span>
+<span class="nc" id="L1425">                                c.get(j).expected = 0;</span>
+<span class="nc" id="L1426">                                c.get(j).primary_expected = 0;</span>
+                            }
+                        }
+                    }
+                }
+            }
+<span class="nc bnc" id="L1432" title="All 2 branches missed.">            if (best_po.type == PhysicalOption.PUNCH_BOTH) {</span>
+<span class="nc bnc" id="L1433" title="All 2 branches missed.">                if (((la_dmg + ra_dmg) &lt; best_po.expectedDmg)</span>
+<span class="nc bnc" id="L1434" title="All 2 branches missed.">                    &amp;&amp; (attackOptions.size() &gt; 0)) {</span>
+<span class="nc bnc" id="L1435" title="All 2 branches missed.">                    for (int i = 0; i &lt; attackOptions.size(); i++) {</span>
+<span class="nc" id="L1436">                        c = attackOptions.get(i);</span>
+<span class="nc bnc" id="L1437" title="All 2 branches missed.">                        for (int j = 0; j &lt; c.size(); j++) {</span>
+<span class="nc bnc" id="L1438" title="All 2 branches missed.">                            if (c.get(j).weapon.getLocation() == Mech.LOC_LARM) {</span>
+<span class="nc" id="L1439">                                c.get(j).expected = 0;</span>
+<span class="nc" id="L1440">                                c.get(j).primary_expected = 0;</span>
+                            }
+<span class="nc bnc" id="L1442" title="All 2 branches missed.">                            if (c.get(j).weapon.getLocation() == Mech.LOC_RARM) {</span>
+<span class="nc" id="L1443">                                c.get(j).expected = 0;</span>
+<span class="nc" id="L1444">                                c.get(j).primary_expected = 0;</span>
+                            }
+                        }
+                    }
+                }
+            }
+        }
+<span class="nc" id="L1451">    }</span>
+
+    /* could use best of best strategy instead of expensive ga */
+    public double attackUtility(MoveOption es, CEntity target) {
+<span class="nc" id="L1455">        GAAttack result = bestAttack(es, target, 1);</span>
+<span class="nc bnc" id="L1456" title="All 2 branches missed.">        if (result == null) {</span>
+<span class="nc" id="L1457">            return 0;</span>
+        }
+<span class="nc" id="L1459">        return result.getFittestChromosomesFitness();</span>
+    }
+
+    @Override
+    public void calculateFiringTurn() {
+<span class="nc" id="L1464">        int first_entity = game.getFirstEntityNum(getMyTurn());</span>
+<span class="nc" id="L1465">        int entity_num = first_entity;</span>
+<span class="nc" id="L1466">        int best_entity = first_entity;</span>
+<span class="nc" id="L1467">        int spin_mode = 0;</span>
+<span class="nc" id="L1468">        double max = java.lang.Double.NEGATIVE_INFINITY;</span>
+<span class="nc" id="L1469">        int[] results = null;</span>
+<span class="nc" id="L1470">        ArrayList&lt;ArrayList&lt;AttackOption&gt;&gt; winner = null;</span>
+<span class="nc" id="L1471">        int arc = 0;</span>
+        WeaponType spinner;
+
+<span class="nc bnc" id="L1474" title="All 2 branches missed.">        if (entity_num == -1) {</span>
+<span class="nc" id="L1475">            return;</span>
+        }
+
+        do {
+<span class="nc" id="L1479">            Entity en = game.getEntity(entity_num);</span>
+<span class="nc" id="L1480">            CEntity cen = centities.get(en);</span>
+
+<span class="nc" id="L1482">            GAAttack test = bestAttack(cen.current, null, 3);</span>
+
+<span class="nc bnc" id="L1484" title="All 4 branches missed.">            if ((test != null) &amp;&amp; (test.getFittestChromosomesFitness() &gt; max)) {</span>
+<span class="nc" id="L1485">                max = test.getFittestChromosomesFitness();</span>
+<span class="nc" id="L1486">                results = test.getResultChromosome();</span>
+<span class="nc" id="L1487">                arc = test.getFiringArc();</span>
+<span class="nc" id="L1488">                best_entity = entity_num;</span>
+<span class="nc" id="L1489">                winner = test.getAttack();</span>
+            }
+<span class="nc" id="L1491">            entity_num = game.getNextEntityNum(getMyTurn(), entity_num);</span>
+<span class="nc bnc" id="L1492" title="All 4 branches missed.">        } while ((entity_num != first_entity) &amp;&amp; (entity_num != -1));</span>
+
+<span class="nc" id="L1494">        Vector&lt;EntityAction&gt; av = new Vector&lt;EntityAction&gt;();</span>
+        // maximum already selected (or default)
+<span class="nc" id="L1496">        Entity en = game.getEntity(best_entity);</span>
+<span class="nc bnc" id="L1497" title="All 2 branches missed.">        if (results != null) {</span>
+<span class="nc" id="L1498">            Entity primary_target = game.getEntitiesVector().get(</span>
+                    results[results.length - 1]);
+<span class="nc" id="L1500">            TreeSet&lt;AttackOption&gt; tm = new TreeSet&lt;AttackOption&gt;(</span>
+<span class="nc" id="L1501">                    new AttackOption.Sorter(centities.get(primary_target)));</span>
+<span class="nc bnc" id="L1502" title="All 2 branches missed.">            for (int i = 0; i &lt; (results.length - 1); i++) {</span>
+<span class="nc bnc" id="L1503" title="All 2 branches missed.">                if (winner != null) {</span>
+<span class="nc" id="L1504">                    AttackOption a = winner.get(i).get(results[i]);</span>
+<span class="nc bnc" id="L1505" title="All 2 branches missed.">                    if (a.target != null) {</span>
+<span class="nc" id="L1506">                        a.target.expected_damage[a.toHit.getSideTable()] += a.value;</span>
+<span class="nc" id="L1507">                        a.target.hasTakenDamage = true;</span>
+<span class="nc" id="L1508">                        tm.add(a);</span>
+                    }
+                }
+            }
+<span class="nc" id="L1512">            Iterator&lt;AttackOption&gt; i = tm.iterator();</span>
+<span class="nc bnc" id="L1513" title="All 2 branches missed.">            while (i.hasNext()) {</span>
+<span class="nc" id="L1514">                AttackOption a = i.next();</span>
+
+<span class="nc" id="L1516">                WeaponAttackAction new_attack = new WeaponAttackAction(</span>
+<span class="nc" id="L1517">                        en.getId(), a.target.getEntity().getId(),</span>
+<span class="nc" id="L1518">                        en.getEquipmentNum(a.weapon));</span>
+
+<span class="nc bnc" id="L1520" title="All 2 branches missed.">                if (en.getEquipment(new_attack.getWeaponId()).getLinked() != null) {</span>
+<span class="nc" id="L1521">                    spinner = (WeaponType) a.weapon.getType();</span>
+
+                    // If this is an ultra-cannon or rotary cannon, try to spin
+                    // it up
+
+<span class="nc bnc" id="L1526" title="All 2 branches missed.">                    if ((spinner.getAmmoType() == AmmoType.T_AC_ULTRA)</span>
+<span class="nc bnc" id="L1527" title="All 2 branches missed.">                        || (spinner.getAmmoType() == AmmoType.T_AC_ULTRA_THB)</span>
+<span class="nc bnc" id="L1528" title="All 2 branches missed.">                        || (spinner.getAmmoType() == AmmoType.T_AC_ROTARY)) {</span>
+<span class="nc" id="L1529">                        spin_mode = Compute.spinUpCannon(game, new_attack);</span>
+<span class="nc" id="L1530">                        super.sendModeChange(en.getId(),</span>
+<span class="nc" id="L1531">                                             en.getEquipmentNum(a.weapon), spin_mode);</span>
+                    }
+<span class="nc" id="L1533">                    Mounted cur_ammo = en</span>
+<span class="nc" id="L1534">                            .getEquipment(new_attack.getWeaponId()).getLinked();</span>
+<span class="nc" id="L1535">                    new_attack.setAmmoId(en.getEquipmentNum(cur_ammo));</span>
+<span class="nc" id="L1536">                    Compute.getAmmoAdjDamage(game, new_attack);</span>
+
+                }
+<span class="nc" id="L1539">                av.add(new_attack);</span>
+
+<span class="nc" id="L1541">            }</span>
+
+            // Use the attack options and weapon attack actions to determine the
+            // best aiming point
+
+<span class="nc bnc" id="L1546" title="All 2 branches missed.">            if (av.size() &gt; 0) {</span>
+<span class="nc" id="L1547">                getAimPoint(tm, av);</span>
+            }
+
+        }
+<span class="nc bnc" id="L1551" title="All 4 branches missed.">        switch (arc) {</span>
+            case 1:
+<span class="nc" id="L1553">                av.add(0, new TorsoTwistAction(en.getId(),</span>
+<span class="nc" id="L1554">                                               (en.getFacing() + 5) % 6));</span>
+<span class="nc" id="L1555">                break;</span>
+            case 2:
+<span class="nc" id="L1557">                av.add(0, new TorsoTwistAction(en.getId(),</span>
+<span class="nc" id="L1558">                                               (en.getFacing() + 1) % 6));</span>
+<span class="nc" id="L1559">                break;</span>
+            case 3:
+<span class="nc" id="L1561">                av.add(0, new TorsoTwistAction(en.getId(),</span>
+<span class="nc" id="L1562">                                               (en.getFacing() + 3) % 6));</span>
+                break;
+        }
+<span class="nc" id="L1565">        sendAttackData(best_entity, av);</span>
+<span class="nc" id="L1566">    }</span>
+
+    /**
+     * consider how to put more pre-turn logic here
+     */
+    @Override
+    protected void initMovement() {
+<span class="nc" id="L1573">        old_moves = null;</span>
+<span class="nc" id="L1574">        enemies_moved = 0;</span>
+<span class="nc" id="L1575">        double max_modifier = 1.4;</span>
+<span class="nc" id="L1576">        ArrayList&lt;Entity&gt; entities = new ArrayList&lt;Entity&gt;(</span>
+<span class="nc" id="L1577">                game.getEntitiesVector());</span>
+<span class="nc" id="L1578">        double num_entities = Math.sqrt(entities.size()) / 100;</span>
+<span class="nc" id="L1579">        ArrayList&lt;CEntity&gt; friends = new ArrayList&lt;CEntity&gt;();</span>
+<span class="nc" id="L1580">        ArrayList&lt;CEntity&gt; foes = new ArrayList&lt;CEntity&gt;();</span>
+<span class="nc" id="L1581">        double friend_sum = 0;</span>
+<span class="nc" id="L1582">        double foe_sum = 0;</span>
+<span class="nc" id="L1583">        double max_foe_bv = 0;</span>
+<span class="nc" id="L1584">        CEntity max_foe = null;</span>
+<span class="nc bnc" id="L1585" title="All 2 branches missed.">        for (int i = 0; i &lt; entities.size(); i++) {</span>
+<span class="nc" id="L1586">            Entity entity = entities.get(i);</span>
+<span class="nc" id="L1587">            CEntity centity = centities.get(entity);</span>
+<span class="nc" id="L1588">            centity.enemy_num = i;</span>
+<span class="nc" id="L1589">            double old_value = centity.bv * (centity.overall_armor_percent + 1);</span>
+<span class="nc" id="L1590">            centity.reset(); // should get fresh values</span>
+<span class="nc" id="L1591">            double new_value = centity.bv * (centity.overall_armor_percent + 1);</span>
+<span class="nc" id="L1592">            double percent = 1 + ((new_value - old_value) / old_value);</span>
+<span class="nc bnc" id="L1593" title="All 2 branches missed.">            if (entity.getOwner().equals(getLocalPlayer())) {</span>
+<span class="nc" id="L1594">                friends.add(centity);</span>
+<span class="nc" id="L1595">                friend_sum += new_value;</span>
+<span class="nc bnc" id="L1596" title="All 2 branches missed.">                if (percent &lt; .85) {</span>
+                    // small retreat
+<span class="nc" id="L1598">                    centity.strategy.attack = .85;</span>
+<span class="nc bnc" id="L1599" title="All 2 branches missed.">                } else if (percent &lt; .95) {</span>
+<span class="nc" id="L1600">                    centity.strategy.attack = 1;</span>
+<span class="nc bnc" id="L1601" title="All 4 branches missed.">                } else if ((percent &lt;= 1)</span>
+                           &amp;&amp; (centity.strategy.attack &lt; max_modifier)) {
+<span class="nc bnc" id="L1603" title="All 2 branches missed.">                    if (percent == 1) {</span>
+<span class="nc bnc" id="L1604" title="All 2 branches missed.">                        if (centity.strategy.attack &lt; 1) {</span>
+<span class="nc" id="L1605">                            centity.strategy.attack = Math.min(</span>
+                                    1.4 * centity.strategy.attack, 1);
+                        } else {
+<span class="nc" id="L1608">                            centity.strategy.attack *= (1.0 + num_entities);</span>
+                        }
+                    } else {
+<span class="nc" id="L1611">                        centity.strategy.attack *= (1.0 + (2 * num_entities));</span>
+                    }
+                }
+<span class="nc bnc" id="L1614" title="All 2 branches missed.">            } else if (!entity.getOwner().isEnemyOf(getLocalPlayer())) {</span>
+<span class="nc" id="L1615">                friend_sum += new_value;</span>
+            } else {
+<span class="nc" id="L1617">                foes.add(centity);</span>
+<span class="nc" id="L1618">                foe_sum += new_value;</span>
+<span class="nc bnc" id="L1619" title="All 2 branches missed.">                if (entity.isCommander()) {</span>
+<span class="nc" id="L1620">                    new_value *= 3; // make bots like to attack commanders</span>
+                }
+<span class="nc bnc" id="L1622" title="All 4 branches missed.">                if ((new_value &gt; max_foe_bv) || (max_foe == null)) {</span>
+<span class="nc" id="L1623">                    max_foe_bv = new_value;</span>
+<span class="nc" id="L1624">                    max_foe = centity;</span>
+                }
+<span class="nc bnc" id="L1626" title="All 2 branches missed.">                if (getEntitiesOwned().size() &gt; 2) {</span>
+<span class="nc bnc" id="L1627" title="All 2 branches missed.">                    if (centity.strategy.target &gt; 2) {</span>
+<span class="nc" id="L1628">                        centity.strategy.target = 1 + (.5 * (centity.strategy.target - 2));</span>
+                    }
+<span class="nc bnc" id="L1630" title="All 4 branches missed.">                    if ((percent &lt; .85)</span>
+                        &amp;&amp; (centity.strategy.target &lt; max_modifier)) {
+<span class="nc" id="L1632">                        centity.strategy.target *= (1.0 + (6 * num_entities));</span>
+<span class="nc bnc" id="L1633" title="All 4 branches missed.">                    } else if ((percent &lt; .95)</span>
+                               &amp;&amp; (centity.strategy.target &lt; max_modifier)) {
+<span class="nc" id="L1635">                        centity.strategy.target *= (1.0 + (4 * num_entities));</span>
+<span class="nc bnc" id="L1636" title="All 2 branches missed.">                    } else if (percent &lt;= 1) {</span>
+<span class="nc bnc" id="L1637" title="All 2 branches missed.">                        if (percent == 1) {</span>
+<span class="nc" id="L1638">                            centity.strategy.target /= (1.0 + (2 * num_entities));</span>
+                        } else {
+<span class="nc" id="L1640">                            centity.strategy.target /= (1.0 + num_entities);</span>
+                        }
+                    }
+                    // don't go below one
+<span class="nc bnc" id="L1644" title="All 2 branches missed.">                    if (centity.strategy.target &lt; 1) {</span>
+<span class="nc" id="L1645">                        centity.strategy.target = 1;</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L1650">        System.out.println(&quot;Us &quot; + friend_sum + &quot; Them &quot; + foe_sum);</span>
+        // do some more reasoning...
+<span class="nc" id="L1652">        double unit_values = friend_sum;</span>
+<span class="nc" id="L1653">        double enemy_values = foe_sum;</span>
+<span class="nc" id="L1654">        Iterator&lt;CEntity&gt; i = foes.iterator();</span>
+
+<span class="nc bnc" id="L1656" title="All 2 branches missed.">        if (friends.size() &gt; 1) {</span>
+<span class="nc bnc" id="L1657" title="All 2 branches missed.">            if ((Strategy.MainTarget == null)</span>
+<span class="nc bnc" id="L1658" title="All 2 branches missed.">                || (null == game.getEntity(Strategy.MainTarget.getEntity()</span>
+<span class="nc" id="L1659">                                                              .getId()))) {</span>
+<span class="nc" id="L1660">                Strategy.MainTarget = max_foe;</span>
+            }
+            // TODO : Handle this better.
+<span class="nc bnc" id="L1663" title="All 2 branches missed.">            if (null == Strategy.MainTarget) {</span>
+<span class="nc" id="L1664">                System.err</span>
+<span class="nc" id="L1665">                        .println(&quot;TestBot#initMovement() - no main target for bot&quot;);</span>
+<span class="nc bnc" id="L1666" title="All 2 branches missed.">            } else if (null == Strategy.MainTarget.strategy) {</span>
+<span class="nc" id="L1667">                System.err</span>
+<span class="nc" id="L1668">                        .println(&quot;TestBot#initMovement() - no strategy for main target&quot;);</span>
+            } else {
+<span class="nc" id="L1670">                Strategy.MainTarget.strategy.target += .2;</span>
+<span class="nc bnc" id="L1671" title="All 2 branches missed.">                while (i.hasNext()) {</span>
+<span class="nc" id="L1672">                    CEntity centity = i.next();</span>
+                    // good turn, keep up the work, but randomize to reduce
+                    // predictability
+<span class="nc bnc" id="L1675" title="All 2 branches missed.">                    if ((friend_sum - foe_sum) &gt;= ((.9 * unit_values) - enemy_values)) {</span>
+<span class="nc bnc" id="L1676" title="All 2 branches missed.">                        if (Compute.randomInt(2) == 1) {</span>
+<span class="nc" id="L1677">                            centity.strategy.target += .3;</span>
+                        }
+                        // lost that turn, but still in the fight, just get a
+                        // little more aggressive
+<span class="nc bnc" id="L1681" title="All 2 branches missed.">                    } else if (friend_sum &gt; (.9 * foe_sum)) {</span>
+<span class="nc" id="L1682">                        centity.strategy.target += .15;</span>
+                        // lost that turn and loosing
+<span class="nc bnc" id="L1684" title="All 2 branches missed.">                    } else if (centity.strategy.target &lt; 2) { // go for the</span>
+                        // gusto
+<span class="nc" id="L1686">                        centity.strategy.target += .3;</span>
+                    }
+<span class="nc" id="L1688">                    System.out.println(centity.getEntity().getShortName() + &quot; &quot;</span>
+                                       + centity.strategy.target);
+<span class="nc" id="L1690">                }</span>
+            }
+        }
+
+<span class="nc" id="L1694">        double ratio = friend_sum / foe_sum;</span>
+<span class="nc" id="L1695">        double mod = 1;</span>
+<span class="nc bnc" id="L1696" title="All 2 branches missed.">        if (ratio &lt; .9) {</span>
+<span class="nc" id="L1697">            mod = .95;</span>
+<span class="nc bnc" id="L1698" title="All 2 branches missed.">        } else if (ratio &lt; 1) {</span>
+            // no change
+        } else { // attack
+<span class="nc" id="L1701">            mod = (1.0 + num_entities);</span>
+        }
+<span class="nc" id="L1703">        i = friends.iterator();</span>
+<span class="nc bnc" id="L1704" title="All 2 branches missed.">        while (i.hasNext()) {</span>
+<span class="nc" id="L1705">            CEntity centity = i.next();</span>
+<span class="nc bnc" id="L1706" title="All 8 branches missed.">            if (!((mod &lt; 1) &amp;&amp; (centity.strategy.attack &lt; .6))</span>
+                &amp;&amp; !((mod &gt; 1) &amp;&amp; (centity.strategy.attack &gt;= max_modifier))) {
+<span class="nc" id="L1708">                centity.strategy.attack *= mod;</span>
+            }
+<span class="nc" id="L1710">        }</span>
+<span class="nc" id="L1711">        System.gc(); // just to make sure</span>
+<span class="nc" id="L1712">    }</span>
+
+    @Override
+    protected void processChat(GamePlayerChatEvent ge) {
+<span class="nc" id="L1716">        chatp.processChat(ge, this);</span>
+<span class="nc" id="L1717">    }</span>
+
+    // Where do I put my units? This prioritizes hexes and facings
+    @Override
+    protected void calculateDeployment() {
+
+        int weapon_count;
+        int hex_count, x_ave, y_ave, nDir;
+        double av_range;
+
+        Coords pointing_to;
+
+<span class="nc" id="L1729">        int entNum = game.getFirstDeployableEntityNum(game.getTurnForPlayer(localPlayerNumber));</span>
+<span class="nc bnc" id="L1730" title="All 4 branches missed.">        assert (entNum != Entity.NONE) : &quot;The bot is trying to deploy without units being left.&quot;;</span>
+
+<span class="nc" id="L1732">        List&lt;Coords&gt; cStart = getStartingCoordsArray(game.getEntity(entNum));</span>
+<span class="nc" id="L1733">        Coords cDeploy = getFirstValidCoords(getEntity(entNum), cStart);</span>
+
+<span class="nc bnc" id="L1735" title="All 2 branches missed.">        if (cDeploy == null) {</span>
+            // bad event handeling, this unit is not deployable, remove it
+            // instead.
+            // This should not happen but does (eg ships on a deployment zone
+            // without water.
+<span class="nc" id="L1740">            System.out</span>
+<span class="nc" id="L1741">                    .println(&quot;The bot does not know how or is unable to deploy &quot;</span>
+<span class="nc" id="L1742">                             + getEntity(entNum) + &quot;. Removing it instead.&quot;);</span>
+<span class="nc" id="L1743">            sendChat(&quot;Oh dear I don't know how to deploy this &quot;</span>
+<span class="nc" id="L1744">                     + getEntity(entNum) + &quot;. Skipping to the next one.&quot;);</span>
+<span class="nc" id="L1745">            sendDeleteEntity(entNum);</span>
+<span class="nc" id="L1746">            return;</span>
+        }
+
+        // Now that we have a location to deploy to, get a direction
+        // Using average long range of deploying unit, point towards the largest
+        // cluster of enemies in range
+
+<span class="nc" id="L1753">        av_range = 0.0;</span>
+<span class="nc" id="L1754">        weapon_count = 0;</span>
+<span class="nc bnc" id="L1755" title="All 2 branches missed.">        for (Mounted mounted : getEntity(entNum).getWeaponList()) {</span>
+<span class="nc" id="L1756">            WeaponType wtype = (WeaponType) mounted.getType();</span>
+<span class="nc bnc" id="L1757" title="All 4 branches missed.">            if ((wtype.getName() != &quot;ATM 3&quot;) &amp;&amp; (wtype.getName() != &quot;ATM 6&quot;)</span>
+<span class="nc bnc" id="L1758" title="All 2 branches missed.">                &amp;&amp; (wtype.getName() != &quot;ATM 9&quot;)</span>
+<span class="nc bnc" id="L1759" title="All 2 branches missed.">                &amp;&amp; (wtype.getName() != &quot;ATM 12&quot;)) {</span>
+<span class="nc bnc" id="L1760" title="All 2 branches missed.">                if (getEntity(entNum).getC3Master() != null) {</span>
+<span class="nc" id="L1761">                    av_range += ((wtype.getLongRange()) * 1.25);</span>
+                } else {
+<span class="nc" id="L1763">                    av_range += wtype.getLongRange();</span>
+                }
+<span class="nc" id="L1765">                weapon_count++;</span>
+            }
+<span class="nc" id="L1767">        }</span>
+<span class="nc bnc" id="L1768" title="All 2 branches missed.">        for (Mounted mounted : getEntity(entNum).getAmmo()) {</span>
+<span class="nc" id="L1769">            AmmoType atype = (AmmoType) mounted.getType();</span>
+<span class="nc bnc" id="L1770" title="All 2 branches missed.">            if (atype.getAmmoType() == AmmoType.T_ATM) {</span>
+<span class="nc" id="L1771">                weapon_count++;</span>
+<span class="nc" id="L1772">                av_range += 15.0;</span>
+<span class="nc bnc" id="L1773" title="All 2 branches missed.">                if (atype.getMunitionType() == AmmoType.M_HIGH_EXPLOSIVE) {</span>
+<span class="nc" id="L1774">                    av_range -= 6;</span>
+                }
+<span class="nc bnc" id="L1776" title="All 2 branches missed.">                if (atype.getMunitionType() == AmmoType.M_EXTENDED_RANGE) {</span>
+<span class="nc" id="L1777">                    av_range += 12.0;</span>
+                }
+            }
+<span class="nc bnc" id="L1780" title="All 2 branches missed.">            if (atype.getAmmoType() == AmmoType.T_MML) {</span>
+<span class="nc" id="L1781">                weapon_count++;</span>
+<span class="nc bnc" id="L1782" title="All 2 branches missed.">                if (atype.hasFlag(AmmoType.F_MML_LRM)) {</span>
+<span class="nc" id="L1783">                    av_range = 9;</span>
+                } else {
+<span class="nc" id="L1785">                    av_range = 21.0;</span>
+                }
+            }
+<span class="nc" id="L1788">        }</span>
+
+<span class="nc" id="L1790">        av_range = av_range / weapon_count;</span>
+
+<span class="nc" id="L1792">        hex_count = 0;</span>
+<span class="nc" id="L1793">        x_ave = 0;</span>
+<span class="nc" id="L1794">        y_ave = 0;</span>
+<span class="nc bnc" id="L1795" title="All 2 branches missed.">        for (Entity test_ent : game.getEntitiesVector()) {</span>
+<span class="nc bnc" id="L1796" title="All 2 branches missed.">            if (test_ent.isDeployed()) {</span>
+<span class="nc bnc" id="L1797" title="All 2 branches missed.">                if (test_ent.isVisibleToEnemy()) {</span>
+<span class="nc bnc" id="L1798" title="All 2 branches missed.">                    if (cDeploy.distance(test_ent.getPosition()) &lt;= (int) av_range) {</span>
+<span class="nc" id="L1799">                        hex_count++;</span>
+<span class="nc" id="L1800">                        x_ave += test_ent.getPosition().getX();</span>
+<span class="nc" id="L1801">                        y_ave += test_ent.getPosition().getY();</span>
+                    }
+                }
+            }
+<span class="nc" id="L1805">        }</span>
+<span class="nc bnc" id="L1806" title="All 2 branches missed.">        if (hex_count != 0) {</span>
+<span class="nc" id="L1807">            pointing_to = new Coords((x_ave / hex_count), (y_ave / hex_count));</span>
+        } else {
+<span class="nc" id="L1809">            pointing_to = new Coords(game.getBoard().getWidth() / 2, game</span>
+<span class="nc" id="L1810">                                                                             .getBoard().getHeight() / 2);</span>
+        }
+<span class="nc" id="L1812">        nDir = cDeploy.direction(pointing_to);</span>
+
+        // If unit has stealth armor, turn it on
+<span class="nc bnc" id="L1815" title="All 2 branches missed.">        if ((getEntity(entNum) instanceof Mech)</span>
+<span class="nc bnc" id="L1816" title="All 2 branches missed.">            &amp;&amp; (getEntity(entNum).getArmorType(0) == EquipmentType.T_ARMOR_STEALTH)</span>
+<span class="nc bnc" id="L1817" title="All 2 branches missed.">            &amp;&amp; !getEntity(entNum).hasPatchworkArmor()) {</span>
+<span class="nc bnc" id="L1818" title="All 2 branches missed.">            for (Mounted test_equip : getEntity(entNum).getMisc()) {</span>
+<span class="nc" id="L1819">                MiscType test_type = (MiscType) test_equip.getType();</span>
+<span class="nc bnc" id="L1820" title="All 2 branches missed.">                if (test_type.hasFlag(MiscType.F_STEALTH)) {</span>
+<span class="nc bnc" id="L1821" title="All 2 branches missed.">                    if (!test_equip.curMode().getName().equals(&quot;On&quot;)) {</span>
+<span class="nc" id="L1822">                        test_equip.setMode(&quot;On&quot;);</span>
+<span class="nc" id="L1823">                        super.sendModeChange(entNum, getEntity(entNum)</span>
+<span class="nc" id="L1824">                                .getEquipmentNum(test_equip), 1);</span>
+                    }
+                }
+<span class="nc" id="L1827">            }</span>
+        }
+
+<span class="nc" id="L1830">        Entity ce = game.getEntity(entNum);</span>
+<span class="nc bnc" id="L1831" title="All 4 branches missed.">        assert (!ce.isLocationProhibited(cDeploy)) : &quot;Bot tried to deploy to an invalid hex&quot;;</span>
+<span class="nc" id="L1832">        deploy(entNum, cDeploy, nDir, 0);</span>
+<span class="nc" id="L1833">    }</span>
+
+    @Override
+    protected MovePath continueMovementFor(Entity entity) {
+
+<span class="nc bnc" id="L1838" title="All 2 branches missed.">        if (entity == null) {</span>
+<span class="nc" id="L1839">            throw new NullPointerException(&quot;Entity is null.&quot;);</span>
+        }
+
+<span class="nc" id="L1842">        System.out.println(&quot;Contemplating movement of &quot; + entity.getShortName()</span>
+<span class="nc" id="L1843">                           + &quot; &quot; + entity.getId());</span>
+<span class="nc" id="L1844">        CEntity cen = centities.get(entity);</span>
+<span class="nc" id="L1845">        cen.refresh();</span>
+<span class="nc" id="L1846">        firstPass(cen);</span>
+
+<span class="nc" id="L1848">        Object[] enemy_array = getEnemyEntities().toArray();</span>
+<span class="nc" id="L1849">        MoveOption result[] = calculateMove(entity);</span>
+<span class="nc" id="L1850">        MoveOption min = null;</span>
+<span class="nc" id="L1851">        ArrayList&lt;MoveOption[]&gt; possible = new ArrayList&lt;MoveOption[]&gt;();</span>
+<span class="nc" id="L1852">        boolean short_circuit = false;</span>
+
+<span class="nc bnc" id="L1854" title="All 2 branches missed.">        if (result.length &lt; 6) {</span>
+<span class="nc bnc" id="L1855" title="All 2 branches missed.">            min = result.length &gt; 0 ? (MoveOption) result[0] : null;</span>
+<span class="nc" id="L1856">            short_circuit = true;</span>
+        }
+<span class="nc" id="L1858">        possible.add(result);</span>
+
+        // should ignore mechs that are not engaged
+        // and only do the below when there are 2 or mechs left to move
+<span class="nc bnc" id="L1862" title="All 2 branches missed.">        if (!short_circuit) {</span>
+<span class="nc bnc" id="L1863" title="All 4 branches missed.">            if ((getEntitiesOwned().size() &gt; 1) &amp;&amp; (possible.size() &gt; 0)) {</span>
+<span class="nc" id="L1864">                GALance lance = new GALance(this, possible, 50, 80);</span>
+<span class="nc" id="L1865">                lance.evolve();</span>
+<span class="nc" id="L1866">                min = lance.getResult();</span>
+<span class="nc" id="L1867">                old_moves = lance;</span>
+<span class="nc bnc" id="L1868" title="All 2 branches missed.">            } else if ((possible.get(0) != null)</span>
+<span class="nc bnc" id="L1869" title="All 2 branches missed.">                       &amp;&amp; (possible.get(0).length &gt; 0)) {</span>
+<span class="nc" id="L1870">                min = possible.get(0)[0];</span>
+            }
+        }
+<span class="nc bnc" id="L1873" title="All 2 branches missed.">        if (min == null) {</span>
+<span class="nc" id="L1874">            min = new MoveOption(game, centities.get(getFirstEntityNum()));</span>
+        }
+
+<span class="nc bnc" id="L1877" title="All 2 branches missed.">        for (Object element : enemy_array) {</span>
+<span class="nc" id="L1878">            Entity en = (Entity) element;</span>
+
+            // ignore loaded units
+<span class="nc bnc" id="L1881" title="All 2 branches missed.">            if (en.getPosition() == null) {</span>
+<span class="nc" id="L1882">                continue;</span>
+            }
+
+<span class="nc" id="L1885">            CEntity enemy = centities.get(en);</span>
+<span class="nc" id="L1886">            int enemy_hit_arc = CEntity.getThreatHitArc(</span>
+<span class="nc" id="L1887">                    enemy.current.getFinalCoords(),</span>
+<span class="nc" id="L1888">                    enemy.current.getFinalFacing(), min.getFinalCoords());</span>
+<span class="nc" id="L1889">            MoveOption.DamageInfo di = min.damageInfos.get(enemy);</span>
+<span class="nc bnc" id="L1890" title="All 2 branches missed.">            if (di != null) {</span>
+<span class="nc" id="L1891">                enemy.expected_damage[enemy_hit_arc] += di.min_damage;</span>
+            }
+<span class="nc bnc" id="L1893" title="All 2 branches missed.">            if (enemy.expected_damage[enemy_hit_arc] &gt; 0) {</span>
+<span class="nc" id="L1894">                enemy.hasTakenDamage = true;</span>
+            }
+        }
+<span class="nc bnc" id="L1897" title="All 2 branches missed.">        if (min.isPhysical) {</span>
+<span class="nc" id="L1898">            centities.get(min.getPhysicalTargetId()).isPhysicalTarget = true;</span>
+        }
+<span class="nc" id="L1900">        System.out.println(min);</span>
+<span class="nc" id="L1901">        min.getCEntity().current = min;</span>
+<span class="nc" id="L1902">        min.getCEntity().last = min;</span>
+<span class="nc" id="L1903">        min.getCEntity().moved = true;</span>
+
+        // If this unit has a jammed RAC, and it has only walked,
+        // add an unjam action
+<span class="nc bnc" id="L1907" title="All 2 branches missed.">        if (min.getLastStep() != null) {</span>
+<span class="nc bnc" id="L1908" title="All 2 branches missed.">            if (min.getCEntity().entity.canUnjamRAC()) {</span>
+<span class="nc bnc" id="L1909" title="All 2 branches missed.">                if ((min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_WALK)</span>
+<span class="nc bnc" id="L1910" title="All 2 branches missed.">                    || (min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_VTOL_WALK)</span>
+<span class="nc bnc" id="L1911" title="All 2 branches missed.">                    || (min.getLastStep().getMovementType(true) == EntityMovementType.MOVE_NONE)) {</span>
+                    // Cycle through all available weapons, only unjam if the
+                    // jam(med)
+                    // RACs count for a significant portion of possible damage
+<span class="nc" id="L1915">                    int rac_damage = 0;</span>
+<span class="nc" id="L1916">                    int other_damage = 0;</span>
+<span class="nc" id="L1917">                    int clearance_range = 0;</span>
+<span class="nc bnc" id="L1918" title="All 2 branches missed.">                    for (Mounted equip : min.getCEntity().entity</span>
+<span class="nc" id="L1919">                            .getWeaponList()) {</span>
+<span class="nc" id="L1920">                        WeaponType test_weapon = new WeaponType();</span>
+
+<span class="nc" id="L1922">                        test_weapon = (WeaponType) equip.getType();</span>
+<span class="nc bnc" id="L1923" title="All 2 branches missed.">                        if ((test_weapon.getAmmoType() == AmmoType.T_AC_ROTARY)</span>
+<span class="nc bnc" id="L1924" title="All 2 branches missed.">                            &amp;&amp; (equip.isJammed() == true)) {</span>
+<span class="nc" id="L1925">                            rac_damage = rac_damage</span>
+<span class="nc" id="L1926">                                         + (4 * (test_weapon.getDamage()));</span>
+                        } else {
+<span class="nc bnc" id="L1928" title="All 2 branches missed.">                            if (equip.canFire()) {</span>
+<span class="nc" id="L1929">                                other_damage += test_weapon.getDamage();</span>
+<span class="nc bnc" id="L1930" title="All 2 branches missed.">                                if (test_weapon.getMediumRange() &gt; clearance_range) {</span>
+<span class="nc" id="L1931">                                    clearance_range = test_weapon</span>
+<span class="nc" id="L1932">                                            .getMediumRange();</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L1936">                    }</span>
+                    // Even if the jammed RAC doesn't make up a significant
+                    // portion
+                    // of the units damage, its still better to have it
+                    // functional
+                    // If nothing is &quot;close&quot; then unjam anyways
+<span class="nc" id="L1942">                    int check_range = 100;</span>
+<span class="nc bnc" id="L1943" title="All 2 branches missed.">                    for (Entity enemy : game.getEntitiesVector()) {</span>
+<span class="nc bnc" id="L1944" title="All 2 branches missed.">                        if ((min.getCEntity().entity.getPosition() != null)</span>
+<span class="nc bnc" id="L1945" title="All 2 branches missed.">                            &amp;&amp; (enemy.getPosition() != null)</span>
+<span class="nc bnc" id="L1946" title="All 2 branches missed.">                            &amp;&amp; (enemy.isEnemyOf(min.getCEntity().entity))) {</span>
+<span class="nc bnc" id="L1947" title="All 2 branches missed.">                            if (enemy.isVisibleToEnemy()) {</span>
+<span class="nc" id="L1948">                                if (min.getCEntity().entity.getPosition()</span>
+<span class="nc bnc" id="L1949" title="All 2 branches missed.">                                                           .distance(enemy.getPosition()) &lt; check_range) {</span>
+<span class="nc" id="L1950">                                    check_range = min.getCEntity().entity</span>
+<span class="nc" id="L1951">                                            .getPosition().distance(</span>
+<span class="nc" id="L1952">                                                    enemy.getPosition());</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L1956">                    }</span>
+<span class="nc bnc" id="L1957" title="All 4 branches missed.">                    if ((rac_damage &gt;= other_damage)</span>
+                        || (check_range &lt; clearance_range)) {
+<span class="nc" id="L1959">                        min.addStep(MoveStepType.UNJAM_RAC);</span>
+                    }
+                }
+            }
+        }
+
+<span class="nc" id="L1965">        return min;</span>
+    }
+
+    @Override
+    protected Vector&lt;Minefield&gt; calculateMinefieldDeployment() {
+<span class="nc" id="L1970">        Vector&lt;Minefield&gt; deployedMinefields = new Vector&lt;Minefield&gt;();</span>
+
+<span class="nc" id="L1972">        deployMinefields(deployedMinefields, getLocalPlayer()</span>
+<span class="nc" id="L1973">                .getNbrMFConventional(), 0);</span>
+<span class="nc" id="L1974">        deployMinefields(deployedMinefields,</span>
+<span class="nc" id="L1975">                         getLocalPlayer().getNbrMFCommand(), 1);</span>
+<span class="nc" id="L1976">        deployMinefields(deployedMinefields, getLocalPlayer().getNbrMFVibra(),</span>
+                         2);
+
+<span class="nc" id="L1979">        return deployedMinefields;</span>
+    }
+
+    @Override
+    protected PlayerIDandList&lt;Coords&gt; calculateArtyAutoHitHexes() {
+<span class="nc" id="L1984">        PlayerIDandList&lt;Coords&gt; artyAutoHitHexes = new PlayerIDandList&lt;Coords&gt;();</span>
+<span class="nc" id="L1985">        artyAutoHitHexes.setPlayerID(getLocalPlayer().getId());</span>
+<span class="nc" id="L1986">        return artyAutoHitHexes;</span>
+    }
+
+    protected void deployMinefields(Vector&lt;Minefield&gt; deployedMinefields,
+                                    int number, int type) {
+<span class="nc bnc" id="L1991" title="All 2 branches missed.">        for (int i = 0; i &lt; number; i++) {</span>
+<span class="nc" id="L1992">            Coords coords = new Coords(Compute.randomInt(game.getBoard()</span>
+<span class="nc" id="L1993">                                                             .getWidth()),</span>
+<span class="nc" id="L1994">                                       Compute.randomInt(game.getBoard().getHeight())</span>
+            );
+
+<span class="nc bnc" id="L1997" title="All 2 branches missed.">            if (game.containsMinefield(coords)) {</span>
+<span class="nc" id="L1998">                Minefield mf = game.getMinefields(coords).get(0);</span>
+<span class="nc bnc" id="L1999" title="All 2 branches missed.">                if (mf.getPlayerId() == getLocalPlayer().getId()) {</span>
+<span class="nc" id="L2000">                    i--;</span>
+<span class="nc" id="L2001">                    continue;</span>
+                }
+<span class="nc" id="L2003">            } else {</span>
+<span class="nc" id="L2004">                Minefield mf = null;</span>
+
+<span class="nc bnc" id="L2006" title="All 2 branches missed.">                if (type == 0) {</span>
+<span class="nc" id="L2007">                    mf = Minefield.createMinefield(coords, getLocalPlayer()</span>
+<span class="nc" id="L2008">                            .getId(), Minefield.TYPE_CONVENTIONAL, 10);</span>
+<span class="nc bnc" id="L2009" title="All 2 branches missed.">                } else if (type == 1) {</span>
+<span class="nc" id="L2010">                    mf = Minefield.createMinefield(coords, getLocalPlayer()</span>
+<span class="nc" id="L2011">                            .getId(), Minefield.TYPE_COMMAND_DETONATED, 10);</span>
+<span class="nc bnc" id="L2012" title="All 2 branches missed.">                } else if (type == 2) {</span>
+<span class="nc" id="L2013">                    mf = Minefield.createMinefield(coords, getLocalPlayer()</span>
+<span class="nc" id="L2014">                            .getId(), Minefield.TYPE_VIBRABOMB, 20);</span>
+                }
+<span class="nc" id="L2016">                deployedMinefields.add(mf);</span>
+            }
+        }
+<span class="nc" id="L2019">    }</span>
+
+    /*
+     * Calculate the best location to aim at on a target Mech. Attack options
+     * must match 1:1 with WeaponAttackActions in Vector.
+     */
+    private void getAimPoint(TreeSet&lt;AttackOption&gt; attack_tree,
+                             Vector&lt;EntityAction&gt; atk_action_list) {
+
+<span class="nc bnc" id="L2028" title="All 4 branches missed.">        if ((attack_tree == null) || (atk_action_list == null)) {</span>
+<span class="nc" id="L2029">            return;</span>
+        }
+
+        WeaponAttackAction aimed_attack;
+        AttackOption current_option;
+
+        Vector&lt;Integer&gt; target_id_list; // List of viable aimed-shot targets
+
+        // Adjusted damages
+        double base_damage, base_odds;
+        double refactored_damage, refactored_head;
+
+        // Armor values
+        // Order is: head, ct, lt, rt, la, ra, ll, rl
+<span class="nc" id="L2043">        double[] values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};</span>
+
+        // Internal structure values
+        // Order is: head, ct, lt, rt, la, ra, ll, rl
+<span class="nc" id="L2047">        double[] is_values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};</span>
+
+        // Fitness values
+        // Order is: head, ct, lt, rt, la, ra, ll, rl
+<span class="nc" id="L2051">        double[] fitness = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};</span>
+
+        // Counters for armor penetration
+        // Order is: head, ct, lt, rt, la, ra, ll, rl
+<span class="nc" id="L2055">        int[] pen_counters = {0, 0, 0, 0, 0, 0, 0, 0};</span>
+
+        int attacker_id, test_target;
+<span class="nc" id="L2058">        int action_index = 0;</span>
+
+        // Base to-hit
+        int base_to_hit;
+
+        // Best locations to aim for
+        int best_loc, best_loc_head;
+
+<span class="nc" id="L2066">        boolean has_tcomp = false;</span>
+        boolean imob_target, rear_shot;
+        boolean is_primary_target;
+
+        // For each attack action
+
+<span class="nc" id="L2072">        target_id_list = new Vector&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L2073" title="All 2 branches missed.">        for (EntityAction aea : atk_action_list) {</span>
+
+<span class="nc bnc" id="L2075" title="All 2 branches missed.">            if (aea instanceof WeaponAttackAction) {</span>
+                // Get the attacker
+
+<span class="nc" id="L2078">                attacker_id = ((WeaponAttackAction) atk_action_list.get(0))</span>
+<span class="nc" id="L2079">                        .getEntityId();</span>
+
+                // Check to see if the attacker has a tcomp
+
+<span class="nc" id="L2083">                has_tcomp = game.getEntity(attacker_id).hasTargComp();</span>
+
+                // Get the target entity id
+
+<span class="nc" id="L2087">                test_target = ((WeaponAttackAction) aea).getTargetId();</span>
+
+                // If the target is a Mech
+
+<span class="nc bnc" id="L2091" title="All 2 branches missed.">                if (game.getEntity(test_target) instanceof Mech) {</span>
+
+                    // If the target is officially immobile or if the attacker
+                    // has a tcomp
+
+<span class="nc bnc" id="L2096" title="All 2 branches missed.">                    if ((has_tcomp == true)</span>
+<span class="nc bnc" id="L2097" title="All 2 branches missed.">                        | (game.getEntity(test_target).isImmobile())) {</span>
+<span class="nc bnc" id="L2098" title="All 2 branches missed.">                        if (!target_id_list.contains(test_target)) {</span>
+<span class="nc" id="L2099">                            target_id_list.add(test_target);</span>
+                        }
+                    }
+                }
+            }
+<span class="nc" id="L2104">        }</span>
+
+        // For each valid target
+
+<span class="nc" id="L2108">        is_primary_target = true;</span>
+<span class="nc bnc" id="L2109" title="All 2 branches missed.">        for (Iterator&lt;Integer&gt; i = target_id_list.iterator(); i.hasNext(); ) {</span>
+
+            // Set the current target
+
+<span class="nc" id="L2113">            test_target = i.next();</span>
+<span class="nc" id="L2114">            imob_target = game.getEntity(test_target).isImmobile();</span>
+
+            // Get the targets aspect ratio
+
+<span class="nc" id="L2118">            rear_shot = false;</span>
+<span class="nc bnc" id="L2119" title="All 2 branches missed.">            for (Iterator&lt;AttackOption&gt; j = attack_tree.iterator(); j.hasNext(); ) {</span>
+<span class="nc" id="L2120">                current_option = j.next();</span>
+<span class="nc bnc" id="L2121" title="All 2 branches missed.">                if (current_option.target.getEntity().getId() == test_target) {</span>
+<span class="nc" id="L2122">                    int attack_direction = current_option.toHit.getSideTable();</span>
+<span class="nc bnc" id="L2123" title="All 2 branches missed.">                    if (attack_direction == ToHitData.SIDE_REAR) {</span>
+<span class="nc" id="L2124">                        rear_shot = true;</span>
+                    } else {
+<span class="nc" id="L2126">                        rear_shot = false;</span>
+                    }
+<span class="nc" id="L2128">                    break;</span>
+                }
+            }
+
+            // Get the armor values for the target and make them negative (count
+            // up)
+
+<span class="nc" id="L2135">            values[0] = game.getEntity(test_target).getArmor(Mech.LOC_HEAD);</span>
+<span class="nc" id="L2136">            values[1] = game.getEntity(test_target).getArmor(Mech.LOC_CT,</span>
+                                                             rear_shot);
+<span class="nc" id="L2138">            values[2] = game.getEntity(test_target).getArmor(Mech.LOC_LT,</span>
+                                                             rear_shot);
+<span class="nc" id="L2140">            values[3] = game.getEntity(test_target).getArmor(Mech.LOC_RT,</span>
+                                                             rear_shot);
+<span class="nc" id="L2142">            values[4] = game.getEntity(test_target).getArmor(Mech.LOC_LARM);</span>
+<span class="nc" id="L2143">            values[5] = game.getEntity(test_target).getArmor(Mech.LOC_RARM);</span>
+<span class="nc" id="L2144">            values[6] = game.getEntity(test_target).getArmor(Mech.LOC_LLEG);</span>
+<span class="nc" id="L2145">            values[7] = game.getEntity(test_target).getArmor(Mech.LOC_RLEG);</span>
+
+            // Get the internals for the target
+
+<span class="nc" id="L2149">            is_values[0] = game.getEntity(test_target).getInternal(</span>
+                    Mech.LOC_HEAD);
+<span class="nc" id="L2151">            is_values[1] = game.getEntity(test_target).getInternal(Mech.LOC_CT);</span>
+<span class="nc" id="L2152">            is_values[2] = game.getEntity(test_target).getInternal(Mech.LOC_LT);</span>
+<span class="nc" id="L2153">            is_values[3] = game.getEntity(test_target).getInternal(Mech.LOC_RT);</span>
+<span class="nc" id="L2154">            is_values[4] = game.getEntity(test_target).getInternal(</span>
+                    Mech.LOC_LARM);
+<span class="nc" id="L2156">            is_values[5] = game.getEntity(test_target).getInternal(</span>
+                    Mech.LOC_RARM);
+<span class="nc" id="L2158">            is_values[6] = game.getEntity(test_target).getInternal(</span>
+                    Mech.LOC_LLEG);
+<span class="nc" id="L2160">            is_values[7] = game.getEntity(test_target).getInternal(</span>
+                    Mech.LOC_RLEG);
+
+            // Reset the fitness array
+<span class="nc bnc" id="L2164" title="All 2 branches missed.">            for (int arr_index = 0; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc" id="L2165">                fitness[arr_index] = 0.0;</span>
+            }
+
+            // Reset the penetration counter
+
+<span class="nc bnc" id="L2170" title="All 2 branches missed.">            for (int arr_index = 0; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc" id="L2171">                pen_counters[arr_index] = 0;</span>
+            }
+
+            // For each attack option
+
+<span class="nc" id="L2176">            action_index = 0;</span>
+<span class="nc" id="L2177">            refactored_damage = 0.0;</span>
+<span class="nc" id="L2178">            refactored_head = 0.0;</span>
+
+<span class="nc" id="L2180">            best_loc = Mech.LOC_CT;</span>
+<span class="nc" id="L2181">            best_loc_head = Mech.LOC_CT;</span>
+<span class="nc bnc" id="L2182" title="All 2 branches missed.">            for (Iterator&lt;AttackOption&gt; j = attack_tree.iterator(); j.hasNext(); ) {</span>
+
+                // If the target of the attack option is the current target
+
+<span class="nc" id="L2186">                current_option = j.next();</span>
+<span class="nc bnc" id="L2187" title="All 2 branches missed.">                if (test_target == current_option.target.getEntity().getId()) {</span>
+
+                    // Get the weapon
+
+<span class="nc" id="L2191">                    Mounted test_weapon = current_option.weapon;</span>
+<span class="nc" id="L2192">                    boolean aptGunnery = current_option.target.getEntity().hasAbility(OptionsConstants.PILOT_APTITUDE_GUNNERY);</span>
+
+                    // If the weapon is not LBX cannon or LBX cannon loaded with
+                    // slug
+
+<span class="nc" id="L2197">                    boolean direct_fire = true;</span>
+<span class="nc" id="L2198">                    if (((WeaponType) test_weapon.getType())</span>
+<span class="nc bnc" id="L2199" title="All 2 branches missed.">                                .hasFlag(WeaponType.F_DIRECT_FIRE) == false) {</span>
+<span class="nc" id="L2200">                        direct_fire = false;</span>
+                    }
+<span class="nc bnc" id="L2202" title="All 2 branches missed.">                    if (test_weapon.getType().hasFlag(WeaponType.F_PULSE)) {</span>
+<span class="nc" id="L2203">                        direct_fire = false;</span>
+                    }
+<span class="nc bnc" id="L2205" title="All 2 branches missed.">                    if ((((WeaponType) test_weapon.getType()).getAmmoType() == AmmoType.T_AC_LBX)</span>
+<span class="nc" id="L2206">                        || (((WeaponType) test_weapon.getType())</span>
+<span class="nc bnc" id="L2207" title="All 2 branches missed.">                                    .getAmmoType() == AmmoType.T_AC_LBX)) {</span>
+<span class="nc" id="L2208">                        if (((AmmoType) test_weapon.getLinked().getType())</span>
+<span class="nc bnc" id="L2209" title="All 2 branches missed.">                                    .getAmmoType() == AmmoType.M_CLUSTER) {</span>
+<span class="nc" id="L2210">                            direct_fire = false;</span>
+                        }
+                    }
+<span class="nc bnc" id="L2213" title="All 2 branches missed.">                    if (test_weapon.getCurrentShots() &gt; 1) {</span>
+<span class="nc" id="L2214">                        direct_fire = false;</span>
+                    }
+
+                    // If the weapon is direct fire
+
+<span class="nc bnc" id="L2219" title="All 2 branches missed.">                    if (direct_fire == true) {</span>
+
+                        // Get the expected damage, to-hit number, and odds
+                        // (0-1) of hitting
+
+<span class="nc bnc" id="L2224" title="All 2 branches missed.">                        base_damage = is_primary_target ? current_option.primary_expected</span>
+<span class="nc" id="L2225">                                                        : current_option.expected;</span>
+<span class="nc bnc" id="L2226" title="All 2 branches missed.">                        base_to_hit = is_primary_target ? current_option.toHit</span>
+<span class="nc" id="L2227">                                .getValue()</span>
+<span class="nc" id="L2228">                                                        : current_option.toHit.getValue() + 1;</span>
+<span class="nc bnc" id="L2229" title="All 2 branches missed.">                        base_odds = is_primary_target ? current_option.primary_odds</span>
+<span class="nc" id="L2230">                                                      : current_option.odds;</span>
+<span class="nc bnc" id="L2231" title="All 2 branches missed.">                        base_damage = base_odds == 0.0 ? 0.0 : base_damage</span>
+<span class="nc" id="L2232">                                                               / base_odds;</span>
+
+                        // If the target is mobile, only a tcomp can make an
+                        // aimed shot
+
+<span class="nc bnc" id="L2237" title="All 4 branches missed.">                        if (!imob_target &amp; has_tcomp) {</span>
+
+                            // Refactor the expected damage to account for
+                            // increased to-hit number
+
+<span class="nc" id="L2242">                            refactored_head = 0.0;</span>
+<span class="nc bnc" id="L2243" title="All 4 branches missed.">                            if (((base_to_hit + 4) &lt;= 12) &amp;&amp; Compute.allowAimedShotWith(test_weapon,</span>
+                                                                                        IAimingModes
+                                                                                                .AIM_MODE_TARG_COMP)) {
+<span class="nc" id="L2246">                                refactored_damage = base_damage</span>
+<span class="nc" id="L2247">                                                    * (Compute.oddsAbove(base_to_hit + 4, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2248">                                ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2249">                                        .get(action_index))</span>
+<span class="nc" id="L2250">                                        .setAimingMode(IAimingModes.AIM_MODE_TARG_COMP);</span>
+                                // Consider that a regular shot has a roughly
+                                // 20% chance of hitting the same location
+                                // Use the better of the regular shot or aimed
+                                // shot
+<span class="nc bnc" id="L2255" title="All 2 branches missed.">                                if ((0.2 * base_damage * (Compute.oddsAbove(base_to_hit, aptGunnery) / 100.0)) &gt;</span>
+                                    refactored_damage) {
+<span class="nc" id="L2257">                                    refactored_damage = 0.2</span>
+                                                        * base_damage
+<span class="nc" id="L2259">                                                        * (Compute.oddsAbove(base_to_hit, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2260">                                    ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2261">                                            .get(action_index))</span>
+<span class="nc" id="L2262">                                            .setAimingMode(IAimingModes.AIM_MODE_NONE);</span>
+                                }
+                            } else {
+<span class="nc" id="L2265">                                refactored_damage = 0.0;</span>
+<span class="nc" id="L2266">                                ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2267">                                        .get(action_index))</span>
+<span class="nc" id="L2268">                                        .setAimingMode(IAimingModes.AIM_MODE_NONE);</span>
+                            }
+
+                        }
+
+                        // If the target is immobile, the shot will always be
+                        // aimed
+
+<span class="nc bnc" id="L2276" title="All 2 branches missed.">                        if (imob_target) {</span>
+
+                            // If the attacker has a tcomp, consider both
+                            // options: immobile aim, tcomp aim
+
+<span class="nc bnc" id="L2281" title="All 2 branches missed.">                            if (has_tcomp) {</span>
+
+<span class="nc bnc" id="L2283" title="All 2 branches missed.">                                if (Compute.allowAimedShotWith(test_weapon, IAimingModes.AIM_MODE_TARG_COMP)) {</span>
+                                    // Refactor the expected damage to account for
+                                    // increased to-hit number of the tcomp
+
+<span class="nc" id="L2287">                                    refactored_damage = base_damage</span>
+<span class="nc" id="L2288">                                                        * (Compute.oddsAbove(base_to_hit + 4, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2289">                                    refactored_head = 0.0;</span>
+<span class="nc" id="L2290">                                    ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2291">                                            .get(action_index))</span>
+<span class="nc" id="L2292">                                            .setAimingMode(IAimingModes.AIM_MODE_TARG_COMP);</span>
+
+                                    // Check against immobile aim mode w/tcomp
+                                    // assist
+
+                                }
+<span class="nc" id="L2298">                                if (((0.50 * base_damage * (Compute</span>
+<span class="nc bnc" id="L2299" title="All 2 branches missed.">                                                                    .oddsAbove(base_to_hit, aptGunnery) / 100.0)) &gt;</span>
+<span class="nc bnc" id="L2300" title="All 2 branches missed.">                                     refactored_damage) &amp;&amp; Compute.allowAimedShotWith(test_weapon,</span>
+                                                                                      IAimingModes.AIM_MODE_IMMOBILE)) {
+<span class="nc" id="L2302">                                    refactored_damage = 0.50</span>
+                                                        * base_damage
+<span class="nc" id="L2304">                                                        * (Compute.oddsAbove(base_to_hit, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2305">                                    refactored_head = 0.50</span>
+                                                      * base_damage
+                                                      * (Compute
+<span class="nc" id="L2308">                                                                 .oddsAbove(base_to_hit + 7, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2309">                                    ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2310">                                            .get(action_index))</span>
+<span class="nc" id="L2311">                                            .setAimingMode(IAimingModes.AIM_MODE_IMMOBILE);</span>
+                                }
+
+<span class="nc bnc" id="L2314" title="All 2 branches missed.">                            } else if (Compute.allowAimedShotWith(test_weapon, IAimingModes.AIM_MODE_IMMOBILE)) {</span>
+
+                                // If the attacker doesn't have a tcomp, settle
+                                // for immobile aim
+
+<span class="nc" id="L2319">                                refactored_damage = 0.50</span>
+                                                    * base_damage
+<span class="nc" id="L2321">                                                    * (Compute.oddsAbove(base_to_hit, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2322">                                refactored_head = 0.50</span>
+                                                  * base_damage
+<span class="nc" id="L2324">                                                  * (Compute.oddsAbove(base_to_hit + 7, aptGunnery) / 100.0);</span>
+<span class="nc" id="L2325">                                ((WeaponAttackAction) atk_action_list</span>
+<span class="nc" id="L2326">                                        .get(action_index))</span>
+<span class="nc" id="L2327">                                        .setAimingMode(IAimingModes.AIM_MODE_IMMOBILE);</span>
+
+                            }
+                        }
+
+                        // Count the refactored damage off each location. Count
+                        // hits to IS.
+                        // Ignore locations that have been previously destroyed
+
+<span class="nc bnc" id="L2336" title="All 2 branches missed.">                        for (int arr_index = 0; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc bnc" id="L2337" title="All 2 branches missed.">                            if (arr_index == 0) {</span>
+<span class="nc" id="L2338">                                values[arr_index] -= refactored_head;</span>
+                            } else {
+<span class="nc" id="L2340">                                values[arr_index] -= refactored_damage;</span>
+                            }
+<span class="nc bnc" id="L2342" title="All 6 branches missed.">                            if ((values[arr_index] &lt; 0)</span>
+                                &amp; (is_values[arr_index] &gt; 0)) {
+<span class="nc" id="L2344">                                is_values[arr_index] += values[arr_index];</span>
+<span class="nc" id="L2345">                                values[arr_index] = 0;</span>
+<span class="nc" id="L2346">                                pen_counters[arr_index]++;</span>
+                            }
+                        }
+                    }
+
+                    // End if (AttackAction against current target)
+
+                }
+
+<span class="nc" id="L2355">                action_index++;</span>
+
+            }
+
+            double loc_mod;
+<span class="nc bnc" id="L2360" title="All 2 branches missed.">            for (int arr_index = 0; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc" id="L2361">                loc_mod = 0.0;</span>
+
+                // If any location has had its armor stripped but is not
+                // destroyed,
+                // criticals may result
+
+<span class="nc bnc" id="L2367" title="All 6 branches missed.">                if ((values[arr_index] &lt;= 0) &amp; (is_values[arr_index] &gt; 0)) {</span>
+<span class="nc bnc" id="L2368" title="All 9 branches missed.">                    switch (arr_index) {</span>
+                        case 0: // Head hits are very good, pilot damage and
+                            // critical systems
+<span class="nc" id="L2371">                            fitness[arr_index] = 4.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2372">                            fitness[arr_index] += getAimModifier(test_target,</span>
+                                                                 Mech.LOC_HEAD);
+<span class="nc" id="L2374">                            break;</span>
+                        case 1: // CT hits are good, chances at hitting gyro,
+                            // engine
+<span class="nc" id="L2377">                            fitness[arr_index] = 3.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2378">                            fitness[arr_index] += getAimModifier(test_target,</span>
+                                                                 Mech.LOC_CT);
+<span class="nc" id="L2380">                            break;</span>
+                        case 2: // Side torso hits are good, equipment hits and
+                            // ammo slots
+<span class="nc" id="L2383">                            loc_mod = getAimModifier(test_target, Mech.LOC_LT);</span>
+<span class="nc" id="L2384">                            fitness[arr_index] = 2.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2385">                            fitness[arr_index] += loc_mod;</span>
+<span class="nc" id="L2386">                            break;</span>
+                        case 3:
+<span class="nc" id="L2388">                            loc_mod = getAimModifier(test_target, Mech.LOC_RT);</span>
+<span class="nc" id="L2389">                            fitness[arr_index] = 2.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2390">                            fitness[arr_index] += loc_mod;</span>
+<span class="nc" id="L2391">                            break;</span>
+                        case 6: // Leg hits are good, reduces target mobility
+<span class="nc" id="L2393">                            loc_mod = getAimModifier(test_target, Mech.LOC_LLEG);</span>
+<span class="nc" id="L2394">                            fitness[arr_index] = 2.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2395">                            fitness[arr_index] += loc_mod;</span>
+<span class="nc" id="L2396">                            break;</span>
+                        case 7:
+<span class="nc" id="L2398">                            loc_mod = getAimModifier(test_target, Mech.LOC_RLEG);</span>
+<span class="nc" id="L2399">                            fitness[arr_index] = 2.0 * pen_counters[arr_index];</span>
+<span class="nc" id="L2400">                            fitness[arr_index] += loc_mod;</span>
+<span class="nc" id="L2401">                            break;</span>
+                        case 4: // Arm hits might damage some weapons, but not
+                            // the best option
+<span class="nc" id="L2404">                            loc_mod = getAimModifier(test_target, Mech.LOC_LARM);</span>
+<span class="nc" id="L2405">                            fitness[arr_index] = pen_counters[arr_index];</span>
+<span class="nc" id="L2406">                            fitness[arr_index] += loc_mod;</span>
+<span class="nc" id="L2407">                            break;</span>
+                        case 5:
+<span class="nc" id="L2409">                            loc_mod = getAimModifier(test_target, Mech.LOC_RARM);</span>
+<span class="nc" id="L2410">                            fitness[arr_index] = pen_counters[arr_index];</span>
+<span class="nc" id="L2411">                            fitness[arr_index] += loc_mod;</span>
+                    }
+                }
+
+                // If any location has been destroyed, adjust the location value
+                // relative to its value
+
+<span class="nc bnc" id="L2418" title="All 6 branches missed.">                if ((is_values[arr_index] &lt;= 0) &amp; (pen_counters[arr_index] &gt; 0)) {</span>
+
+<span class="nc bnc" id="L2420" title="All 9 branches missed.">                    switch (arr_index) {</span>
+                        case 0: // Destroying the head is a hard kill and gets
+                            // rid of the pilot, too
+<span class="nc" id="L2423">                            fitness[arr_index] += 3 * getAimModifier(</span>
+                                    test_target, Mech.LOC_HEAD);
+<span class="nc" id="L2425">                            break;</span>
+                        case 1: // Destroying the CT is a hard kill
+<span class="nc" id="L2427">                            fitness[arr_index] += 2 * getAimModifier(</span>
+                                    test_target, Mech.LOC_CT);
+<span class="nc" id="L2429">                            break;</span>
+                        case 2: // Destroying a side torso could be a soft kill
+                            // or cripple
+<span class="nc" id="L2432">                            fitness[arr_index] += 1.5 * getAimModifier(</span>
+                                    test_target, Mech.LOC_LT);
+<span class="nc" id="L2434">                            break;</span>
+                        case 3:
+<span class="nc" id="L2436">                            fitness[arr_index] += 1.5 * getAimModifier(</span>
+                                    test_target, Mech.LOC_RT);
+<span class="nc" id="L2438">                            break;</span>
+                        case 6: // Destroying a leg is a mobility kill
+<span class="nc" id="L2440">                            fitness[arr_index] += 1.5 * getAimModifier(</span>
+                                    test_target, Mech.LOC_LLEG);
+<span class="nc" id="L2442">                            break;</span>
+                        case 7:
+<span class="nc" id="L2444">                            fitness[arr_index] += 1.5 * getAimModifier(</span>
+                                    test_target, Mech.LOC_RLEG);
+<span class="nc" id="L2446">                            break;</span>
+                        case 4: // Destroying an arm can cripple a Mech, but not
+                            // the best option
+<span class="nc" id="L2449">                            fitness[arr_index] += getAimModifier(test_target,</span>
+                                                                 Mech.LOC_LARM);
+<span class="nc" id="L2451">                            break;</span>
+                        case 5:
+<span class="nc" id="L2453">                            fitness[arr_index] += getAimModifier(test_target,</span>
+                                                                 Mech.LOC_RARM);
+                            break;
+
+                    }
+                }
+
+            }
+
+            // Get the best target location, including the head
+
+<span class="nc" id="L2464">            refactored_damage = fitness[1];</span>
+<span class="nc bnc" id="L2465" title="All 2 branches missed.">            for (int arr_index = 0; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc bnc" id="L2466" title="All 2 branches missed.">                if (fitness[arr_index] &gt; refactored_damage) {</span>
+<span class="nc" id="L2467">                    refactored_damage = fitness[arr_index];</span>
+<span class="nc bnc" id="L2468" title="All 8 branches missed.">                    switch (arr_index) {</span>
+                        case 0:
+<span class="nc" id="L2470">                            best_loc_head = Mech.LOC_HEAD;</span>
+<span class="nc" id="L2471">                            break;</span>
+                        case 2: // case 1 is CT, which was initialized as
+                            // default
+<span class="nc" id="L2474">                            best_loc_head = Mech.LOC_LT;</span>
+<span class="nc" id="L2475">                            break;</span>
+                        case 3:
+<span class="nc" id="L2477">                            best_loc_head = Mech.LOC_RT;</span>
+<span class="nc" id="L2478">                            break;</span>
+                        case 4:
+<span class="nc" id="L2480">                            best_loc_head = Mech.LOC_LARM;</span>
+<span class="nc" id="L2481">                            break;</span>
+                        case 5:
+<span class="nc" id="L2483">                            best_loc_head = Mech.LOC_RARM;</span>
+<span class="nc" id="L2484">                            break;</span>
+                        case 6:
+<span class="nc" id="L2486">                            best_loc_head = Mech.LOC_LLEG;</span>
+<span class="nc" id="L2487">                            break;</span>
+                        case 7:
+<span class="nc" id="L2489">                            best_loc_head = Mech.LOC_RLEG;</span>
+<span class="nc" id="L2490">                            break;</span>
+                        default:
+<span class="nc" id="L2492">                            best_loc_head = Mech.LOC_CT;</span>
+                    }
+                }
+            }
+
+            // Get the best target location, not including the head
+<span class="nc" id="L2498">            int temp_index = 1;</span>
+<span class="nc" id="L2499">            refactored_damage = fitness[1];</span>
+<span class="nc bnc" id="L2500" title="All 2 branches missed.">            for (int arr_index = 2; arr_index &lt; 8; arr_index++) {</span>
+<span class="nc bnc" id="L2501" title="All 2 branches missed.">                if (fitness[arr_index] &gt; refactored_damage) {</span>
+<span class="nc" id="L2502">                    refactored_damage = fitness[arr_index];</span>
+<span class="nc" id="L2503">                    temp_index = arr_index;</span>
+<span class="nc bnc" id="L2504" title="All 7 branches missed.">                    switch (arr_index) {</span>
+                        case 2: // case 1 is CT, which was set as default
+<span class="nc" id="L2506">                            best_loc = Mech.LOC_LT;</span>
+<span class="nc" id="L2507">                            break;</span>
+                        case 3:
+<span class="nc" id="L2509">                            best_loc = Mech.LOC_RT;</span>
+<span class="nc" id="L2510">                            break;</span>
+                        case 4:
+<span class="nc" id="L2512">                            best_loc = Mech.LOC_LARM;</span>
+<span class="nc" id="L2513">                            break;</span>
+                        case 5:
+<span class="nc" id="L2515">                            best_loc = Mech.LOC_RARM;</span>
+<span class="nc" id="L2516">                            break;</span>
+                        case 6:
+<span class="nc" id="L2518">                            best_loc = Mech.LOC_LLEG;</span>
+<span class="nc" id="L2519">                            break;</span>
+                        case 7:
+<span class="nc" id="L2521">                            best_loc = Mech.LOC_RLEG;</span>
+<span class="nc" id="L2522">                            break;</span>
+                        default:
+<span class="nc" id="L2524">                            best_loc = Mech.LOC_CT;</span>
+                    }
+                }
+            }
+
+            // For all weapon attack actions
+
+<span class="nc bnc" id="L2531" title="All 2 branches missed.">            for (EntityAction entityAction : atk_action_list) {</span>
+<span class="nc" id="L2532">                aimed_attack = (WeaponAttackAction) entityAction;</span>
+
+                // If the target of the action is the current target
+
+<span class="nc bnc" id="L2536" title="All 2 branches missed.">                if (aimed_attack.getTargetId() == test_target) {</span>
+
+                    // If the weapon aim mode is set to use a tcomp
+
+<span class="nc bnc" id="L2540" title="All 2 branches missed.">                    if (aimed_attack.getAimingMode() == IAimingModes.AIM_MODE_TARG_COMP) {</span>
+
+                        // If the location is at least close to being breached
+                        // or the target is immobile
+
+<span class="nc bnc" id="L2545" title="All 2 branches missed.">                        if (values[temp_index] &lt;= Compute.randomInt(5)) {</span>
+<span class="nc" id="L2546">                            aimed_attack.setAimedLocation(best_loc);</span>
+                        } else {
+<span class="nc" id="L2548">                            aimed_attack</span>
+<span class="nc" id="L2549">                                    .setAimingMode(IAimingModes.AIM_MODE_NONE);</span>
+<span class="nc" id="L2550">                            aimed_attack.setAimedLocation(Entity.LOC_NONE);</span>
+                        }
+
+                    }
+
+                    // If the weapon aim mode is set for immobile aim
+
+<span class="nc bnc" id="L2557" title="All 2 branches missed.">                    if (aimed_attack.getAimingMode() == IAimingModes.AIM_MODE_IMMOBILE) {</span>
+<span class="nc" id="L2558">                        aimed_attack.setAimedLocation(best_loc_head);</span>
+                    }
+
+                }
+
+<span class="nc" id="L2563">            }</span>
+
+            // Any targets after this are secondary targets. Use secondary odds
+            // and damage.
+
+<span class="nc" id="L2568">            is_primary_target = false;</span>
+<span class="nc" id="L2569">        }</span>
+<span class="nc" id="L2570">    }</span>
+
+    private double getAimModifier(int target_id, int location) {
+
+        double loc_total;
+
+        // TODO: change the factor of 0.1 to float depending on critical item
+        // type
+
+<span class="nc" id="L2579">        loc_total = 0.1 * game.getEntity(target_id).getHittableCriticals(</span>
+                location);
+
+<span class="nc" id="L2582">        return loc_total;</span>
+    }
+
+    @Override
+    protected void checkMoral() {
+        // unused.
+<span class="nc" id="L2588">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

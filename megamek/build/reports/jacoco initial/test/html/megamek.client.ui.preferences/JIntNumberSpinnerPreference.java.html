@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JIntNumberSpinnerPreference.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.preferences</a> &gt; <span class="el_source">JIntNumberSpinnerPreference.java</span></div><h1>JIntNumberSpinnerPreference.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.preferences;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.lang.ref.WeakReference;
+
+/**
+ * JIntNumberSpinnerPreference monitors the value of a JSpinner whose number model is for an int.
+ * It sets the saved value when a dialog is loaded and changes it as it changes.
+ *
+ * Call preferences.manage(new JIntNumberSpinnerPreference(JSpinner)) to use this preference,
+ * on a JSpinner with an int valued SpinnerNumberModel that has called setName
+ */
+<span class="nc bnc" id="L33" title="All 2 branches missed.">public class JIntNumberSpinnerPreference extends PreferenceElement implements ChangeListener {</span>
+    //region Variable Declarations
+    private final WeakReference&lt;JSpinner&gt; weakReference;
+    private int intValue;
+    //endregion Variable Declarations
+
+    //region Constructors
+    public JIntNumberSpinnerPreference(final JSpinner spinner) {
+<span class="nc" id="L41">        super(spinner.getName());</span>
+<span class="nc bnc" id="L42" title="All 4 branches missed.">        assert spinner.getModel() instanceof SpinnerNumberModel;</span>
+<span class="nc" id="L43">        setIntValue((Integer) spinner.getValue());</span>
+<span class="nc" id="L44">        weakReference = new WeakReference&lt;&gt;(spinner);</span>
+<span class="nc" id="L45">        spinner.addChangeListener(this);</span>
+<span class="nc" id="L46">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public WeakReference&lt;JSpinner&gt; getWeakReference() {
+<span class="nc" id="L51">        return weakReference;</span>
+    }
+
+    public int getIntValue() {
+<span class="nc" id="L55">        return intValue;</span>
+    }
+
+    public void setIntValue(final int intValue) {
+<span class="nc" id="L59">        this.intValue = intValue;</span>
+<span class="nc" id="L60">    }</span>
+    //endregion Getters/Setters
+
+    //region PreferenceElement
+    @Override
+    protected String getValue() {
+<span class="nc" id="L66">        return Integer.toString(getIntValue());</span>
+    }
+
+    @Override
+    protected void initialize(final String value) {
+<span class="nc bnc" id="L71" title="All 6 branches missed.">        assert (value != null) &amp;&amp; !value.isBlank();</span>
+
+<span class="nc" id="L73">        final JSpinner element = getWeakReference().get();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L75">            final int newValue = Integer.parseInt(value);</span>
+<span class="nc" id="L76">            final SpinnerNumberModel model = (SpinnerNumberModel) element.getModel();</span>
+<span class="nc bnc" id="L77" title="All 4 branches missed.">            if (((Integer) model.getMinimum() &lt;= newValue) &amp;&amp; ((Integer) model.getMaximum() &gt;= newValue)) {</span>
+<span class="nc" id="L78">                setIntValue(newValue);</span>
+<span class="nc" id="L79">                element.setValue(getIntValue());</span>
+            }
+        }
+<span class="nc" id="L82">    }</span>
+
+    @Override
+    protected void dispose() {
+<span class="nc" id="L86">        final JSpinner element = getWeakReference().get();</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L88">            element.removeChangeListener(this);</span>
+<span class="nc" id="L89">            getWeakReference().clear();</span>
+        }
+<span class="nc" id="L91">    }</span>
+    //endregion PreferenceElement
+
+    //region ChangeListener
+    @Override
+    public void stateChanged(final ChangeEvent evt) {
+<span class="nc" id="L97">        final JSpinner element = getWeakReference().get();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L99">            setIntValue((Integer) element.getValue());</span>
+        }
+<span class="nc" id="L101">    }</span>
+    //endregion ChangeListener
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

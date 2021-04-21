@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSEMPHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons</a> &gt; <span class="el_source">TSEMPHandler.java</span></div><h1>TSEMPHandler.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2005 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+package megamek.common.weapons;
+
+import java.util.Vector;
+
+import megamek.common.Aero;
+import megamek.common.BattleArmor;
+import megamek.common.Building;
+import megamek.common.Compute;
+import megamek.common.ConvFighter;
+import megamek.common.Engine;
+import megamek.common.Entity;
+import megamek.common.IGame;
+import megamek.common.Infantry;
+import megamek.common.Mech;
+import megamek.common.Protomech;
+import megamek.common.Report;
+import megamek.common.SupportTank;
+import megamek.common.Tank;
+import megamek.common.ToHitData;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.common.weapons.other.TSEMPWeapon;
+import megamek.server.Server;
+
+/**
+ * Weaponhandler for the Tight-Stream Electro-Magnetic Pulse (TSEMP) weapon, 
+ * which is found in FM:3145 pg 255.
+ * 
+ * @author arlith
+ * Created on Sept 5, 2005
+ */ 
+public class TSEMPHandler extends EnergyWeaponHandler {
+    private static final long serialVersionUID = 5545991061428671743L;
+
+    /**
+     * @param t
+     * @param w
+     * @param g
+     * @param s
+     */
+    public TSEMPHandler(ToHitData t, WeaponAttackAction w, IGame g, Server s) {
+<span class="nc" id="L54">        super(t, w, g, s);</span>
+<span class="nc" id="L55">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.EnergyWeaponHandler#calcDamagePerHit()
+     */
+    @Override
+    protected int calcDamagePerHit() {
+<span class="nc" id="L64">        return 0;</span>
+    }
+    
+    public boolean handle(IGame.Phase phase, Vector&lt;Report&gt; vPhaseReport) {
+<span class="nc" id="L68">        weapon.setFired(true);</span>
+
+<span class="nc" id="L70">        ae.setFiredTsempThisTurn(true);</span>
+<span class="nc" id="L71">        ae.setHasFiredTsemp(true);</span>
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (ae.getTsempEffect() == TSEMPWeapon.TSEMP_EFFECT_NONE){</span>
+<span class="nc" id="L74">            ae.setTsempEffect(TSEMPWeapon.TSEMP_EFFECT_INTERFERENCE);</span>
+        }
+
+<span class="nc" id="L77">        return super.handle(phase, vPhaseReport);</span>
+    }
+
+    protected void handleEntityDamage(Entity entityTarget,
+            Vector&lt;Report&gt; vPhaseReport, Building bldg, int hits, int nCluster,
+            int bldgAbsorbs) {
+<span class="nc" id="L83">        super.handleEntityDamage(entityTarget, vPhaseReport, bldg, hits, </span>
+                nCluster, bldgAbsorbs);
+        
+        // Increment the TSEMP hit counter
+<span class="nc" id="L87">        entityTarget.addTsempHitThisTurn();</span>
+
+        // Report that this unit has been hit by TSEMP
+<span class="nc" id="L90">        Report r = new Report(7410);</span>
+<span class="nc" id="L91">        r.subject = entityTarget.getId();</span>
+<span class="nc" id="L92">        r.addDesc(entityTarget);</span>
+<span class="nc" id="L93">        r.add(entityTarget.getTsempHitsThisTurn());</span>
+<span class="nc" id="L94">        r.indent(2);</span>
+<span class="nc" id="L95">        vPhaseReport.add(r);</span>
+
+        // TSEMP has no effect against infantry
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (entityTarget.isConventionalInfantry()) {</span>
+            // No Effect
+<span class="nc" id="L100">            r = new Report(7415);</span>
+<span class="nc" id="L101">            r.subject = entityTarget.getId();</span>
+<span class="nc" id="L102">            r.indent(3);</span>
+<span class="nc" id="L103">            vPhaseReport.add(r);</span>
+<span class="nc" id="L104">            return;</span>
+        }
+        
+        // Determine roll modifiers
+<span class="nc" id="L108">        int tsempModifiers = 0;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (entityTarget.getWeight() &gt;= 200){</span>
+            // No Effect
+<span class="nc" id="L111">            r = new Report(7416);</span>
+<span class="nc" id="L112">            r.subject = entityTarget.getId();</span>
+<span class="nc" id="L113">            r.indent(3);</span>
+<span class="nc" id="L114">            vPhaseReport.add(r);</span>
+<span class="nc" id="L115">            return;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        } else if (entityTarget.getWeight() &gt;= 100){</span>
+<span class="nc" id="L117">            tsempModifiers -= 2;</span>
+        }
+        
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (entityTarget.getEngine() != null &amp;&amp;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                entityTarget.getEngine().getEngineType() == </span>
+                    Engine.COMBUSTION_ENGINE){
+<span class="nc" id="L123">            tsempModifiers -= 1;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        } else if (entityTarget.getEngine() != null &amp;&amp;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                entityTarget.getEngine().getEngineType() == </span>
+                Engine.STEAM){
+<span class="nc" id="L127">            tsempModifiers -= 2;</span>
+        }
+        
+<span class="nc" id="L130">        tsempModifiers += Math.min(4, entityTarget.getTsempHitsThisTurn() - 1);</span>
+        // Multiple hits add a +1 for each hit after the first, 
+        //  up to a max of 4                   
+<span class="nc" id="L133">        int tsempRoll = Math.max(2, Compute.d6(2) + tsempModifiers);</span>
+        
+        // Ugly code to set the target rolls
+<span class="nc" id="L136">        int shutdownTarget = 13;</span>
+<span class="nc" id="L137">        int interferenceTarget = 13;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (entityTarget instanceof Mech){</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (((Mech) entityTarget).isIndustrial()){</span>
+<span class="nc" id="L140">                interferenceTarget = 6;</span>
+<span class="nc" id="L141">                shutdownTarget = 8;</span>
+            } else {
+<span class="nc" id="L143">                interferenceTarget = 7;</span>
+<span class="nc" id="L144">                shutdownTarget = 9;</span>
+            }            
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        } else if (entityTarget instanceof SupportTank){</span>
+<span class="nc" id="L147">            interferenceTarget = 5;</span>
+<span class="nc" id="L148">            shutdownTarget = 7;</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        } else if (entityTarget instanceof Tank){</span>
+<span class="nc" id="L150">            interferenceTarget = 6;</span>
+<span class="nc" id="L151">            shutdownTarget = 8;</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        } else if (entityTarget instanceof BattleArmor){</span>
+<span class="nc" id="L153">            interferenceTarget = 6;</span>
+<span class="nc" id="L154">            shutdownTarget = 8;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        } else if (entityTarget instanceof Protomech){</span>
+<span class="nc" id="L156">            interferenceTarget = 6;</span>
+<span class="nc" id="L157">            shutdownTarget = 9;</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        } else if (entityTarget instanceof ConvFighter){</span>
+<span class="nc" id="L159">            interferenceTarget = 6;</span>
+<span class="nc" id="L160">            shutdownTarget = 8;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        } else if (entityTarget instanceof Aero){</span>
+<span class="nc" id="L162">            interferenceTarget = 7;</span>
+<span class="nc" id="L163">            shutdownTarget = 9;</span>
+        }
+
+        // Create the effect report
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (tsempModifiers == 0){</span>
+<span class="nc" id="L168">            r = new Report(7411);</span>
+        } else {
+<span class="nc" id="L170">            r = new Report(7412);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">            if (tsempModifiers &gt;= 0){</span>
+<span class="nc" id="L172">                r.add(&quot;+&quot; + tsempModifiers);</span>
+            } else {
+<span class="nc" id="L174">                r.add(tsempModifiers);</span>
+            }
+        }
+<span class="nc" id="L177">        r.indent(3);</span>
+<span class="nc" id="L178">        r.add(tsempRoll);</span>
+<span class="nc" id="L179">        r.subject = entityTarget.getId();</span>
+        String tsempEffect;
+
+        // Determine the effect
+<span class="nc" id="L183">        Report baShutdownReport = null;</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (tsempRoll &gt;= shutdownTarget){</span>
+<span class="nc" id="L185">            entityTarget.setTsempEffect(TSEMPWeapon.TSEMP_EFFECT_SHUTDOWN);</span>
+<span class="nc" id="L186">            tsempEffect = </span>
+                    &quot;&lt;font color='C00000'&gt;&lt;b&gt;Shutdown!&lt;/b&gt;&lt;/font&gt;&quot;;
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            if (entityTarget instanceof BattleArmor){</span>
+<span class="nc" id="L189">                baShutdownReport = new Report(3706);</span>
+<span class="nc" id="L190">                baShutdownReport.addDesc(entityTarget);</span>
+<span class="nc" id="L191">                baShutdownReport.indent(4);</span>
+<span class="nc" id="L192">                baShutdownReport.add(entityTarget.getLocationAbbr(hit));</span>
+                // TODO: fix for salvage purposes
+<span class="nc" id="L194">                entityTarget.destroyLocation(hit.getLocation());</span>
+                // Check to see if the squad has been eliminated
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                if (entityTarget.getTransferLocation(hit).getLocation() == </span>
+                        Entity.LOC_DESTROYED) {
+<span class="nc" id="L198">                    vPhaseReport.addAll(server.destroyEntity(entityTarget,</span>
+                            &quot;all troopers eliminated&quot;, false));
+                }
+            } else {
+<span class="nc" id="L202">                entityTarget.setShutDown(true);</span>
+            }
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        } else if (tsempRoll &gt;= interferenceTarget){</span>
+<span class="nc" id="L205">            int targetEffect = entityTarget.getTsempEffect();</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (targetEffect != TSEMPWeapon.TSEMP_EFFECT_SHUTDOWN) {</span>
+<span class="nc" id="L207">                entityTarget.setTsempEffect(</span>
+                        TSEMPWeapon.TSEMP_EFFECT_INTERFERENCE);
+            }
+<span class="nc" id="L210">            tsempEffect = &quot;&lt;b&gt;Interference!&lt;/b&gt;&quot;;</span>
+<span class="nc" id="L211">        } else {</span>
+            // No effect roll
+<span class="nc" id="L213">            tsempEffect = &quot;No Effect!&quot;;</span>
+        }
+<span class="nc" id="L215">        r.add(tsempEffect);</span>
+<span class="nc" id="L216">        vPhaseReport.add(r); </span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (baShutdownReport != null){</span>
+<span class="nc" id="L218">            vPhaseReport.add(baShutdownReport);</span>
+        }
+<span class="nc" id="L220">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

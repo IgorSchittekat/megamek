@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JTablePreference.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.preferences</a> &gt; <span class="el_source">JTablePreference.java</span></div><h1>JTablePreference.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.preferences;
+
+import javax.swing.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * JTablePreference monitors the latest sort column and sort order of a JTable. It sets the saved
+ * values when a dialog is loaded and changes them as they change.
+ *
+ * Call preferences.manage(new JTablePreference(JTable)) to use this preference, on a JTable that
+ * has called setName
+ */
+<span class="nc bnc" id="L35" title="All 2 branches missed.">public class JTablePreference extends PreferenceElement implements MouseListener {</span>
+    //region Variable Declarations
+    private final WeakReference&lt;JTable&gt; weakReference;
+    private int columnIndex;
+    private SortOrder sortOrder;
+    //endregion Variable Declarations
+
+    //region Constructors
+    public JTablePreference(final JTable table) {
+<span class="nc" id="L44">        super(table.getName());</span>
+
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (table.getRowSorter().getSortKeys().size() &gt; 0) {</span>
+<span class="nc" id="L47">            setColumnIndex(table.getRowSorter().getSortKeys().get(0).getColumn());</span>
+<span class="nc" id="L48">            setSortOrder(table.getRowSorter().getSortKeys().get(0).getSortOrder());</span>
+        } else {
+<span class="nc" id="L50">            setColumnIndex(0);</span>
+<span class="nc" id="L51">            setSortOrder(SortOrder.ASCENDING);</span>
+        }
+
+<span class="nc" id="L54">        weakReference = new WeakReference&lt;&gt;(table);</span>
+<span class="nc" id="L55">        table.getTableHeader().addMouseListener(this);</span>
+<span class="nc" id="L56">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public WeakReference&lt;JTable&gt; getWeakReference() {
+<span class="nc" id="L61">        return weakReference;</span>
+    }
+
+    public int getColumnIndex() {
+<span class="nc" id="L65">        return columnIndex;</span>
+    }
+
+    public void setColumnIndex(final int columnIndex) {
+<span class="nc" id="L69">        this.columnIndex = columnIndex;</span>
+<span class="nc" id="L70">    }</span>
+
+    public SortOrder getSortOrder() {
+<span class="nc" id="L73">        return sortOrder;</span>
+    }
+
+    public void setSortOrder(final SortOrder sortOrder) {
+<span class="nc" id="L77">        this.sortOrder = sortOrder;</span>
+<span class="nc" id="L78">    }</span>
+    //endregion Getters/Setters
+
+    //region PreferenceElement
+    @Override
+    protected String getValue() {
+<span class="nc" id="L84">        return String.format(&quot;%d|%s&quot;, getColumnIndex(), getSortOrder().name());</span>
+    }
+
+    @Override
+    protected void initialize(final String value) {
+<span class="nc bnc" id="L89" title="All 6 branches missed.">        assert (value != null) &amp;&amp; !value.isBlank();</span>
+
+<span class="nc" id="L91">        final JTable element = getWeakReference().get();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L93">            final String[] parts = value.split(&quot;\\|&quot;, -1);</span>
+
+<span class="nc" id="L95">            setColumnIndex(Integer.parseInt(parts[0]));</span>
+<span class="nc" id="L96">            setSortOrder(SortOrder.valueOf(parts[1]));</span>
+
+<span class="nc" id="L98">            final List&lt;RowSorter.SortKey&gt; sortKeys = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L99">            sortKeys.add(new RowSorter.SortKey(getColumnIndex(), getSortOrder()));</span>
+
+<span class="nc" id="L101">            element.getRowSorter().setSortKeys(sortKeys);</span>
+        }
+<span class="nc" id="L103">    }</span>
+
+    @Override
+    protected void dispose() {
+<span class="nc" id="L107">        final JTable element = getWeakReference().get();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (element != null) {</span>
+<span class="nc" id="L109">            element.removeMouseListener(this);</span>
+<span class="nc" id="L110">            getWeakReference().clear();</span>
+        }
+<span class="nc" id="L112">    }</span>
+    //endregion PreferenceElement
+
+    //region MouseListener
+    @Override
+    public void mouseClicked(final MouseEvent evt) {
+<span class="nc" id="L118">        final JTable table = getWeakReference().get();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (table != null) {</span>
+<span class="nc" id="L120">            final int uiIndex = table.getColumnModel().getColumnIndexAtX(evt.getX());</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (uiIndex == -1) {</span>
+<span class="nc" id="L122">                return;</span>
+            }
+
+<span class="nc" id="L125">            setColumnIndex(table.getColumnModel().getColumn(uiIndex).getModelIndex());</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            for (final RowSorter.SortKey key : table.getRowSorter().getSortKeys()) {</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                if (key.getColumn() == getColumnIndex()) {</span>
+<span class="nc" id="L128">                    setSortOrder(key.getSortOrder());</span>
+<span class="nc" id="L129">                    break;</span>
+                }
+<span class="nc" id="L131">            }</span>
+        }
+<span class="nc" id="L133">    }</span>
+
+    @Override
+    public void mousePressed(final MouseEvent evt) {
+
+<span class="nc" id="L138">    }</span>
+
+    @Override
+    public void mouseReleased(final MouseEvent evt) {
+
+<span class="nc" id="L143">    }</span>
+
+    @Override
+    public void mouseEntered(final MouseEvent evt) {
+
+<span class="nc" id="L148">    }</span>
+
+    @Override
+    public void mouseExited(final MouseEvent evt) {
+
+<span class="nc" id="L153">    }</span>
+    //endregion MouseListener
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
