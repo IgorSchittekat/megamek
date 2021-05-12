@@ -12748,21 +12748,21 @@ public class AmmoType extends EquipmentType {
     }
 
     //Clan BA LRM Missile Launcher
-    private static AmmoType createBACLLRM1Ammo() {
+    private static AmmoType createBACLLRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "BA LRM 1 Ammo";
-        ammo.shortName = "LRM 1";
-        ammo.setInternalName("BACL Ammo LRM-1");
-        ammo.addLookupName("BACLLRM1 Ammo");
-        ammo.addLookupName("BACL LRM 1 Ammo");
+        ammo.name = "BA LRM " + rackSize + " Ammo";
+        ammo.shortName = "LRM " + rackSize;
+        ammo.setInternalName("BACL Ammo LRM-" + rackSize);
+        ammo.addLookupName("BACLLRM" + rackSize + " Ammo");
+        ammo.addLookupName("BACL LRM " + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
-        ammo.bv = 2;
-        ammo.kgPerShot = 8.3;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "261,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -12774,118 +12774,26 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CGS)
                 .setProductionFactions(F_CGS);
         return ammo;
+    }
+
+    private static AmmoType createBACLLRM1Ammo() {
+        return createBACLLRMAmmo(1, 2, 8.3);
     }
 
     private static AmmoType createBACLLRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 2 Ammo";
-        ammo.shortName = "LRM 2";
-        ammo.setInternalName("BACL Ammo LRM-2");
-        ammo.addLookupName("BACLLRM2 Ammo");
-        ammo.addLookupName("BACL LRM 2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 3;
-        ammo.kgPerShot = 16.6;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3058, 3060, 3062, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CGS)
-                .setProductionFactions(F_CGS);
-        return ammo;
+        return createBACLLRMAmmo(2, 3, 16.6);
     }
 
     private static AmmoType createBACLLRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 3 Ammo";
-        ammo.shortName = "LRM 3";
-        ammo.setInternalName("BACL Ammo LRM-3");
-        ammo.addLookupName("BACLLRM3 Ammo");
-        ammo.addLookupName("BACL LRM 3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 5;
-        ammo.kgPerShot = 25;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3058, 3060, 3062, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CGS)
-                .setProductionFactions(F_CGS);
-        return ammo;
+        return createBACLLRMAmmo(3, 5, 25);
     }
 
     private static AmmoType createBACLLRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 4 Ammo";
-        ammo.shortName = "LRM 4";
-        ammo.setInternalName("BACL Ammo LRM-4");
-        ammo.addLookupName("BACLLRM4 Ammo");
-        ammo.addLookupName("BACL LRM 4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 6;
-        ammo.kgPerShot = 33.3;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3058, 3060, 3062, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CGS)
-                .setProductionFactions(F_CGS);
-        return ammo;
+        return createBACLLRMAmmo(4, 6, 33.3);
     }
 
     private static AmmoType createBACLLRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 5 Ammo";
-        ammo.shortName = "LRM 5";
-        ammo.setInternalName("BACL Ammo LRM-5");
-        ammo.addLookupName("BACLLRM5 Ammo");
-        ammo.addLookupName("BACL LRM 5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 7;
-        ammo.kgPerShot = 41.5;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3058, 3060, 3062, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CGS)
-                .setProductionFactions(F_CGS);
-        return ammo;
+        return createBACLLRMAmmo(5, 7, 41.5);
     }
 
     //BA SRM
