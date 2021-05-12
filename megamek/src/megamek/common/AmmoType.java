@@ -12797,21 +12797,21 @@ public class AmmoType extends EquipmentType {
     }
 
     //BA SRM
-    private static AmmoType createBASRM1Ammo() {
+    private static AmmoType createBASRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "BA SRM 1 Ammo";
-        ammo.shortName = "SRM 1";
-        ammo.setInternalName("BA-SRM1 Ammo");
-        ammo.addLookupName("BASRM-1 Ammo");
-        ammo.addLookupName("BASRM1 Ammo");
+        ammo.name = "BA SRM " + rackSize + " Ammo";
+        ammo.shortName = "SRM " + rackSize;
+        ammo.setInternalName("BA-SRM" + rackSize + " Ammo");
+        ammo.addLookupName("BASRM-" + rackSize + " Ammo");
+        ammo.addLookupName("BASRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
-        ammo.bv = 2;
-        ammo.kgPerShot = 10;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "261,TM";
         //Hackish, blended the Clan and IS versions for Availability.
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
@@ -12826,164 +12826,30 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CWF, F_LC, F_FS)
                 .setProductionFactions(F_CWF, F_FS, F_LC);
         return ammo;
+    }
+
+    private static AmmoType createBASRM1Ammo() {
+        return createBASRMAmmo(1, 2, 10);
     }
 
     private static AmmoType createBASRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA SRM 2 Ammo";
-        ammo.shortName = "SRM 2";
-        ammo.setInternalName("BA-SRM2 Ammo");
-        ammo.addLookupName("BASRM-2 Ammo");
-        ammo.addLookupName("BASRM2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 3;
-        ammo.kgPerShot = 20;
-        ammo.rulesRefs = "261,TM";
-        //Hackish, blended the Clan and IS versions for Availability.
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setISAdvancement(3050, 3050, 3051, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2865, 2868, 2870, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CWF, F_LC, F_FS)
-                .setProductionFactions(F_CWF, F_FS, F_LC);
-        return ammo;
+        return createBASRMAmmo(2, 3, 20);
     }
-
 
     private static AmmoType createBASRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA SRM 3 Ammo";
-        ammo.shortName = "SRM 3";
-        ammo.setInternalName("BA-SRM3 Ammo");
-        ammo.addLookupName("BASRM-3 Ammo");
-        ammo.addLookupName("BASRM3 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 4;
-        ammo.kgPerShot = 30;
-        ammo.rulesRefs = "261,TM";
-        //Hackish, blended the Clan and IS versions for Availability.
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setISAdvancement(3050, 3050, 3051, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2865, 2868, 2870, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CWF, F_LC, F_FS)
-                .setProductionFactions(F_CWF, F_FS, F_LC);
-        return ammo;
+        return createBASRMAmmo(3, 4, 30);
     }
-
 
     private static AmmoType createBASRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA SRM 4 Ammo";
-        ammo.shortName = "SRM 4";
-        ammo.setInternalName("BA-SRM4 Ammo");
-        ammo.addLookupName("BASRM-4 Ammo");
-        ammo.addLookupName("BASRM4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 5;
-        ammo.kgPerShot = 40;
-        ammo.rulesRefs = "261,TM";
-        //Hackish, blended the Clan and IS versions for Availability.
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setISAdvancement(3050, 3050, 3051, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2865, 2868, 2870, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CWF, F_LC, F_FS)
-                .setProductionFactions(F_CWF, F_FS, F_LC);
-        return ammo;
+        return createBASRMAmmo(4, 5, 40);
     }
 
-
     private static AmmoType createBASRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA SRM 5 Ammo";
-        ammo.shortName = "SRM 5";
-        ammo.setInternalName("BA-SRM5 Ammo");
-        ammo.addLookupName("BASRM-5 Ammo");
-        ammo.addLookupName("BASRM5 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 6;
-        ammo.kgPerShot = 50;
-        ammo.rulesRefs = "261,TM";
-        //Hackish, blended the Clan and IS versions for Availability.
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setISAdvancement(3050, 3050, 3051, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2865, 2868, 2870, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CWF, F_LC, F_FS)
-                .setProductionFactions(F_CWF, F_FS, F_LC);
-        return ammo;
+        return createBASRMAmmo(5, 6, 50);
     }
 
     private static AmmoType createBASRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA SRM 6 Ammo";
-        ammo.shortName = "SRM 6";
-        ammo.setInternalName("BA-SRM6 Ammo");
-        ammo.addLookupName("BASRM-6 Ammo");
-        ammo.addLookupName("BASRM6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 7;
-        ammo.kgPerShot = 60;
-        ammo.rulesRefs = "261,TM";
-        //Hackish, blended the Clan and IS versions for Availability.
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setISAdvancement(3050, 3050, 3051, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2865, 2868, 2870, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CWF, F_LC, F_FS)
-                .setProductionFactions(F_CWF, F_FS, F_LC);
-        return ammo;
+        return createBASRMAmmo(6, 7, 60);
     }
 
     //Advanced SRMs
