@@ -12456,18 +12456,18 @@ public class AmmoType extends EquipmentType {
     }
 
     //Clan Improved SRMs
-    private static AmmoType createCLImprovedSRM2Ammo() {
+    private static AmmoType createCLImprovedSRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Improved SRM 2 Ammo";
-        ammo.shortName = "Improved SRM 2";
-        ammo.setInternalName("ClanImpAmmoSRM2");
-        ammo.addLookupName("CLImpSRM2 Ammo");
+        ammo.name = "Improved SRM " + rackSize + " Ammo";
+        ammo.shortName = "Improved SRM " + rackSize;
+        ammo.setInternalName("ClanImpAmmoSRM" + rackSize);
+        ammo.addLookupName("CLImpSRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_IMP;
-        ammo.shots = 50;
-        ammo.bv = 4;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 27000;
         ammo.kgPerShot = 10;
         ammo.rulesRefs = "96, IO";
@@ -12482,62 +12482,18 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_CCC)
                 .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
         return ammo;
+    }
+
+    private static AmmoType createCLImprovedSRM2Ammo() {
+        return createCLImprovedSRMAmmo(2, 50, 4);
     }
 
     private static AmmoType createCLImprovedSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved SRM 4 Ammo";
-        ammo.shortName = "Improved SRM 4";
-        ammo.setInternalName("ClImpAmmoSRM4");
-        ammo.addLookupName("CLImpSRM4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_IMP;
-        ammo.shots = 25;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 10;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_X, RATING_X)
-                .setClanAdvancement(2815, 2817, 2819, 2828, 3080)
-                .setClanApproximate(true, false, false, true, false)
-                .setPrototypeFactions(F_CCC)
-                .setProductionFactions(F_CCC)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLImprovedSRMAmmo(4, 25, 7);
     }
 
     private static AmmoType createCLImprovedSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved SRM 6 Ammo";
-        ammo.shortName = "Improved SRM 6";
-        ammo.setInternalName("CLImpAmmoSRM6");
-        ammo.addLookupName("CLImpSRM6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_IMP;
-        ammo.shots = 15;
-        ammo.bv = 10;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 10;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_X, RATING_X)
-                .setClanAdvancement(2815, 2817, 2819, 2828, 3080)
-                .setClanApproximate(true, false, false, true, false)
-                .setPrototypeFactions(F_CCC)
-                .setProductionFactions(F_CCC)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLImprovedSRMAmmo(6, 15, 10);
     }
 
     // TODO - To be Sorted
