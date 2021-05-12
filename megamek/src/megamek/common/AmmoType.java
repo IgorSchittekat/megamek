@@ -3573,93 +3573,45 @@ public class AmmoType extends EquipmentType {
     }
 
     // Cruise Missiles
-
-    private static AmmoType createISCruiseMissile50Ammo() {
+    private static AmmoType createISCruiseMissileAmmo(int rackSize, double bv, double cost, double tonnage) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Cruise Missile/50 Ammo";
-        ammo.setInternalName("ISCruiseMissile50Ammo");
+        ammo.name = "Cruise Missile/" + rackSize + " Ammo";
+        ammo.setInternalName("ISCruiseMissile" + rackSize + "Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 50;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_CRUISE_MISSILE;
         ammo.shots = 1;
-        ammo.bv = 75;
-        ammo.cost = 20000;
-        ammo.tonnage = 25;
+        ammo.bv = bv;
+        ammo.cost = cost;
+        ammo.tonnage = tonnage;
         ammo.flags = ammo.flags.or(F_CRUISE_MISSILE);
         ammo.rulesRefs = "284,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setTechRating(RATING_E)
+        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
+                .setTechRating(RATING_E)
                 .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
                 .setISAdvancement(3065, 3095, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false).setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS).setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
+                .setISApproximate(false, false, false, false, false)
+                .setPrototypeFactions(F_FS)
+                .setProductionFactions(F_FS)
+                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
         return ammo;
+    }
+
+    private static AmmoType createISCruiseMissile50Ammo() {
+        return createISCruiseMissileAmmo(50, 75, 20000, 25);
     }
 
     private static AmmoType createISCruiseMissile70Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Cruise Missile/70 Ammo";
-        ammo.setInternalName("ISCruiseMissile70Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 70;
-        ammo.ammoType = AmmoType.T_CRUISE_MISSILE;
-        ammo.shots = 1;
-        ammo.bv = 129;
-        ammo.cost = 50000;
-        ammo.tonnage = 35;
-        ammo.flags = ammo.flags.or(F_CRUISE_MISSILE);
-        ammo.rulesRefs = "284,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3065, 3095, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false).setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS).setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createISCruiseMissileAmmo(70, 129, 50000, 35);
     }
 
     private static AmmoType createISCruiseMissile90Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Cruise Missile/90 Ammo";
-        ammo.setInternalName("ISCruiseMissile90Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 90;
-        ammo.ammoType = AmmoType.T_CRUISE_MISSILE;
-        ammo.shots = 1;
-        ammo.bv = 191;
-        ammo.cost = 90000;
-        ammo.tonnage = 45;
-        ammo.flags = ammo.flags.or(F_CRUISE_MISSILE);
-        ammo.rulesRefs = "284,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3065, 3095, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false).setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS).setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createISCruiseMissileAmmo(90, 191, 90000, 45);
     }
 
     private static AmmoType createISCruiseMissile120Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Cruise Missile/120 Ammo";
-        ammo.setInternalName("ISCruiseMissile120Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 120;
-        ammo.ammoType = AmmoType.T_CRUISE_MISSILE;
-        ammo.shots = 1;
-        ammo.bv = 285;
-        ammo.cost = 140000;
-        ammo.tonnage = 60;
-        ammo.flags = ammo.flags.or(F_CRUISE_MISSILE);
-        ammo.rulesRefs = "284,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3065, 3095, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false).setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS).setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createISCruiseMissileAmmo(120, 285, 140000, 60);
     }
 
     // Artillery Cannon Shells
