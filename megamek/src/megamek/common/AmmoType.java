@@ -12382,18 +12382,18 @@ public class AmmoType extends EquipmentType {
     }
 
     //CLAN IMPROVED LRMS
-    private static AmmoType createCLImprovedLRM5Ammo() {
+    private static AmmoType createCLImprovedLRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Improved LRM 5 Ammo";
-        ammo.shortName = "Improved LRM 5";
-        ammo.setInternalName("ClanImprovedLRM5Ammo");
-        ammo.addLookupName("CLImpLRM5Ammo");
+        ammo.name = "Improved LRM " + rackSize + " Ammo";
+        ammo.shortName = "Improved LRM " + rackSize;
+        ammo.setInternalName("ClanImprovedLRM" + rackSize + "Ammo");
+        ammo.addLookupName("CLImpLRM" + rackSize + "Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM_IMP;
-        ammo.shots = 24;
-        ammo.bv = 6;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 30000;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
@@ -12410,98 +12410,22 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_CCY)
                 .setReintroductionFactions(F_EI);
         return ammo;
+    }
+
+    private static AmmoType createCLImprovedLRM5Ammo() {
+        return createCLImprovedLRMAmmo(5, 24, 6);
     }
 
     private static AmmoType createCLImprovedLRM10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved LRM 10 Ammo";
-        ammo.shortName = "Improved LRM 10";
-        ammo.setInternalName("ClanImprovedLRM10Ammo");
-        ammo.addLookupName("CLImpLRM10Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_LRM_IMP;
-        ammo.shots = 12;
-        ammo.bv = 11;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 8.33;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_X, RATING_X)
-                .setClanAdvancement(2815, 2818, 2820, 2831, 3080)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_CCY)
-                .setProductionFactions(F_CCY)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedLRMAmmo(10, 12, 11);
     }
 
     private static AmmoType createCLImprovedLRM15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.shortName = "Improved LRM 15";
-        ammo.name = "Improved LRM 15 Ammo";
-        ammo.setInternalName("ClanImprovedLRM15Ammo");
-        ammo.addLookupName("CLImpLRM15Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_LRM_IMP;
-        ammo.shots = 8;
-        ammo.bv = 17;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 8.33;
-        ammo.rulesRefs = "96, IO";
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_X, RATING_X)
-                .setClanAdvancement(2815, 2818, 2820, 2831, 3080)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_CCY)
-                .setProductionFactions(F_CCY)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedLRMAmmo(15, 8, 17);
     }
 
     private static AmmoType createCLImprovedLRM20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved LRM 20 Ammo";
-        ammo.shortName = "Improved LRM 20";
-        ammo.setInternalName("ClanImprovedLRM20Ammo");
-        ammo.addLookupName("CLImpLRM20Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_LRM_IMP;
-        ammo.shots = 6;
-        ammo.bv = 23;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 8.33;
-        ammo.rulesRefs = "96, IO";
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_X, RATING_X)
-                .setClanAdvancement(2815, 2818, 2820, 2831, 3080)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_CCY)
-                .setProductionFactions(F_CCY)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedLRMAmmo(20, 6, 23);
     }
 
     private static AmmoType createCLImprovedGaussAmmo() {
