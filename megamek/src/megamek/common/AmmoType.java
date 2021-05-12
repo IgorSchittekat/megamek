@@ -12980,15 +12980,15 @@ public class AmmoType extends EquipmentType {
     }
 
     //BA Rocket Launchers
-    private static AmmoType createBARL1Ammo() {
+    private static AmmoType createBARLAmmo(int rackSize) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "RL 1 Ammo";
-        ammo.setInternalName("BARL1 Ammo");
-        ammo.addLookupName("LAW Launcher Ammo");
-        ammo.addLookupName("IS Ammo LAW Launcher");
+        ammo.name = "RL " + rackSize + " Ammo";
+        ammo.setInternalName("BARL" + rackSize + " Ammo");
+        ammo.addLookupName("LAW " + rackSize + " Launcher Ammo");
+        ammo.addLookupName("IS Ammo LAW-" + rackSize + " Launcher");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
@@ -13004,112 +13004,27 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_FS, F_LC)
                 .setProductionFactions(F_FS, F_LC);
         return ammo;
+    }
+
+    private static AmmoType createBARL1Ammo() {
+        return createBARLAmmo(1);
     }
 
     private static AmmoType createBARL2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 2 Ammo";
-        ammo.setInternalName("BARL2 Ammo");
-        ammo.addLookupName("LAW 2 Launcher Ammo");
-        ammo.addLookupName("IS Ammo LAW-2 Launcher");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_B, RATING_B)
-                .setISAdvancement(3050, 3050, 3052, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS, F_LC)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createBARLAmmo(2);
     }
 
     private static AmmoType createBARL3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 3 Ammo";
-        ammo.setInternalName("BARL3 Ammo");
-        ammo.addLookupName("LAW 3 Launcher Ammo");
-        ammo.addLookupName("IS Ammo LAW-3 Launcher");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_B, RATING_B)
-                .setISAdvancement(3050, 3050, 3052, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS, F_LC)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createBARLAmmo(3);
     }
 
     private static AmmoType createBARL4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 4 Ammo";
-        ammo.setInternalName("BARL4 Ammo");
-        ammo.addLookupName("LAW 4 Launcher Ammo");
-        ammo.addLookupName("IS Ammo LAW-4 Launcher");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_B, RATING_B)
-                .setISAdvancement(3050, 3050, 3052, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS, F_LC)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createBARLAmmo(4);
     }
 
     private static AmmoType createBARL5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 5 Ammo";
-        ammo.setInternalName("BARL5 Ammo");
-        ammo.addLookupName("LAW 5 Launcher Ammo");
-        ammo.addLookupName("IS Ammo LAW-5 Launcher");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_B, RATING_B)
-                .setISAdvancement(3050, 3050, 3052, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS, F_LC)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createBARLAmmo(5);
     }
-
 
     //Misc Stuff. (Pods)
 
