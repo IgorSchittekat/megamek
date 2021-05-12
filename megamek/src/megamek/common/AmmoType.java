@@ -12331,26 +12331,28 @@ public class AmmoType extends EquipmentType {
         ammo.bv = 30;
         ammo.cost = 40000;
         ammo.rulesRefs = "217,IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setIntroLevel(false).setUnofficial(false).setTechRating(RATING_E)
+        ammo.techAdvancement.setTechBase(TECH_BASE_IS).setIntroLevel(false)
+                .setUnofficial(false).setTechRating(RATING_E)
                 .setAvailability(RATING_E, RATING_F, RATING_E, RATING_D)
-                .setISAdvancement(2593, 2600, DATE_NONE, 2830, 3044).setISApproximate(false, false, false, false, false)
+                .setISAdvancement(2593, 2600, DATE_NONE, 2830, 3044)
+                .setISApproximate(false, false, false, false, false)
                 .setPrototypeFactions(F_TH).setProductionFactions(F_TH);
         return ammo;
     }
 
     //Clan Improved Stuff.
-    private static AmmoType createCLImprovedAC2Ammo() {
+    private static AmmoType createCLImprovedACAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Improved Autocannon/2 Ammo";
-        ammo.shortName = "Improved Autocannon/2 Ammo";
-        ammo.setInternalName("CLIMPAmmoAC2");
+        ammo.name = "Improved Autocannon/" + rackSize + " Ammo";
+        ammo.shortName = "Improved Autocannon/" + rackSize + " Ammo";
+        ammo.setInternalName("CLIMPAmmoAC" + rackSize);
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_IMP;
-        ammo.shots = 45;
-        ammo.bv = 5;
-        ammo.cost = 1000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "96, IO";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -12361,78 +12363,22 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_CLAN)
                 .setReintroductionFactions(F_EI);
         return ammo;
+    }
+
+    private static AmmoType createCLImprovedAC2Ammo() {
+        return createCLImprovedACAmmo(2, 45, 5, 1000);
     }
 
     private static AmmoType createCLImprovedAC5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved Autocannon/5 Ammo";
-        ammo.shortName = "Improved Autocannon/5 Ammo";
-        ammo.setInternalName("CLIMPAmmoAC5");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_IMP;
-        ammo.shots = 20;
-        ammo.bv = 9;
-        ammo.cost = 4500;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_C, RATING_X, RATING_X)
-                .setClanAdvancement(DATE_NONE, 2815, 2818, 2833, 3080)
-                .setClanApproximate(false, true, false, false, false)
-                .setProductionFactions(F_CLAN)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedACAmmo(5, 20, 9, 4500);
     }
 
     private static AmmoType createCLImprovedAC10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved Autocannon/10 Ammo";
-        ammo.shortName = "Improved Autocannon/10 Ammo";
-        ammo.setInternalName("CLIMPAmmoAC10");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC_IMP;
-        ammo.shots = 10;
-        ammo.bv = 15;
-        ammo.cost = 6000;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_C, RATING_X, RATING_X)
-                .setClanAdvancement(DATE_NONE, 2815, 2818, 2833, 3080)
-                .setClanApproximate(false, true, false, false, false)
-                .setProductionFactions(F_CLAN)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedACAmmo(10, 10, 15, 6000);
     }
 
     private static AmmoType createCLImprovedAC20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Improved Autocannon/20 Ammo";
-        ammo.shortName = "Improved Autocannon/20 Ammo";
-        ammo.setInternalName("CLIMPAmmoAC20");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_IMP;
-        ammo.shots = 5;
-        ammo.bv = 22;
-        ammo.cost = 10000;
-        ammo.rulesRefs = "96, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_C, RATING_X, RATING_X)
-                .setClanAdvancement(DATE_NONE, 2815, 2818, 2833, 3080)
-                .setClanApproximate(false, true, false, false, false)
-                .setProductionFactions(F_CLAN)
-                .setReintroductionFactions(F_EI);
-        return ammo;
+        return createCLImprovedACAmmo(20, 5, 22, 10000);
     }
 
     //CLAN IMPROVED LRMS
