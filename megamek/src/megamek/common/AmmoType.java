@@ -12853,21 +12853,21 @@ public class AmmoType extends EquipmentType {
     }
 
     //Advanced SRMs
-    private static AmmoType createAdvancedSRM1Ammo() {
+    private static AmmoType createAdvancedSRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Advanced SRM 1 Ammo";
-        ammo.shortName = "Advanced SRM 1";
-        ammo.setInternalName("BA-Advanced SRM-1 Ammo");
-        ammo.addLookupName("BAAdvanced SRM1 Ammo");
-        ammo.addLookupName("BAAdvancedSRM1 Ammo");
+        ammo.name = "Advanced SRM " + rackSize + " Ammo";
+        ammo.shortName = "Advanced SRM " + rackSize;
+        ammo.setInternalName("BA-Advanced SRM-" + rackSize + " Ammo");
+        ammo.addLookupName("BAAdvanced SRM" + rackSize + " Ammo");
+        ammo.addLookupName("BAAdvancedSRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_ADVANCED;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
-        ammo.bv = 2;
-        ammo.kgPerShot = 10;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "261,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -12879,147 +12879,30 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CHH)
                 .setProductionFactions(F_CHH);
         return ammo;
+    }
+
+    private static AmmoType createAdvancedSRM1Ammo() {
+        return createAdvancedSRMAmmo(1, 2, 10);
     }
 
     private static AmmoType createAdvancedSRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Advanced SRM 2 Ammo";
-        ammo.shortName = "Advanced SRM 2";
-        ammo.setInternalName("BA-Advanced SRM-2 Ammo");
-        ammo.addLookupName("BA-Advanced SRM-2 Ammo OS");
-        ammo.addLookupName("BAAdvancedSRM2 Ammo");
-        ammo.addLookupName("BAAdvanced SRM2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM_ADVANCED;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 4;
-        ammo.kgPerShot = 20;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3052, 3056, 3066, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CHH)
-                .setProductionFactions(F_CHH);
-        return ammo;
+        return createAdvancedSRMAmmo(2, 4, 20);
     }
 
     private static AmmoType createAdvancedSRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Advanced SRM 3 Ammo";
-        ammo.shortName = "Advanced SRM 3";
-        ammo.setInternalName("BA-Advanced SRM-3 Ammo");
-        ammo.addLookupName("BAAdvanced SRM3 Ammo");
-        ammo.addLookupName("BAAdvancedSRM3 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_SRM_ADVANCED;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 6;
-        ammo.kgPerShot = 30;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3052, 3056, 3066, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CHH)
-                .setProductionFactions(F_CHH);
-        return ammo;
+        return createAdvancedSRMAmmo(3, 6, 30);
     }
 
     private static AmmoType createAdvancedSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Advanced SRM 4 Ammo";
-        ammo.shortName = "Advanced SRM 4";
-        ammo.setInternalName("BA-Advanced SRM-4 Ammo");
-        ammo.addLookupName("BAAdvanced SRM4 Ammo");
-        ammo.addLookupName("BAAdvancedSRM4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_ADVANCED;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 8;
-        ammo.kgPerShot = 40;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3052, 3056, 3066, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CHH)
-                .setProductionFactions(F_CHH);
-        return ammo;
+        return createAdvancedSRMAmmo(4, 8, 40);
     }
 
     private static AmmoType createAdvancedSRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Advanced SRM 5 Ammo";
-        ammo.shortName = "Advanced SRM 5";
-        ammo.setInternalName("BA-Advanced SRM-5 Ammo");
-        ammo.addLookupName("BAAdvancedSRM5 Ammo");
-        ammo.addLookupName("BAAdvanced SRM5 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_SRM_ADVANCED;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 10;
-        ammo.kgPerShot = 50;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3052, 3056, 3066, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CHH)
-                .setProductionFactions(F_CHH);
-        return ammo;
+        return createAdvancedSRMAmmo(5, 10, 50);
     }
 
     private static AmmoType createAdvancedSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Advanced SRM 6 Ammo";
-        ammo.shortName = "Advanced SRM 6";
-        ammo.setInternalName("BA-Advanced SRM-6 Ammo");
-        ammo.addLookupName("BAAdvanced SRM6 Ammo");
-        ammo.addLookupName("BAAdvancedSRM6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_ADVANCED;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 12;
-        ammo.kgPerShot = 60;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_D)
-                .setClanAdvancement(3052, 3056, 3066, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CHH)
-                .setProductionFactions(F_CHH);
-        return ammo;
+        return createAdvancedSRMAmmo(6, 12, 60);
     }
 
     //BA MRMs
