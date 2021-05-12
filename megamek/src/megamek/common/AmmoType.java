@@ -12906,21 +12906,21 @@ public class AmmoType extends EquipmentType {
     }
 
     //BA MRMs
-    private static AmmoType createISMRM1Ammo() {
+    private static AmmoType createISMRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "MRM 1 Ammo";
-        ammo.shortName = "MRM 1";
-        ammo.setInternalName("IS MRM 1 Ammo");
-        ammo.addLookupName("ISMRM1 Ammo");
-        ammo.addLookupName("ISBAMRM1 Ammo");
+        ammo.name = "MRM " + rackSize + " Ammo";
+        ammo.shortName = "MRM " + rackSize;
+        ammo.setInternalName("IS MRM " + rackSize + " Ammo");
+        ammo.addLookupName("ISMRM" + rackSize + " Ammo");
+        ammo.addLookupName("ISBAMRM" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_MRM;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
-        ammo.bv = 1;
-        ammo.kgPerShot = 5;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "261,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -12932,118 +12932,26 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_DC)
                 .setProductionFactions(F_DC);
         return ammo;
+    }
+
+    private static AmmoType createISMRM1Ammo() {
+        return createISMRMAmmo(1, 1, 5);
     }
 
     private static AmmoType createISMRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 2 Ammo";
-        ammo.shortName = "MRM 2";
-        ammo.setInternalName("IS MRM 2 Ammo");
-        ammo.addLookupName("ISMRM2 Ammo");
-        ammo.addLookupName("ISBAMRM2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 2;
-        ammo.kgPerShot = 10;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_B)
-                .setISAdvancement(3058, 3060, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRMAmmo(2, 2, 10);
     }
 
     private static AmmoType createISMRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 3 Ammo";
-        ammo.shortName = "MRM 3";
-        ammo.setInternalName("IS MRM 3 Ammo");
-        ammo.addLookupName("ISMRM3 Ammo");
-        ammo.addLookupName("ISBAMRM3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 2;
-        ammo.kgPerShot = 15;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_B)
-                .setISAdvancement(3058, 3060, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRMAmmo(3, 2, 15);
     }
 
     private static AmmoType createISMRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 4 Ammo";
-        ammo.shortName = "MRM 4";
-        ammo.setInternalName("IS MRM 4 Ammo");
-        ammo.addLookupName("ISMRM4 Ammo");
-        ammo.addLookupName("ISBAMRM4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 3;
-        ammo.kgPerShot = 20;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_B)
-                .setISAdvancement(3058, 3060, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRMAmmo(4, 3, 20);
     }
 
     private static AmmoType createISMRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 5 Ammo";
-        ammo.shortName = "MRM 5";
-        ammo.setInternalName("IS MRM 5 Ammo");
-        ammo.addLookupName("ISMRM5 Ammo");
-        ammo.addLookupName("ISBAMRM5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 4;
-        ammo.kgPerShot = 25;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_B)
-                .setISAdvancement(3058, 3060, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRMAmmo(5, 4, 25);
     }
 
     private static AmmoType createISBATaserAmmo() {
