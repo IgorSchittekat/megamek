@@ -11110,20 +11110,20 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createNAC10Ammo() {
+    private static AmmoType createNACAmmo(int rackSize, double tonnage, double bv, double cost, double ammoRatio) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "NAC/10 Ammo";
-        ammo.setInternalName("Ammo NAC/10");
-        ammo.addLookupName("NAC10 Ammo");
+        ammo.name = "NAC/" + rackSize + "Ammo";
+        ammo.setInternalName("Ammo NAC/" + rackSize);
+        ammo.addLookupName("NAC" + rackSize + "Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_NAC;
         ammo.shots = 1;
-        ammo.tonnage = 0.2;
-        ammo.bv = 237;
-        ammo.cost = 30000;
-        ammo.ammoRatio = 0.2;
+        ammo.tonnage = tonnage;
+        ammo.bv = bv;
+        ammo.cost = cost;
+        ammo.ammoRatio = ammoRatio;
         ammo.capital = true;
         ammo.rulesRefs = "333,TO";
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
@@ -11138,156 +11138,30 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_TA)
                 .setReintroductionFactions(F_FS, F_LC);
         return ammo;
+    }
+
+    private static AmmoType createNAC10Ammo() {
+        return createNACAmmo(10, 0.2, 237, 30000, 0.2);
     }
 
     private static AmmoType createNAC20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "NAC/20 Ammo";
-        ammo.setInternalName("Ammo NAC/20");
-        ammo.addLookupName("NAC20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_NAC;
-        ammo.shots = 1;
-        ammo.tonnage = 0.4;
-        ammo.bv = 474;
-        ammo.cost = 60000;
-        ammo.ammoRatio = 0.4;
-        ammo.capital = true;
-        ammo.rulesRefs = "333,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_E, RATING_X, RATING_E, RATING_E)
-                .setISAdvancement(DATE_ES, 2200, DATE_NONE, 2950, 3051)
-                .setISApproximate(false, true, false, true, false)
-                .setClanAdvancement(DATE_ES, 2200, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_TA)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createNACAmmo(20, 0.4, 474, 60000, 0.4);
     }
 
     private static AmmoType createNAC25Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "NAC/25 Ammo";
-        ammo.setInternalName("Ammo NAC/25");
-        ammo.addLookupName("NAC25 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 25;
-        ammo.ammoType = AmmoType.T_NAC;
-        ammo.shots = 1;
-        ammo.tonnage = 0.6;
-        ammo.bv = 593;
-        ammo.cost = 75000;
-        ammo.ammoRatio = 0.6;
-        ammo.capital = true;
-        ammo.rulesRefs = "333,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_E, RATING_X, RATING_E, RATING_E)
-                .setISAdvancement(DATE_ES, 2200, DATE_NONE, 2950, 3051)
-                .setISApproximate(false, true, false, true, false)
-                .setClanAdvancement(DATE_ES, 2200, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_TA)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createNACAmmo(25, 0.6, 593, 75000, 0.6);
     }
 
     private static AmmoType createNAC30Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "NAC/30 Ammo";
-        ammo.setInternalName("Ammo NAC/30");
-        ammo.addLookupName("NAC30 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 30;
-        ammo.ammoType = AmmoType.T_NAC;
-        ammo.shots = 1;
-        ammo.tonnage = 0.8;
-        ammo.bv = 711;
-        ammo.cost = 90000;
-        ammo.ammoRatio = 0.8;
-        ammo.capital = true;
-        ammo.rulesRefs = "333,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_E, RATING_X, RATING_E, RATING_E)
-                .setISAdvancement(DATE_ES, 2200, DATE_NONE, 2950, 3051)
-                .setISApproximate(false, true, false, true, false)
-                .setClanAdvancement(DATE_ES, 2200, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_TA)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createNACAmmo(30, 0.8, 711, 90000, 0.8);
     }
 
     private static AmmoType createNAC35Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "NAC/35 Ammo";
-        ammo.setInternalName("Ammo NAC/35");
-        ammo.addLookupName("NAC35 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 35;
-        ammo.ammoType = AmmoType.T_NAC;
-        ammo.shots = 1;
-        ammo.tonnage = 1;
-        ammo.bv = 620;
-        ammo.cost = 105000;
-        ammo.ammoRatio = 1.0;
-        ammo.capital = true;
-        ammo.rulesRefs = "333,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_E, RATING_X, RATING_E, RATING_E)
-                .setISAdvancement(DATE_ES, 2200, DATE_NONE, 2950, 3051)
-                .setISApproximate(false, true, false, true, false)
-                .setClanAdvancement(DATE_ES, 2200, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_TA)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createNACAmmo(35, 1, 620, 105000, 1.0);
     }
 
     private static AmmoType createNAC40Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "NAC/40 Ammo";
-        ammo.setInternalName("Ammo NAC/40");
-        ammo.addLookupName("NAC40 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 40;
-        ammo.ammoType = AmmoType.T_NAC;
-        ammo.shots = 1;
-        ammo.tonnage = 1.2;
-        ammo.bv = 708;
-        ammo.cost = 120000;
-        ammo.ammoRatio = 1.2;
-        ammo.capital = true;
-        ammo.rulesRefs = "333,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_E, RATING_X, RATING_E, RATING_E)
-                .setISAdvancement(DATE_ES, 2200, DATE_NONE, 2950, 3051)
-                .setISApproximate(false, true, false, true, false)
-                .setClanAdvancement(DATE_ES, 2200, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_TA)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createNACAmmo(40, 1.2, 708, 120000, 1.2);
     }
 
     //Standard Cap Missiles
