@@ -12201,19 +12201,19 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISLRM5pAmmo() {
+    private static AmmoType createISLRMpAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Primitive Prototype LRM 5 Ammo";
-        ammo.shortName = "LRM 5p";
-        ammo.setInternalName("IS Ammo LRM-5 Primitive");
-        ammo.addLookupName("ISLRM5p Ammo");
-        ammo.addLookupName("IS LRM 5 Primitive Ammo");
+        ammo.name = "Primitive Prototype LRM " + rackSize + " Ammo";
+        ammo.shortName = "LRM " + rackSize + "p";
+        ammo.setInternalName("IS Ammo LRM-" + rackSize + " Primitive");
+        ammo.addLookupName("ISLRM" + rackSize + "p Ammo");
+        ammo.addLookupName("IS LRM " + rackSize + " Primitive Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM_PRIMITIVE;
-        ammo.shots = 18;
-        ammo.bv = 6;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
         ammo.cost = 30000;
@@ -12230,101 +12230,23 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_TA)
                 .setProductionFactions(F_TA);
         return ammo;
+    }
+
+    private static AmmoType createISLRM5pAmmo() {
+        return createISLRMpAmmo(5, 18, 6);
     }
 
     private static AmmoType createISLRM10pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype LRM 10 Ammo";
-        ammo.shortName = "LRM 10p";
-        ammo.setInternalName("IS Ammo LRM-10 Primitive");
-        ammo.addLookupName("ISLRM10p Ammo");
-        ammo.addLookupName("IS LRM 10 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_LRM_PRIMITIVE;
-        ammo.shots = 9;
-        ammo.bv = 11;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.cost = 30000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2295, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
-        return ammo;
+        return createISLRMpAmmo(10, 9, 11);
     }
 
     private static AmmoType createISLRM15pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype LRM 15 Ammo";
-        ammo.shortName = "LRM 15p";
-        ammo.setInternalName("IS Ammo LRM-15 Primitive");
-        ammo.addLookupName("ISLRM15p Ammo");
-        ammo.addLookupName("IS LRM 15 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_LRM_PRIMITIVE;
-        ammo.shots = 6;
-        ammo.bv = 17;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.cost = 30000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2295, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
-        return ammo;
+        return createISLRMpAmmo(15, 6, 17);
     }
 
     private static AmmoType createISLRM20pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype LRM 20 Ammo";
-        ammo.shortName = "LRM 20p";
-        ammo.setInternalName("IS Ammo LRM-20 Primitive");
-        ammo.addLookupName("ISLRM20p Ammo");
-        ammo.addLookupName("IS LRM 20 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_LRM_PRIMITIVE;
-        ammo.shots = 5;
-        ammo.bv = 23;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.cost = 30000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2295, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
-        return ammo;
+        return createISLRMpAmmo(20, 5, 23);
     }
-
 
     private static AmmoType createISSRM2pAmmo() {
         AmmoType ammo = new AmmoType();
