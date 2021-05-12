@@ -12248,19 +12248,19 @@ public class AmmoType extends EquipmentType {
         return createISLRMpAmmo(20, 5, 23);
     }
 
-    private static AmmoType createISSRM2pAmmo() {
+    private static AmmoType createISSRMpAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Primitive Prototype SRM 2 Ammo";
-        ammo.shortName = "SRM 2p";
-        ammo.setInternalName("IS Ammo SRM-2 Primitive");
-        ammo.addLookupName("ISSRM2p Ammo");
-        ammo.addLookupName("IS SRM 2 Primitive Ammo");
+        ammo.name = "Primitive Prototype SRM " + rackSize +" Ammo";
+        ammo.shortName = "SRM " + rackSize + "p";
+        ammo.setInternalName("IS Ammo SRM-" + rackSize + " Primitive");
+        ammo.addLookupName("ISSRM" + rackSize + "p Ammo");
+        ammo.addLookupName("IS SRM " + rackSize + " Primitive Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_PRIMITIVE;
-        ammo.shots = 38;
-        ammo.bv = 3;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 27000;
         //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
         //This to cover some of the back worlds in the Periphery.
@@ -12275,64 +12275,18 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_TA)
                 .setProductionFactions(F_TA);
         return ammo;
+    }
+
+    private static AmmoType createISSRM2pAmmo() {
+        return createISSRMpAmmo(2, 38, 3);
     }
 
     private static AmmoType createISSRM4pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype SRM 4 Ammo";
-        ammo.shortName = "SRM 4p";
-        ammo.setInternalName("IS Ammo SRM-4 Primitive");
-        ammo.addLookupName("ISSRM4p Ammo");
-        ammo.addLookupName("IS SRM 4 Primitive Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_PRIMITIVE;
-        ammo.shots = 19;
-        ammo.bv = 5;
-        ammo.cost = 27000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2365, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
-        return ammo;
+        return createISSRMpAmmo(4, 19, 5);
     }
 
     private static AmmoType createISSRM6pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype SRM 6 Ammo";
-        ammo.shortName = "SRM 6p";
-        ammo.setInternalName("IS Ammo SRM-6 Primitive");
-        ammo.addLookupName("ISSRM6p Ammo");
-        ammo.addLookupName("IS SRM 6 Primitive Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_PRIMITIVE;
-        ammo.shots = 11;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2365, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
-        return ammo;
+        return createISSRMpAmmo(6, 11, 7);
     }
 
     private static AmmoType createISPrimitiveLongTomAmmo() {
