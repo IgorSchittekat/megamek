@@ -12697,23 +12697,23 @@ public class AmmoType extends EquipmentType {
     }
 
     //IS BA LRM Missile Launchers
-    private static AmmoType createBAISLRM1Ammo() {
+    private static AmmoType createBAISLRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "BA LRM 1 Ammo";
-        ammo.shortName = "LRM 1";
-        ammo.setInternalName("IS BA Ammo LRM-1");
-        ammo.addLookupName("BAISLRM1 Ammo");
-        ammo.addLookupName("BAISLRM1 Ammo");
+        ammo.name = "BA LRM "+ rackSize + " Ammo";
+        ammo.shortName = "LRM " + rackSize;
+        ammo.setInternalName("IS BA Ammo LRM-" + rackSize);
+        ammo.addLookupName("BAISLRM" + rackSize + " Ammo");
+        ammo.addLookupName("BAISLRM" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
         ammo.rackSize = 1;
         ammo.ammoType = AmmoType.T_LRM;
         ammo.flags = ammo.flags.or(F_BATTLEARMOR);
         ammo.shots = 1;
-        ammo.bv = 2;
+        ammo.bv = bv;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 8.3;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "261,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -12725,125 +12725,26 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_FS)
                 .setProductionFactions(F_FS);
         return ammo;
+    }
+
+    private static AmmoType createBAISLRM1Ammo() {
+        return createBAISLRMAmmo(1, 2, 8.3);
     }
 
     private static AmmoType createBAISLRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 2 Ammo";
-        ammo.shortName = "LRM 2";
-        ammo.setInternalName("IS BA Ammo LRM-2");
-        ammo.addLookupName("BAISLRM2 Ammo");
-        ammo.addLookupName("BAISLRM2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 3;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 16.6;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3057, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createBAISLRMAmmo(2, 3, 16.6);
     }
 
     private static AmmoType createBAISLRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 3 Ammo";
-        ammo.shortName = "LRM 3";
-        ammo.setInternalName("IS BA Ammo LRM-3");
-        ammo.addLookupName("BAISLRM3 Ammo");
-        ammo.addLookupName("BAISLRM3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 4;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 25;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3057, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createBAISLRMAmmo(3, 4, 25);
     }
 
     private static AmmoType createBAISLRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 4 Ammo";
-        ammo.shortName = "LRM 4";
-        ammo.setInternalName("IS BA Ammo LRM-4");
-        ammo.addLookupName("BAISLRM4 Ammo");
-        ammo.addLookupName("BAISLRM4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 5;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 33.4;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3057, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createBAISLRMAmmo(4, 5, 33.4);
     }
 
     private static AmmoType createBAISLRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "BA LRM 5 Ammo";
-        ammo.shortName = "LRM 5";
-        ammo.setInternalName("IS BA Ammo LRM-5");
-        ammo.addLookupName("BAISLRM5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.flags = ammo.flags.or(F_BATTLEARMOR);
-        ammo.shots = 1;
-        ammo.bv = 6;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.kgPerShot = 41.5;
-        ammo.rulesRefs = "261,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3057, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createBAISLRMAmmo(5, 6, 41.5);
     }
 
     //Clan BA LRM Missile Launcher
