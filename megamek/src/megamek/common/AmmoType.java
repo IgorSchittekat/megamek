@@ -7933,21 +7933,21 @@ public class AmmoType extends EquipmentType {
 
 
     //CLAN PROTO LRMS
-    private static AmmoType createCLLRM1Ammo() {
+    private static AmmoType createCLLRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LRM 1 Ammo";
-        ammo.shortName = "LRM 1";
-        ammo.setInternalName("Clan Ammo Protomech LRM-1");
-        ammo.addLookupName("Clan Ammo LRM-1");
-        ammo.addLookupName("CLLRM1 Ammo");
-        ammo.addLookupName("Clan LRM 1 Ammo");
+        ammo.name = "LRM " + rackSize + " Ammo";
+        ammo.shortName = "LRM " + rackSize;
+        ammo.setInternalName("Clan Ammo Protomech LRM-" + rackSize);
+        ammo.addLookupName("Clan Ammo LRM-" + rackSize);
+        ammo.addLookupName("CLLRM" + rackSize + " Ammo");
+        ammo.addLookupName("Clan LRM " + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM;
         ammo.shots = 100;
-        ammo.bv = 0.02;
-        ammo.kgPerShot = 8.33;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
         //But LRM Tech Base and Avail Ratings.
         ammo.rulesRefs = "231,TM";
@@ -7961,474 +7961,71 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CSJ)
                 .setProductionFactions(F_CSJ);
         return ammo;
+    }
 
+    private static AmmoType createCLLRM1Ammo() {
+        return createCLLRMAmmo(1, 0.02, 8.33);
     }
 
     private static AmmoType createCLLRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 2 Ammo";
-        ammo.shortName = "LRM 2";
-        ammo.setInternalName("Clan Ammo Protomech LRM-2");
-        ammo.addLookupName("Clan Ammo LRM-2");
-        ammo.addLookupName("CLLRM2 Ammo");
-        ammo.addLookupName("Clan LRM 2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 3;
-        ammo.kgPerShot = 16.66;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(2, 3, 16.66);
     }
 
     private static AmmoType createCLLRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 3 Ammo";
-        ammo.shortName = "LRM 3";
-        ammo.setInternalName("Clan Ammo Protomech LRM-3");
-        ammo.addLookupName("Clan Ammo LRM-3");
-        ammo.addLookupName("CLLRM3 Ammo");
-        ammo.addLookupName("Clan LRM 3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 5;
-        ammo.kgPerShot = 24.99;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(3, 5, 24.99);
     }
 
     private static AmmoType createCLLRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 4 Ammo";
-        ammo.shortName = "LRM 4";
-        ammo.setInternalName("Clan Ammo Protomech LRM-4");
-        ammo.addLookupName("Clan Ammo LRM-4");
-        ammo.addLookupName("CLLRM4 Ammo");
-        ammo.addLookupName("Clan LRM 4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 6;
-        ammo.kgPerShot = 33.32;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(4, 6, 33.32);
     }
 
     private static AmmoType createCLLRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 6 Ammo";
-        ammo.shortName = "LRM 6";
-        ammo.setInternalName("Clan Ammo Protomech LRM-6");
-        ammo.addLookupName("Clan Ammo LRM-6");
-        ammo.addLookupName("CLLRM6 Ammo");
-        ammo.addLookupName("Clan LRM 6 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 9;
-        ammo.kgPerShot = 49.98;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(6, 9, 49.98);
     }
 
     private static AmmoType createCLLRM7Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 7 Ammo";
-        ammo.shortName = "LRM 7";
-        ammo.setInternalName("Clan Ammo Protomech LRM-7");
-        ammo.addLookupName("Clan Ammo LRM-7");
-        ammo.addLookupName("CLLRM7 Ammo");
-        ammo.addLookupName("Clan LRM 7 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 7;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 10;
-        ammo.kgPerShot = 58.31;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(7, 10, 58.31);
     }
 
     private static AmmoType createCLLRM8Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 8 Ammo";
-        ammo.shortName = "LRM 8";
-        ammo.setInternalName("Clan Ammo Protomech LRM-8");
-        ammo.addLookupName("Clan Ammo LRM-8");
-        ammo.addLookupName("CLLRM8 Ammo");
-        ammo.addLookupName("Clan LRM 8 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 11;
-        ammo.kgPerShot = 66.64;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(8, 11, 66.64);
     }
 
     private static AmmoType createCLLRM9Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 9 Ammo";
-        ammo.shortName = "LRM 9";
-        ammo.setInternalName("Clan Ammo Protomech LRM-9");
-        ammo.addLookupName("Clan Ammo LRM-9");
-        ammo.addLookupName("CLLRM9 Ammo");
-        ammo.addLookupName("Clan LRM 9 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 9;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 12;
-        ammo.kgPerShot = 74.97;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(9, 12, 74.97);
     }
 
     private static AmmoType createCLLRM11Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 11 Ammo";
-        ammo.shortName = "LRM 11";
-        ammo.setInternalName("Clan Ammo Protomech LRM-11");
-        ammo.addLookupName("Clan Ammo LRM-11");
-        ammo.addLookupName("CLLRM11 Ammo");
-        ammo.addLookupName("Clan LRM 11 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 11;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 18;
-        ammo.kgPerShot = 91.63;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(11, 18, 91.63);
     }
 
     private static AmmoType createCLLRM12Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 12 Ammo";
-        ammo.setInternalName("Clan Ammo Protomech LRM-12");
-        ammo.shortName = "LRM 12";
-        ammo.addLookupName("Clan Ammo LRM-12");
-        ammo.addLookupName("CLLRM12 Ammo");
-        ammo.addLookupName("Clan LRM 12 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 12;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 18;
-        ammo.kgPerShot = 99.96;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(12, 18, 99.96);
     }
 
     private static AmmoType createCLLRM13Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 13 Ammo";
-        ammo.shortName = "LRM 13";
-        ammo.setInternalName("Clan Ammo Protomech LRM-13");
-        ammo.addLookupName("Clan Ammo LRM-13");
-        ammo.addLookupName("CLLRM13 Ammo");
-        ammo.addLookupName("Clan LRM 13 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 13;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 20;
-        ammo.kgPerShot = 108.29;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(13, 20, 108.29);
     }
 
     private static AmmoType createCLLRM14Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 14 Ammo";
-        ammo.shortName = "LRM 14";
-        ammo.setInternalName("Clan Ammo Protomech LRM-14");
-        ammo.addLookupName("Clan Ammo LRM-14");
-        ammo.addLookupName("CLLRM14 Ammo");
-        ammo.addLookupName("Clan LRM 14 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 14;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 21;
-        ammo.kgPerShot = 116.62;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(14, 21, 116.62);
     }
 
     private static AmmoType createCLLRM16Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 16 Ammo";
-        ammo.shortName = "LRM 16";
-        ammo.setInternalName("Clan Ammo Protomech LRM-16");
-        ammo.addLookupName("Clan Ammo LRM-16");
-        ammo.addLookupName("CLLRM16 Ammo");
-        ammo.addLookupName("Clan LRM 16 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 16;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 133.28;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(16, 27, 133.28);
     }
 
     private static AmmoType createCLLRM17Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 17 Ammo";
-        ammo.shortName = "LRM 17";
-        ammo.setInternalName("Clan Ammo Protomech LRM-17");
-        ammo.addLookupName("Clan Ammo LRM-17");
-        ammo.addLookupName("CLLRM17 Ammo");
-        ammo.addLookupName("Clan LRM 17 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 17;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 141.61;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(17, 27, 141.61);
     }
 
     private static AmmoType createCLLRM18Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRM 18 Ammo";
-        ammo.shortName = "LRM 18";
-        ammo.setInternalName("Clan Ammo Protomech LRM-18");
-        ammo.addLookupName("Clan Ammo LRM-18");
-        ammo.addLookupName("CLLRM18 Ammo");
-        ammo.addLookupName("Clan LRM 18 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 18;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 149.94;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(18, 27, 149.94);
     }
 
     private static AmmoType createCLLRM19Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.shortName = "LRM 19";
-        ammo.name = "LRM 19 Ammo";
-        ammo.setInternalName("Clan Ammo Protomech LRM-19");
-        ammo.addLookupName("Clan Ammo LRM-19");
-        ammo.addLookupName("CLLRM19 Ammo");
-        ammo.addLookupName("Clan LRM 19 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 19;
-        ammo.ammoType = AmmoType.T_LRM;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 158.27;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRMAmmo(19, 27, 158.27);
     }
-
 
     //Standard MRMs
     private static AmmoType createISMRM10Ammo() {
