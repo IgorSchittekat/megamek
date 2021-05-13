@@ -3995,27 +3995,26 @@ public class AmmoType extends EquipmentType {
     }
 
     //LB-X Cluster Ammos
-
-    private static AmmoType createCLLB2XClusterAmmo() {
+    private static AmmoType createCLLBXClusterAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LB 2-X Cluster Ammo";
-        ammo.shortName = "LB-2X Cluster";
+        ammo.name = "LB " + rackSize + "-X Cluster Ammo";
+        ammo.shortName = "LB-" + rackSize + "X Cluster";
         ammo.subMunitionBegin = 6;
         ammo.subMunitionLength = 7;
-        ammo.setInternalName("Clan LB 2-X Cluster Ammo");
-        ammo.addLookupName("Clan Ammo 2-X (CL)");
+        ammo.setInternalName("Clan LB " + rackSize + "-X Cluster Ammo");
+        ammo.addLookupName("Clan Ammo " + rackSize + "-X (CL)");
         // this isn't a true mtf code
-        ammo.addLookupName("CLLBXAC2 CL Ammo");
-        ammo.addLookupName("Clan LB 2-X AC Ammo - Cluster");
+        ammo.addLookupName("CLLBXAC" + rackSize + " CL Ammo");
+        ammo.addLookupName("Clan LB " + rackSize + "-X AC Ammo - Cluster");
         ammo.damagePerShot = 1;
         ammo.toHitModifier = -1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_LBX;
         ammo.munitionType = M_CLUSTER;
-        ammo.shots = 45;
-        ammo.bv = 6;
-        ammo.cost = 3300;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -4028,101 +4027,24 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createCLLB5XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
+    private static AmmoType createCLLB2XClusterAmmo() {
+        return createCLLBXClusterAmmo(2, 45, 6, 3300);
+    }
 
-        ammo.name = "LB 5-X Cluster Ammo";
-        ammo.shortName = "LB-5X Cluster";
-        ammo.subMunitionBegin = 6;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("Clan LB 5-X Cluster Ammo");
-        ammo.addLookupName("Clan Ammo 5-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("CLLBXAC5 CL Ammo");
-        ammo.addLookupName("Clan LB 5-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 20;
-        ammo.bv = 12;
-        ammo.cost = 15000;
-        ammo.rulesRefs = "207,TM";
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setClanAdvancement(2824, 2826, 2828, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setPrototypeFactions(F_CCY)
-                .setProductionFactions(F_CCY);
-        return ammo;
+    private static AmmoType createCLLB5XClusterAmmo() {
+        return createCLLBXClusterAmmo(5, 20, 12, 15000);
     }
 
     private static AmmoType createCLLB10XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 10-X Cluster Ammo";
-        ammo.shortName = "LB-10X Cluster";
+        AmmoType ammo = createCLLBXClusterAmmo(10, 10, 19, 20000);
         ammo.subMunitionBegin = 7;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("Clan LB 10-X Cluster Ammo");
-        ammo.addLookupName("Clan Ammo 10-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("CLLBXAC10 CL Ammo");
-        ammo.addLookupName("Clan LB 10-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 10;
-        ammo.bv = 19;
-        ammo.cost = 20000;
         ammo.kgPerShot = 100;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setClanAdvancement(2824, 2826, 2828, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_CLAN)
-                .setReintroductionFactions(F_CLAN);
         return ammo;
     }
 
     private static AmmoType createCLLB20XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 20-X Cluster Ammo";
-        ammo.shortName = "LB-20X Cluster";
+        AmmoType ammo = createCLLBXClusterAmmo(20, 5, 30, 34000);
         ammo.subMunitionBegin = 7;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("Clan LB 20-X Cluster Ammo");
-        ammo.addLookupName("Clan Ammo 20-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("CLLBXAC20 CL Ammo");
-        ammo.addLookupName("Clan LB 20-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 5;
-        ammo.bv = 30;
-        ammo.cost = 34000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_B)
-                .setClanAdvancement(2824, 2826, 2828, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setProductionFactions(F_CCY)
-                .setReintroductionFactions(F_CHH);
         return ammo;
     }
 
