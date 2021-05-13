@@ -3809,19 +3809,19 @@ public class AmmoType extends EquipmentType {
         ammo.bv = bv;
         ammo.cost = cost;
         ammo.rulesRefs = "207,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
+                .setIntroLevel(true)
+                .setTechRating(RATING_B)
+                .setISApproximate(false, false, false, false, false)
+                .setClanApproximate(false, false, false, true, false);
         return ammo;
     }
 
     private static AmmoType createISAC2Ammo() {
         AmmoType ammo = createISACAmmo(2, 45, 5, 1000);
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
+        ammo.techAdvancement.setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
                 .setISAdvancement(2290, 2300, 2305, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
                 .setClanAdvancement(2290, 2300, 2305, 2850, DATE_NONE)
-                .setClanApproximate(false, false, false, true, false)
                 .setPrototypeFactions(F_TA)
                 .setProductionFactions(F_TA);
         return ammo;
@@ -3829,14 +3829,9 @@ public class AmmoType extends EquipmentType {
 
     private static AmmoType createISAC5Ammo() {
         AmmoType ammo = createISACAmmo(5, 20, 9, 4500);
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
+        ammo.techAdvancement.setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
                 .setISAdvancement(2240, 2250, 2255, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
                 .setClanAdvancement(2240, 2250, 2255, 2850, DATE_NONE)
-                .setClanApproximate(false, false, false, true, false)
                 .setPrototypeFactions(F_TA)
                 .setProductionFactions(F_TA);
         return ammo;
@@ -3844,14 +3839,9 @@ public class AmmoType extends EquipmentType {
 
     private static AmmoType createISAC10Ammo() {
         AmmoType ammo = createISACAmmo(10, 10, 15, 6000);
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
+        ammo.techAdvancement.setAvailability(RATING_C, RATING_C, RATING_D, RATING_D)
                 .setISAdvancement(2443, 2460, 2465, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
                 .setClanAdvancement(2443, 2460, 2465, 2850, DATE_NONE)
-                .setClanApproximate(false, false, false, true, false)
                 .setPrototypeFactions(F_TH)
                 .setProductionFactions(F_TH);
         return ammo;
@@ -3859,14 +3849,9 @@ public class AmmoType extends EquipmentType {
 
     private static AmmoType createISAC20Ammo() {
         AmmoType ammo = createISACAmmo(20, 5, 22, 10000);
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_E, RATING_D, RATING_D)
+        ammo.techAdvancement.setAvailability(RATING_D, RATING_E, RATING_D, RATING_D)
                 .setISAdvancement(2488, 2500, 2502, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
                 .setClanAdvancement(2488, 2500, 2502, 2850, DATE_NONE)
-                .setClanApproximate(false, false, false, true, false)
                 .setPrototypeFactions(F_LC)
                 .setProductionFactions(F_LC);
         return ammo;
