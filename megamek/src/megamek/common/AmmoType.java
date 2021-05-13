@@ -3955,75 +3955,43 @@ public class AmmoType extends EquipmentType {
         return createCLPROACAmmo(8, 10, 8, 6300, 100);
     }
 
-    private static AmmoType createISHVAC2Ammo() {
+    private static AmmoType createISHVACAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "HVAC/2 Ammo";
-        ammo.shortName = "HVAC/2";
-        ammo.setInternalName("IS Ammo HVAC/2");
-        ammo.addLookupName("ISHVAC2 Ammo");
-        ammo.addLookupName("IS Hyper Velocity Autocannon/2 Ammo");
-        ammo.addLookupName("Hyper Velocity AC/2 Ammo");
+        ammo.name = "HVAC/" + rackSize + " Ammo";
+        ammo.shortName = "HVAC/" + rackSize;
+        ammo.setInternalName("IS Ammo HVAC/" + rackSize);
+        ammo.addLookupName("ISHVAC" + rackSize + " Ammo");
+        ammo.addLookupName("IS Hyper Velocity Autocannon/" + rackSize + " Ammo");
+        ammo.addLookupName("Hyper Velocity AC/" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_HYPER_VELOCITY;
-        ammo.shots = 30;
-        ammo.bv = 7;
-        ammo.cost = 3000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "285,TO";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setTechRating(RATING_D).setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3059, 3079).setISApproximate(false, false)
-                .setPrototypeFactions(F_CC).setProductionFactions(F_CC)
+                .setTechRating(RATING_D)
+                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
+                .setISAdvancement(3059, 3079)
+                .setISApproximate(false, false)
+                .setPrototypeFactions(F_CC)
+                .setProductionFactions(F_CC)
                 .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
         return ammo;
+    }
+
+    private static AmmoType createISHVAC2Ammo() {
+        return createISHVACAmmo(2, 30, 7, 3000);
     }
 
     private static AmmoType createISHVAC5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "HVAC/5 Ammo";
-        ammo.shortName = "HVAC/5";
-        ammo.setInternalName("IS Ammo HVAC/5");
-        ammo.addLookupName("ISHVAC5 Ammo");
-        ammo.addLookupName("IS Hyper Velocity Autocannon/5 Ammo");
-        ammo.addLookupName(" Hyper Velocity AC/5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_HYPER_VELOCITY;
-        ammo.shots = 15;
-        ammo.bv = 14;
-        ammo.cost = 10000;
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setTechRating(RATING_D).setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3059, 3079).setISApproximate(false, false)
-                .setPrototypeFactions(F_CC).setProductionFactions(F_CC)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createISHVACAmmo(5, 15, 14, 10000);
     }
 
     private static AmmoType createISHVAC10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "HVAC/10 Ammo";
-        ammo.shortName = "HVAC/10";
-        ammo.setInternalName("IS Ammo HVAC/10");
-        ammo.addLookupName("ISHVAC10 Ammo");
-        ammo.addLookupName("IS Hyper Velocity Autocannon/10 Ammo");
-        ammo.addLookupName("Hyper Velocity AC/10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_HYPER_VELOCITY;
-        ammo.shots = 8;
-        ammo.bv = 20;
-        ammo.cost = 20000;
-        ammo.rulesRefs = "285,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setTechRating(RATING_D).setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3059, 3079).setISApproximate(false, false)
-                .setPrototypeFactions(F_CC).setProductionFactions(F_CC)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createISHVACAmmo(10, 8, 20, 20000);
     }
 
     //LB-X Cluster Ammos
