@@ -3947,9 +3947,12 @@ public class AmmoType extends EquipmentType {
         ammo.rulesRefs = "286,TO";
         ammo.kgPerShot = 25;
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setTechRating(RATING_B).setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3070, 3073, 3145).setClanApproximate(true, true, false)
-                .setPrototypeFactions(F_CBS).setProductionFactions(F_CBS)
+                .setTechRating(RATING_B)
+                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
+                .setClanAdvancement(3070, 3073, 3145)
+                .setClanApproximate(true, true, false)
+                .setPrototypeFactions(F_CBS)
+                .setProductionFactions(F_CBS)
                 .setStaticTechLevel(SimpleTechLevel.ADVANCED);
         return ammo;
     }
@@ -12998,46 +13001,33 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISRotary10Ammo() {
+    private static AmmoType createISRotaryAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Rotary AC/10 Ammo";
-        ammo.shortName = "RAC/10";
-        ammo.setInternalName("ISRotaryAC10 Ammo");
-        ammo.addLookupName("IS Rotary AC/10 Ammo");
+        ammo.name = "Rotary AC/" + rackSize + " Ammo";
+        ammo.shortName = "RAC/" + rackSize;
+        ammo.setInternalName("ISRotaryAC" + rackSize + " Ammo");
+        ammo.addLookupName("IS Rotary AC/" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_ROTARY;
-        ammo.shots = 10;
-        ammo.bv = 37;
-        ammo.cost = 30000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
 
         ammo.techAdvancement.setTechBase(TECH_BASE_IS);
         ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
         ammo.techAdvancement.setTechRating(RATING_E);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_E, RATING_E, RATING_E, RATING_E});
+        ammo.techAdvancement.setAvailability(RATING_E, RATING_E, RATING_E, RATING_E);
         return ammo;
     }
 
+    private static AmmoType createISRotary10Ammo() {
+        return createISRotaryAmmo(10, 10, 37, 30000);
+    }
+
     private static AmmoType createISRotary20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Rotary AC/20 Ammo";
-        ammo.shortName = "RAC/20";
-        ammo.setInternalName("ISRotaryAC20 Ammo");
-        ammo.addLookupName("IS Rotary AC/20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_ROTARY;
-        ammo.shots = 5;
-        ammo.bv = 59;
-        ammo.cost = 80000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
-        ammo.techAdvancement.setTechRating(RATING_E);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_E, RATING_E, RATING_E, RATING_E});
-        return ammo;
+        return createISRotaryAmmo(20, 5, 59, 80000);
     }
 
     private static AmmoType createCLRotary10Ammo() {
