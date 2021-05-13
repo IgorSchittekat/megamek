@@ -4033,136 +4033,68 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISLB2XClusterAmmo() {
+    private static AmmoType createISLBXClusterAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LB 2-X Cluster Ammo";
-        ammo.shortName = "LB 2-X Cluster";
+        ammo.name = "LB " + rackSize + "-X Cluster Ammo";
+        ammo.shortName = "LB " + rackSize + "-X Cluster";
         ammo.subMunitionBegin = 7;
         ammo.subMunitionLength = 7;
-        ammo.setInternalName("IS LB 2-X Cluster Ammo");
-        ammo.addLookupName("IS Ammo 2-X (CL)");
+        ammo.setInternalName("IS LB " + rackSize + "-X Cluster Ammo");
+        ammo.addLookupName("IS Ammo " + rackSize + "-X (CL)");
         // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC2 CL Ammo");
-        ammo.addLookupName("IS LB 2-X AC Ammo - Cluster");
+        ammo.addLookupName("ISLBXAC" + rackSize + " CL Ammo");
+        ammo.addLookupName("IS LB " + rackSize + "-X AC Ammo - Cluster");
         ammo.damagePerShot = 1;
         ammo.toHitModifier = -1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_LBX;
         ammo.munitionType = M_CLUSTER;
-        ammo.shots = 45;
-        ammo.bv = 5;
-        ammo.cost = 3300;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "TM 207";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
                 .setUnofficial(false)
                 .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
                 .setPrototypeFactions(F_FS)
                 .setProductionFactions(F_FS);
+        return ammo;
+    }
+
+    private static AmmoType createISLB2XClusterAmmo() {
+        AmmoType ammo = createISLBXClusterAmmo(2, 45, 5, 3300);
+        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
+                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
+                .setISApproximate(true, false, false, false, false);
         return ammo;
     }
 
     private static AmmoType createISLB5XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 5-X Cluster Ammo";
-        ammo.shortName = "LB 5-X Cluster";
-        ammo.subMunitionBegin = 7;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("IS LB 5-X Cluster Ammo");
-        ammo.addLookupName("IS Ammo 5-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC5 CL Ammo");
-        ammo.addLookupName("IS LB 5-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 20;
-        ammo.bv = 10;
-        ammo.cost = 15000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
+        AmmoType ammo = createISLBXClusterAmmo(5, 20, 10, 15000);
+        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
                 .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
+                .setISApproximate(true, false, false, false, false);
         return ammo;
     }
 
     private static AmmoType createISLB10XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 10-X Cluster Ammo";
-        ammo.shortName = "LB 10-X Cluster";
+        AmmoType ammo = createISLBXClusterAmmo(10, 10, 19, 20000);
         ammo.subMunitionBegin = 8;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("IS LB 10-X Cluster Ammo");
-        ammo.addLookupName("IS Ammo 10-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC10 CL Ammo");
-        ammo.addLookupName("IS LB 10-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 10;
-        ammo.bv = 19;
-        ammo.cost = 20000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_E, RATING_F, RATING_D, RATING_C)
+        ammo.techAdvancement.setAvailability(RATING_E, RATING_F, RATING_D, RATING_C)
                 .setISAdvancement(2590, 2595, 3040, 2840, 3035)
                 .setISApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
                 .setReintroductionFactions(F_FS);
         return ammo;
     }
 
     private static AmmoType createISLB20XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 20-X Cluster Ammo";
-        ammo.shortName = "LB 20-X Cluster";
+        AmmoType ammo = createISLBXClusterAmmo(20, 5, 30, 34000);
         ammo.subMunitionBegin = 8;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("IS LB 20-X Cluster Ammo");
-        ammo.addLookupName("IS Ammo 20-X (CL)");
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC20 CL Ammo");
-        ammo.addLookupName("IS LB 20-X AC Ammo - Cluster");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_LBX;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 5;
-        ammo.bv = 30;
-        ammo.cost = 34000;
-        ammo.rulesRefs = "TM 207";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
+        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
                 .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
                 .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
         return ammo;
     }
 
