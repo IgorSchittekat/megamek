@@ -3794,22 +3794,26 @@ public class AmmoType extends EquipmentType {
     }
 
     //AUTOCANNON AND RIFLE AMMO
-
-    private static AmmoType createISAC2Ammo() {
+    private static AmmoType createISACAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "AC/2 Ammo";
-        ammo.shortName = "AC/2";
-        ammo.setInternalName("IS Ammo AC/2");
-        ammo.addLookupName("ISAC2 Ammo");
-        ammo.addLookupName("IS Autocannon/2 Ammo");
+        ammo.name = "AC/" + rackSize + " Ammo";
+        ammo.shortName = "AC/" + rackSize;
+        ammo.setInternalName("IS Ammo AC/" + rackSize);
+        ammo.addLookupName("ISAC" + rackSize + " Ammo");
+        ammo.addLookupName("IS Autocannon/" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 45;
-        ammo.bv = 5;
-        ammo.cost = 1000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "207,TM";
+        return ammo;
+    }
+
+    private static AmmoType createISAC2Ammo() {
+        AmmoType ammo = createISACAmmo(2, 45, 5, 1000);
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setIntroLevel(true)
                 .setTechRating(RATING_B)
@@ -3824,20 +3828,7 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISAC5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "AC/5 Ammo";
-        ammo.shortName = "AC/5";
-        ammo.setInternalName("IS Ammo AC/5");
-        ammo.addLookupName("ISAC5 Ammo");
-        ammo.addLookupName("IS Autocannon/5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 20;
-        ammo.bv = 9;
-        ammo.cost = 4500;
-        ammo.rulesRefs = "207,TM";
+        AmmoType ammo = createISACAmmo(5, 20, 9, 4500);
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setIntroLevel(true)
                 .setTechRating(RATING_B)
@@ -3852,20 +3843,7 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISAC10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "AC/10 Ammo";
-        ammo.shortName = "AC/10";
-        ammo.setInternalName("IS Ammo AC/10");
-        ammo.addLookupName("ISAC10 Ammo");
-        ammo.addLookupName("IS Autocannon/10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 10;
-        ammo.bv = 15;
-        ammo.cost = 6000;
-        ammo.rulesRefs = "207,TM";
+        AmmoType ammo = createISACAmmo(10, 10, 15, 6000);
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setIntroLevel(true)
                 .setTechRating(RATING_B)
@@ -3880,20 +3858,7 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISAC20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "AC/20 Ammo";
-        ammo.shortName = "AC/20";
-        ammo.setInternalName("IS Ammo AC/20");
-        ammo.addLookupName("ISAC20 Ammo");
-        ammo.addLookupName("IS Autocannon/20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 5;
-        ammo.bv = 22;
-        ammo.cost = 10000;
-        ammo.rulesRefs = "207,TM";
+        AmmoType ammo = createISACAmmo(20, 5, 22, 10000);
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setIntroLevel(true)
                 .setTechRating(RATING_B)
