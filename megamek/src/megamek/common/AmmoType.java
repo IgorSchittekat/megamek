@@ -3916,23 +3916,22 @@ public class AmmoType extends EquipmentType {
         return createISLACAmmo(20, 5, 15, 20000);
     }
 
-    private static AmmoType createCLPROAC2Ammo() {
-
+    private static AmmoType createCLPROACAmmo(int rackSize, int shots, double bv, double cost, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "ProtoMech AC/2 Ammo";
-        ammo.shortName = "Proto AC/2";
-        ammo.setInternalName("Clan ProtoMech AC/2 Ammo");
-        ammo.addLookupName("CLProtoAC2Ammo");
-        ammo.addLookupName("CLProtoAC2 Ammo");
+        ammo.name = "ProtoMech AC/" + rackSize + " Ammo";
+        ammo.shortName = "Proto AC/" + rackSize;
+        ammo.setInternalName("Clan ProtoMech AC/" + rackSize + " Ammo");
+        ammo.addLookupName("CLProtoAC" + rackSize + "Ammo");
+        ammo.addLookupName("CLProtoAC" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_PAC;
-        ammo.shots = 40;
-        ammo.bv = 4;
-        ammo.cost = 1200;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "286,TO";
-        ammo.kgPerShot = 25;
+        ammo.kgPerShot = kgPerShot;
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setTechRating(RATING_B)
                 .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
@@ -3944,54 +3943,16 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
+    private static AmmoType createCLPROAC2Ammo() {
+        return createCLPROACAmmo(2, 40, 4, 1200, 25);
+    }
+
     private static AmmoType createCLPROAC4Ammo() {
-
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "ProtoMech AC/4 Ammo";
-        ammo.shortName = "Proto AC/4";
-        ammo.setInternalName("Clan ProtoMech AC/4 Ammo");
-        ammo.addLookupName("CLProtoAC4Ammo");
-        ammo.addLookupName("CLProtoAC4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_PAC;
-        ammo.shots = 20;
-        ammo.bv = 6;
-        ammo.cost = 4800;
-        ammo.rulesRefs = "286,TO";
-        ammo.kgPerShot = 50;
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setTechRating(RATING_B).setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3070, 3073, 3145).setClanApproximate(true, true, false)
-                .setPrototypeFactions(F_CBS).setProductionFactions(F_CBS)
-                .setStaticTechLevel(SimpleTechLevel.ADVANCED);
-        return ammo;
+        return createCLPROACAmmo(4, 20, 6, 4800, 50);
     }
 
     private static AmmoType createCLPROAC8Ammo() {
-
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "ProtoMech AC/8 Ammo";
-        ammo.shortName = "Proto AC/8";
-        ammo.setInternalName("Clan ProtoMech AC/8 Ammo");
-        ammo.addLookupName("CLProtoAC8Ammo");
-        ammo.addLookupName("CLProtoAC8 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_PAC;
-        ammo.shots = 10;
-        ammo.bv = 8;
-        ammo.cost = 6300;
-        ammo.kgPerShot = 100;
-        ammo.rulesRefs = "286,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setTechRating(RATING_B).setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3070, 3073, 3145).setClanApproximate(true, true, false)
-                .setPrototypeFactions(F_CBS).setProductionFactions(F_CBS)
-                .setStaticTechLevel(SimpleTechLevel.ADVANCED);
-        return ammo;
+        return createCLPROACAmmo(8, 10, 8, 6300, 100);
     }
 
     private static AmmoType createISHVAC2Ammo() {
