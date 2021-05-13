@@ -12697,19 +12697,7 @@ public class AmmoType extends EquipmentType {
 
     //UNOFFICIAL AMMOs
     private static AmmoType createISAC15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "AC/15 Ammo";
-        ammo.shortName = "AC/15";
-        ammo.setInternalName("IS Ammo AC/15");
-        ammo.addLookupName("ISAC15 Ammo");
-        ammo.addLookupName("IS Autocannon/15 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 7;
-        ammo.bv = 22;
-        ammo.cost = 8500;
+        AmmoType ammo = createISACAmmo(15, 7, 22, 8500);
         ammo.rulesRefs = "Unoffical";
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setUnofficial(true)
