@@ -3872,22 +3872,21 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-
-    private static AmmoType createISLAC2Ammo() {
+    private static AmmoType createISLACAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LAC/2 Ammo";
-        ammo.shortName = "LAC/2";
-        ammo.setInternalName("IS Ammo LAC/2");
-        ammo.addLookupName("ISLAC2 Ammo");
-        ammo.addLookupName("IS Light Autocannon/2 Ammo");
-        ammo.addLookupName("Light AC/2 Ammo");
+        ammo.name = "LAC/" + rackSize + " Ammo";
+        ammo.shortName = "LAC/" + rackSize;
+        ammo.setInternalName("IS Ammo LAC/" + rackSize);
+        ammo.addLookupName("ISLAC" + rackSize + " Ammo");
+        ammo.addLookupName("IS Light Autocannon/" + rackSize + " Ammo");
+        ammo.addLookupName("Light AC/" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LAC;
-        ammo.shots = 45;
-        ammo.bv = 4;
-        ammo.cost = 2000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -3901,32 +3900,20 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISLAC5Ammo() {
-        AmmoType ammo = new AmmoType();
+    private static AmmoType createISLAC2Ammo() {
+        return createISLACAmmo(2, 45, 4, 2000);
+    }
 
-        ammo.name = "LAC/5 Ammo";
-        ammo.shortName = "LAC/5";
-        ammo.setInternalName("IS Ammo LAC/5");
-        ammo.addLookupName("ISLAC5 Ammo");
-        ammo.addLookupName("IS Light Autocannon/5 Ammo");
-        ammo.addLookupName("Light AC/5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_LAC;
-        ammo.shots = 20;
-        ammo.bv = 8;
-        ammo.cost = 5000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setISAdvancement(3062, 3068, 3070, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+    private static AmmoType createISLAC5Ammo() {
+        return createISLACAmmo(5, 20, 8, 5000);
+    }
+
+    private static AmmoType createISLAC10Ammo() {
+        return createISLACAmmo(10, 10, 9, 10000);
+    }
+
+    private static AmmoType createISLAC20Ammo() {
+        return createISLACAmmo(20, 5, 15, 20000);
     }
 
     private static AmmoType createCLPROAC2Ammo() {
@@ -13083,63 +13070,6 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_CSF);
         return ammo;
     }
-
-    private static AmmoType createISLAC10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LAC/10 Ammo";
-        ammo.shortName = "LAC/10";
-        ammo.setInternalName("IS Ammo LAC/10");
-        ammo.addLookupName("ISLAC10 Ammo");
-        ammo.addLookupName("IS Light Autocannon/10 Ammo");
-        ammo.addLookupName("Light AC/10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_LAC;
-        ammo.shots = 10;
-        ammo.bv = 9;
-        ammo.cost = 10000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_C)
-                .setISAdvancement(3062, 3068, 3070, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
-    }
-
-    private static AmmoType createISLAC20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LAC/20 Ammo";
-        ammo.shortName = "LAC/20";
-        ammo.setInternalName("IS Ammo LAC/20");
-        ammo.addLookupName("ISLAC20 Ammo");
-        ammo.addLookupName("IS Light Autocannon/20 Ammo");
-        ammo.addLookupName("Light AC/20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_LAC;
-        ammo.shots = 5;
-        ammo.bv = 15;
-        ammo.cost = 20000;
-        ammo.rulesRefs = "207,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_C)
-                .setISAdvancement(3062, 3068, 3070, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
-    }
-
 
     private static AmmoType createISRailGunAmmo() {
         AmmoType ammo = new AmmoType();
