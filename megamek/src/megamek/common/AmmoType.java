@@ -4094,7 +4094,7 @@ public class AmmoType extends EquipmentType {
         ammo.subMunitionBegin = 8;
         ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
                 .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
+                .setISApproximate(true, false, false, false, false);
         return ammo;
     }
 
