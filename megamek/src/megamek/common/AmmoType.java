@@ -13517,31 +13517,6 @@ public class AmmoType extends EquipmentType {
                 case AmmoType.T_AC_PRIMITIVE:
                 case AmmoType.T_LAC:
                 case AmmoType.T_AC_IMP:
-                    // Add the munition name to the beginning of the display
-                    // name.
-                    nameBuf = new StringBuffer(name);
-                    nameBuf.append(" ");
-                    munition.subMunitionBegin = 0;
-                    munition.subMunitionLength = nameBuf.length();
-                    nameBuf.append(base.name);
-                    munition.name = nameBuf.toString();
-
-                    // Add the munition name to the end of the TDB ammo name.
-                    nameBuf = new StringBuffer(" - ");
-                    nameBuf.append(name);
-                    munition.addToEnd(base, " - " + name);
-
-                    // The munition name appears in the middle of the other
-                    // names.
-                    nameBuf = new StringBuffer(base.internalName);
-                    index = base.internalName.lastIndexOf("Ammo");
-                    nameBuf.insert(index, ' ');
-                    nameBuf.insert(index, name);
-                    munition.setInternalName(nameBuf.toString());
-                    munition.shortName = munition.name;
-                    munition.addBeforeString(base, "Ammo", name + " ");
-                    nameBuf = null;
-                    break;
                 case AmmoType.T_PAC:
                     // Add the munition name to the beginning of the display
                     // name.
