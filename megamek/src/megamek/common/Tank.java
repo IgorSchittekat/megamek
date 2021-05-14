@@ -997,13 +997,6 @@ public class Tank extends Entity {
                     }
                     break;
                 case 3:
-                    if (game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_VEHICLES_THRESHOLD)) {
-                        setPotCrit(HitData.EFFECT_VEHICLE_MOVE_DAMAGED);
-                    } else {
-                        rv.setEffect(HitData.EFFECT_VEHICLE_MOVE_DAMAGED);
-                    }
-                    rv.setMotiveMod(motiveMod);
-                    break;
                 case 4:
                     if (game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_VEHICLES_THRESHOLD)) {
                         setPotCrit(HitData.EFFECT_VEHICLE_MOVE_DAMAGED);
@@ -1101,24 +1094,6 @@ public class Tank extends Entity {
                     }
                     break;
                 case 10:
-                    if (!ignoreTurret) {
-                        if (!hasNoDualTurret()) {
-                            int roll = Compute.d6();
-                            if (side == ToHitData.SIDE_FRONT) {
-                                roll -= 2;
-                            } else if (side == ToHitData.SIDE_REAR) {
-                                roll += 2;
-                            }
-                            if (roll <= 3) {
-                                rv = new HitData(LOC_TURRET_2);
-                            } else {
-                                rv = new HitData(LOC_TURRET);
-                            }
-                        } else {
-                            rv = new HitData(LOC_TURRET);
-                        }
-                    }
-                    break;
                 case 11:
                     if (!ignoreTurret) {
                         if (!hasNoDualTurret()) {
