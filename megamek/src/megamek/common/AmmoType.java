@@ -3875,9 +3875,6 @@ public class AmmoType extends EquipmentType {
         ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
                 .setISAdvancement(3062, 3068, 3070, DATE_NONE, DATE_NONE)
                 .setISApproximate(true, false, false, false, false)
                 .setPrototypeFactions(F_FS)
@@ -3886,19 +3883,35 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISLAC2Ammo() {
-        return createISLACAmmo(2, 45, 4, 2000);
+        AmmoType ammo = createISLACAmmo(2, 45, 4, 2000);
+        ammo.techAdvancement.setUnofficial(false)
+                .setTechRating(RATING_B)
+                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D);
+        return ammo;
     }
 
     private static AmmoType createISLAC5Ammo() {
-        return createISLACAmmo(5, 20, 8, 5000);
+        AmmoType ammo = createISLACAmmo(5, 20, 8, 5000);
+        ammo.techAdvancement.setUnofficial(false)
+                .setTechRating(RATING_B)
+                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D);
+        return ammo;
     }
 
     private static AmmoType createISLAC10Ammo() {
-        return createISLACAmmo(10, 10, 9, 10000);
+        AmmoType ammo = createISLACAmmo(10, 10, 9, 10000);
+        ammo.techAdvancement.setUnofficial(true)
+                .setTechRating(RATING_D)
+                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_C);
+        return ammo;
     }
 
     private static AmmoType createISLAC20Ammo() {
-        return createISLACAmmo(20, 5, 15, 20000);
+        AmmoType ammo = createISLACAmmo(20, 5, 15, 20000);
+        ammo.techAdvancement.setUnofficial(true)
+                .setTechRating(RATING_D)
+                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_C);
+        return ammo;
     }
 
     private static AmmoType createCLPROACAmmo(int rackSize, int shots, double bv, double cost, double kgPerShot) {
@@ -4053,7 +4066,7 @@ public class AmmoType extends EquipmentType {
         ammo.shots = shots;
         ammo.bv = bv;
         ammo.cost = cost;
-        ammo.rulesRefs = "TM 207";
+        ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
                 .setUnofficial(false)
@@ -4224,7 +4237,7 @@ public class AmmoType extends EquipmentType {
         ammo.shots = 45;
         ammo.bv = 5;
         ammo.cost = 2000;
-        ammo.rulesRefs = "TM 207";
+        ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
                 .setUnofficial(false)
@@ -4309,7 +4322,7 @@ public class AmmoType extends EquipmentType {
         ammo.shots = 5;
         ammo.bv = 30;
         ammo.cost = 20000;
-        ammo.rulesRefs = "TM 207";
+        ammo.rulesRefs = "207,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
                 .setUnofficial(false)
@@ -10385,9 +10398,9 @@ public class AmmoType extends EquipmentType {
     private static AmmoType createNACAmmo(int rackSize, double tonnage, double bv, double cost, double ammoRatio) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "NAC/" + rackSize + "Ammo";
+        ammo.name = "NAC/" + rackSize + " Ammo";
         ammo.setInternalName("Ammo NAC/" + rackSize);
-        ammo.addLookupName("NAC" + rackSize + "Ammo");
+        ammo.addLookupName("NAC" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
         ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_NAC;
