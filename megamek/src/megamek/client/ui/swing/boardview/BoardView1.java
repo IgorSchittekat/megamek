@@ -226,11 +226,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     static final int FLY_OVER_LINE_WIDTH = 3;
 
     // FIXME : Fonts shouldn't ever be handled like this for accessibility reasons
-    private static Font FONT_7 = new Font("SansSerif", Font.PLAIN, 7);
-    private static Font FONT_8 = new Font("SansSerif", Font.PLAIN, 8);
-    private static Font FONT_9 = new Font("SansSerif", Font.PLAIN, 9);
-    private static Font FONT_10 = new Font("SansSerif", Font.PLAIN, 10);
-    private static Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
+    private static final String fontName = "SansSerif";
+    private static Font FONT_7 = new Font(fontName, Font.PLAIN, 7);
+    private static Font FONT_8 = new Font(fontName, Font.PLAIN, 8);
+    private static Font FONT_9 = new Font(fontName, Font.PLAIN, 9);
+    private static Font FONT_10 = new Font(fontName, Font.PLAIN, 10);
+    private static Font FONT_12 = new Font(fontName, Font.PLAIN, 12);
 
     Dimension hex_size;
 
