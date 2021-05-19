@@ -2556,16 +2556,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         boolean standardTile = (baseImage.getHeight(null) == HEX_H)
                 && (baseImage.getWidth(null) == HEX_W);
 
-        int imgHeight, imgWidth;
-        imgWidth = scaledImage.getWidth(null);
-        imgHeight = scaledImage.getHeight(null);
-
-        // do not make larger than hex images even when the input image is big
-        int origImgWidth = imgWidth; // save for later, needed for large tiles
-        int origImgHeight = imgHeight;
-
-        imgWidth = Math.min(imgWidth,(int)(HEX_W*scale));
-        imgHeight = Math.min(imgHeight,(int)(HEX_H*scale));
+        int imgWidth = Math.min(scaledImage.getWidth(null),(int)(HEX_W*scale));
+        int imgHeight = Math.min(scaledImage.getHeight(null),(int)(HEX_H*scale));
 
         if (useIsometric()) {
             int largestLevelDiff = 0;
@@ -2590,57 +2582,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         BufferedImage hexImage = new BufferedImage(imgWidth, imgHeight,
                 BufferedImage.TYPE_INT_ARGB);
 
-        Graphics2D g = (Graphics2D)(hexImage.getGraphics());
-        GUIPreferences.AntiAliasifSet(g);
-
-        if (standardTile) { // is the image hex-sized, 84*72?
-            g.drawImage(scaledImage, 0, 0, this);
-        } else { // Draw image for a texture larger than a hex
-            Point p1SRC = getHexLocationLargeTile(c.getX(), c.getY());
-            p1SRC.x = p1SRC.x % origImgWidth;
-            p1SRC.y = p1SRC.y % origImgHeight;
-            Point p2SRC = new Point((int) (p1SRC.x + HEX_W * scale),
-                    (int) (p1SRC.y + HEX_H * scale));
-            Point p2DST = new Point((int) (HEX_W * scale),
-                    (int) (HEX_H * scale));
-
-            // hex mask to limit drawing to the hex shape
-            // TODO: this is not ideal yet but at least it draws
-            // without leaving gaps at any zoom
-            Image hexMask = getScaledImage(tileManager.getHexMask(), true);
-            g.drawImage(hexMask, 0, 0, this);
-            Composite svComp = g.getComposite();
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
-                    1f));
-
-            // paint the right slice from the big pic
-            g.drawImage(scaledImage, 0, 0, p2DST.x, p2DST.y, p1SRC.x, p1SRC.y,
-                    p2SRC.x, p2SRC.y, null);
-
-            // Handle wrapping of the image
-            if (p2SRC.x > origImgWidth && p2SRC.y <= origImgHeight) {
-                g.drawImage(scaledImage, origImgWidth - p1SRC.x, 0, p2DST.x,
-                        p2DST.y, 0, p1SRC.y, p2SRC.x - origImgWidth, p2SRC.y,
-                        null); // paint addtl slice on the left side
-            } else if (p2SRC.x <= origImgWidth && p2SRC.y > origImgHeight) {
-                g.drawImage(scaledImage, 0, origImgHeight - p1SRC.y, p2DST.x,
-                        p2DST.y, p1SRC.x, 0, p2SRC.x, p2SRC.y - origImgHeight,
-                        null); // paint addtl slice on the top
-            } else if (p2SRC.x > origImgWidth && p2SRC.y > origImgHeight) {
-                g.drawImage(scaledImage, origImgWidth - p1SRC.x, 0, p2DST.x,
-                        p2DST.y, 0, p1SRC.y, p2SRC.x - origImgWidth, p2SRC.y,
-                        null); // paint addtl slice on the top
-                g.drawImage(scaledImage, 0, origImgHeight - p1SRC.y, p2DST.x,
-                        p2DST.y, p1SRC.x, 0, p2SRC.x, p2SRC.y - origImgHeight,
-                        null); // paint addtl slice on the left side
-                // paint addtl slice on the top left side
-                g.drawImage(scaledImage, origImgWidth - p1SRC.x, origImgHeight
-                        - p1SRC.y, p2DST.x, p2DST.y, 0, 0, p2SRC.x
-                        - origImgWidth, p2SRC.y - origImgHeight, null);
-            }
-
-            g.setComposite(svComp);
-        }
+        Graphics2D g = drawImage(c, scaledImage, standardTile, hexImage);
 
         // To place roads under the shadow map, supers for hexes with roads
         // have to be drawn before the shadow map, otherwise the supers are
@@ -2971,6 +2913,63 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             hexImageCache.put(c, cacheEntry);
         }
         boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+    }
+
+    private Graphics2D drawImage(Coords c, Image scaledImage, boolean standardTile, BufferedImage hexImage) {
+        int origImgWidth = scaledImage.getWidth(null);
+        int origImgHeight = scaledImage.getHeight(null);
+
+        Graphics2D g = (Graphics2D)(hexImage.getGraphics());
+        GUIPreferences.AntiAliasifSet(g);
+
+        if (standardTile) { // is the image hex-sized, 84*72?
+            g.drawImage(scaledImage, 0, 0, this);
+        } else { // Draw image for a texture larger than a hex
+            Point p1SRC = getHexLocationLargeTile(c.getX(), c.getY());
+            p1SRC.x = p1SRC.x % origImgWidth;
+            p1SRC.y = p1SRC.y % origImgHeight;
+            Point p2SRC = new Point((int) (p1SRC.x + HEX_W * scale),
+                    (int) (p1SRC.y + HEX_H * scale));
+            Point p2DST = new Point((int) (HEX_W * scale),
+                    (int) (HEX_H * scale));
+
+            // hex mask to limit drawing to the hex shape
+            // TODO: this is not ideal yet but at least it draws
+            // without leaving gaps at any zoom
+            Image hexMask = getScaledImage(tileManager.getHexMask(), true);
+            g.drawImage(hexMask, 0, 0, this);
+            Composite svComp = g.getComposite();
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,
+                    1f));
+
+            // paint the right slice from the big pic
+            g.drawImage(scaledImage, 0, 0, p2DST.x, p2DST.y, p1SRC.x, p1SRC.y,
+                    p2SRC.x, p2SRC.y, null);
+
+            // Handle wrapping of the image
+            if (p2SRC.x > origImgWidth && p2SRC.y <= origImgHeight) {
+                g.drawImage(scaledImage, origImgWidth - p1SRC.x, 0, p2DST.x,
+                        p2DST.y, 0, p1SRC.y, p2SRC.x - origImgWidth, p2SRC.y,
+                        null); // paint addtl slice on the left side
+            } else if (p2SRC.x <= origImgWidth && p2SRC.y > origImgHeight) {
+                g.drawImage(scaledImage, 0, origImgHeight - p1SRC.y, p2DST.x,
+                        p2DST.y, p1SRC.x, 0, p2SRC.x, p2SRC.y - origImgHeight,
+                        null); // paint addtl slice on the top
+            } else if (p2SRC.x > origImgWidth) {
+                g.drawImage(scaledImage, origImgWidth - p1SRC.x, 0, p2DST.x,
+                        p2DST.y, 0, p1SRC.y, p2SRC.x - origImgWidth, p2SRC.y,
+                        null); // paint addtl slice on the top
+                g.drawImage(scaledImage, 0, origImgHeight - p1SRC.y, p2DST.x,
+                        p2DST.y, p1SRC.x, 0, p2SRC.x, p2SRC.y - origImgHeight,
+                        null); // paint addtl slice on the left side
+                // paint addtl slice on the top left side
+                g.drawImage(scaledImage, origImgWidth - p1SRC.x, origImgHeight
+                        - p1SRC.y, p2DST.x, p2DST.y, 0, 0, p2SRC.x
+                        - origImgWidth, p2SRC.y - origImgHeight, null);
+            }
+            g.setComposite(svComp);
+        }
+        return g;
     }
 
     /**
