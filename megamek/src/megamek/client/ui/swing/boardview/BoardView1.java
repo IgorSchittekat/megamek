@@ -2526,18 +2526,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             return;
         }
 
-        int level = hex.getLevel();
-        int depth = hex.depth(false);
-
-        ITerrain basement = hex.getTerrain(Terrains.BLDG_BASEMENT_TYPE);
-        if (basement != null) {
-            depth = 0;
-        }
-
-        int height = Math.max(hex.terrainLevel(Terrains.BLDG_ELEV),
-                              hex.terrainLevel(Terrains.BRIDGE_ELEV));
-        height = Math.max(height, hex.terrainLevel(Terrains.INDUSTRIAL));
-
         Image boardBgHexImg = getBoardBackgroundHexImage(c, hex);
         // get the base tile image
         Image baseImage, scaledImage;
@@ -2566,7 +2554,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 if (adjHex == null) {
                     continue;
                 }
-                int levelDiff = Math.abs(level - adjHex.getLevel());
+                int levelDiff = Math.abs(hex.getLevel() - adjHex.getLevel());
                 if (levelDiff > largestLevelDiff) {
                     largestLevelDiff = levelDiff;
                 }
@@ -2588,54 +2576,17 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // have to be drawn before the shadow map, otherwise the supers are
         // drawn after.  Unfortunately I dont think the supers images
         // themselves can be checked for roads.
-        List<Image> supers = tileManager.supersFor(hex);
         boolean supersUnderShadow = false;
-        if (hex.containsTerrain(Terrains.ROAD) ||
-                hex.containsTerrain(Terrains.WATER)) {
+        if (hex.containsTerrain(Terrains.ROAD) || hex.containsTerrain(Terrains.WATER)) {
             supersUnderShadow = true;
-            if (supers != null) {
-                for (Image image : supers) {
-                    if (animatedImages.contains(image.hashCode())) {
-                        dontCache = true;
-                    }
-                    scaledImage = getScaledImage(image, true);
-                    g.drawImage(scaledImage, 0, 0, this);
-                }
-            }
+            dontCache = drawSupers(dontCache, g, hex);
         }
 
         // Add the terrain & building shadows
-        if (guip.getBoolean(GUIPreferences.SHADOWMAP) &&
-            (shadowMap != null)) {
-            Point p1SRC = getHexLocationLargeTile(c.getX(), c.getY(), 1);
-            Point p2SRC = new Point(p1SRC.x + HEX_W, p1SRC.y + HEX_H);
-            Point p2DST = new Point(hex_size.width, hex_size.height);
-
-            Composite svComp = g.getComposite();
-            if (game.getPlanetaryConditions().getLight() == PlanetaryConditions.L_DAY) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.55f));
-            } else {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.45f));
-            }
-
-            // paint the right slice from the big pic
-            g.drawImage(shadowMap, 0, 0, p2DST.x, p2DST.y, p1SRC.x, p1SRC.y,
-                    p2SRC.x, p2SRC.y, null);
-            g.setComposite(svComp);
-        }
+        addTerrainAndBuildingShadows(c, g);
 
         if (!supersUnderShadow) {
-            if (supers != null) {
-                for (Image image : supers) {
-                    if (null != image) {
-                        if (animatedImages.contains(image.hashCode())) {
-                            dontCache = true;
-                        }
-                        scaledImage = getScaledImage(image, true);
-                        g.drawImage(scaledImage, 0, 0, this);
-                    }
-                }
-            }
+            dontCache = drawSupers(dontCache, g, hex);
         }
 
         // AO Hex Shadow in this hex when a higher one is adjacent
@@ -2762,36 +2713,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         // write terrain level / water depth / building height
-        if (scale > 0.5f) {
-            int ypos = HEX_H-2;
-            if (level != 0) {
-                drawCenteredString(
-                        Messages.getString("BoardView1.LEVEL") + level, //$NON-NLS-1$
-                        0, (int) (ypos * scale), font_elev, g);
-                ypos -= 10;
-            }
-            if (depth != 0) {
-                drawCenteredString(
-                        Messages.getString("BoardView1.DEPTH") + depth, //$NON-NLS-1$
-                        0, (int) (ypos * scale), font_elev, g);
-                ypos -= 10;
-            }
-            if (height > 0) {
-                g.setColor(GUIPreferences.getInstance().getColor(
-                        "AdvancedBuildingTextColor"));                 //$NON-NLS-1$
-                drawCenteredString(
-                        Messages.getString("BoardView1.HEIGHT") + height, //$NON-NLS-1$
-                        0, (int) (ypos * scale), font_elev, g);
-                ypos -= 10;
-            }
-            if (hex.terrainLevel(Terrains.FOLIAGE_ELEV) == 1) {
-                g.setColor(GUIPreferences.getInstance().getColor(
-                        GUIPreferences.ADVANCED_LOW_FOLIAGE_COLOR));  
-                drawCenteredString(Messages.getString("BoardView1.LowFoliage"), 
-                        0, (int) (ypos * scale), font_elev, g);
-                ypos -= 10;
-            }
-        }
+        writeLevelDepthHeight(hex, g);
 
         // Used to make the following draw calls shorter
         int s21 = (int)(21*scale);
@@ -2913,6 +2835,89 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             hexImageCache.put(c, cacheEntry);
         }
         boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+    }
+
+    private boolean drawSupers(boolean dontCache, Graphics2D g, IHex hex) {
+        List<Image> supers = tileManager.supersFor(hex);
+        if (supers == null) {
+            return dontCache;
+        }
+        for (Image image : supers) {
+            if (image == null) {
+                continue;
+            }
+            if (animatedImages.contains(image.hashCode())) {
+                dontCache = true;
+            }
+            Image scaledImage = getScaledImage(image, true);
+            g.drawImage(scaledImage, 0, 0, this);
+        }
+        return dontCache;
+    }
+
+    private void writeLevelDepthHeight(IHex hex, Graphics2D g) {
+        if (scale <= 0.5f) {
+            return;
+        }
+        int level = hex.getLevel();
+        int depth = hex.depth(false);
+        ITerrain basement = hex.getTerrain(Terrains.BLDG_BASEMENT_TYPE);
+        if (basement != null) {
+            depth = 0;
+        }
+
+        int height = Math.max(hex.terrainLevel(Terrains.BLDG_ELEV),
+                hex.terrainLevel(Terrains.BRIDGE_ELEV));
+        height = Math.max(height, hex.terrainLevel(Terrains.INDUSTRIAL));
+
+        int ypos = HEX_H-2;
+        if (level != 0) {
+            drawCenteredString(
+                    Messages.getString("BoardView1.LEVEL") + level, //$NON-NLS-1$
+                    0, (int) (ypos * scale), font_elev, g);
+            ypos -= 10;
+        }
+        if (depth != 0) {
+            drawCenteredString(
+                    Messages.getString("BoardView1.DEPTH") + depth, //$NON-NLS-1$
+                    0, (int) (ypos * scale), font_elev, g);
+            ypos -= 10;
+        }
+        if (height > 0) {
+            g.setColor(GUIPreferences.getInstance().getColor(
+                    "AdvancedBuildingTextColor"));                 //$NON-NLS-1$
+            drawCenteredString(
+                    Messages.getString("BoardView1.HEIGHT") + height, //$NON-NLS-1$
+                    0, (int) (ypos * scale), font_elev, g);
+            ypos -= 10;
+        }
+        if (hex.terrainLevel(Terrains.FOLIAGE_ELEV) == 1) {
+            g.setColor(GUIPreferences.getInstance().getColor(
+                    GUIPreferences.ADVANCED_LOW_FOLIAGE_COLOR));
+            drawCenteredString(Messages.getString("BoardView1.LowFoliage"),
+                    0, (int) (ypos * scale), font_elev, g);
+            ypos -= 10;
+        }
+    }
+
+    private void addTerrainAndBuildingShadows(Coords c, Graphics2D g) {
+        if (GUIPreferences.getInstance().getBoolean(GUIPreferences.SHADOWMAP) && (shadowMap != null)) {
+            Point p1SRC = getHexLocationLargeTile(c.getX(), c.getY(), 1);
+            Point p2SRC = new Point(p1SRC.x + HEX_W, p1SRC.y + HEX_H);
+            Point p2DST = new Point(hex_size.width, hex_size.height);
+
+            Composite svComp = g.getComposite();
+            if (game.getPlanetaryConditions().getLight() == PlanetaryConditions.L_DAY) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.55f));
+            } else {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.45f));
+            }
+
+            // paint the right slice from the big pic
+            g.drawImage(shadowMap, 0, 0, p2DST.x, p2DST.y, p1SRC.x, p1SRC.y,
+                    p2SRC.x, p2SRC.y, null);
+            g.setComposite(svComp);
+        };
     }
 
     private Graphics2D drawImage(Coords c, Image scaledImage, boolean standardTile, BufferedImage hexImage) {
