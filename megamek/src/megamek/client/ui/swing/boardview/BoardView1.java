@@ -2576,16 +2576,11 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // have to be drawn before the shadow map, otherwise the supers are
         // drawn after.  Unfortunately I dont think the supers images
         // themselves can be checked for roads.
-        boolean supersUnderShadow = false;
         if (hex.containsTerrain(Terrains.ROAD) || hex.containsTerrain(Terrains.WATER)) {
-            supersUnderShadow = true;
             dontCache = drawSupers(dontCache, g, hex);
-        }
-
-        // Add the terrain & building shadows
-        addTerrainAndBuildingShadows(c, g);
-
-        if (!supersUnderShadow) {
+            addTerrainAndBuildingShadows(c, g);
+        } else {
+            addTerrainAndBuildingShadows(c, g);
             dontCache = drawSupers(dontCache, g, hex);
         }
 
