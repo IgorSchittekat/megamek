@@ -5777,24 +5777,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Fuel Tank
         if (mhex.containsTerrain(Terrains.FUEL_TANK)) {
-            // In the BoardEditor, buildings have no entry in the
-            // buildings list of the board, so get the info from the hex
-            if (clientgui == null) {
-                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
-                        Terrains.getEditorName(Terrains.FUEL_TANK),
-                        mhex.terrainLevel(Terrains.FUEL_TANK_CF),
-                        mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)));
-            } else {
-                Building bldg = game.getBoard().getBuildingAt(mcoords);
-                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
-                        bldg.toString(),
-                        bldg.getCurrentCF(mcoords)));
-            }
-            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+            txt.append(getTankText(mhex, mcoords));
         }
 
         // Building
@@ -5899,6 +5882,29 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 txt.append("<br>"); //$NON-NLS-1$
             }
         }
+        return txt.toString();
+    }
+
+    private String getTankText(IHex mhex, Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        // In the BoardEditor, buildings have no entry in the
+        // buildings list of the board, so get the info from the hex
+        if (clientgui == null) {
+            txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
+                    Terrains.getEditorName(Terrains.FUEL_TANK),
+                    mhex.terrainLevel(Terrains.FUEL_TANK_CF),
+                    mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)));
+        } else {
+            Building bldg = game.getBoard().getBuildingAt(mcoords);
+            txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
+                    bldg.toString(),
+                    bldg.getCurrentCF(mcoords)));
+        }
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
         return txt.toString();
     }
 
