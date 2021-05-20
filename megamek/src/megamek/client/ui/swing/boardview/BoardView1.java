@@ -5542,33 +5542,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // Show the player(s) that may deploy here
         // in the artillery autohit designation phase
         if ((game.getPhase() == IGame.Phase.PHASE_SET_ARTYAUTOHITHEXES) && (mhex != null)) {
-            txt.append("<TABLE BORDER=0 width=100%><TR><TD>"); //$NON-NLS-1$
-            Enumeration<IPlayer> allP = game.getPlayers();
-            boolean foundPlayer = false;
-            // loop through all players
-            while (allP.hasMoreElements()) {
-                IPlayer cp = allP.nextElement();
-                if (game.getBoard().isLegalDeployment(mcoords, cp.getStartingPos())) {
-                    if (!foundPlayer) {
-                        foundPlayer = true;
-                        txt.append(Messages.getString("BoardView1.Tooltip.ArtyAutoHeader")); //$NON-NLS-1$
-                    }
-                    txt.append("<B><FONT COLOR=#"); //$NON-NLS-1$
-                    txt.append(cp.getColour().getHexString());
-                    txt.append(">&nbsp;&nbsp;"); //$NON-NLS-1$
-                    txt.append(cp.getName());
-                    txt.append("</FONT></B><BR>"); //$NON-NLS-1$
-                }
-            }
-            if (foundPlayer) txt.append("<BR>"); //$NON-NLS-1$
-
-            // Add a hint with keybind that the zones can be shown graphically
-            String keybindText = InputEvent.getModifiersExText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").modifiers);
-            if (!keybindText.isEmpty()) keybindText += "+";
-            keybindText += KeyEvent.getKeyText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").key);
-            txt.append(Messages.getString("BoardView1.Tooltip.ArtyAutoHint", keybindText));
-
-            txt.append("</TD></TR></TABLE>"); //$NON-NLS-1$
+            txt.append(getDeployPlayersText(mcoords));
         }
 
 
@@ -5746,6 +5720,38 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             ToolTipManager.sharedInstance().setDismissDelay(dismissDelay);
         }
 
+        return txt.toString();
+    }
+
+    private String getDeployPlayersText(Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        txt.append("<TABLE BORDER=0 width=100%><TR><TD>"); //$NON-NLS-1$
+        Enumeration<IPlayer> allP = game.getPlayers();
+        boolean foundPlayer = false;
+        // loop through all players
+        while (allP.hasMoreElements()) {
+            IPlayer cp = allP.nextElement();
+            if (game.getBoard().isLegalDeployment(mcoords, cp.getStartingPos())) {
+                if (!foundPlayer) {
+                    foundPlayer = true;
+                    txt.append(Messages.getString("BoardView1.Tooltip.ArtyAutoHeader")); //$NON-NLS-1$
+                }
+                txt.append("<B><FONT COLOR=#"); //$NON-NLS-1$
+                txt.append(cp.getColour().getHexString());
+                txt.append(">&nbsp;&nbsp;"); //$NON-NLS-1$
+                txt.append(cp.getName());
+                txt.append("</FONT></B><BR>"); //$NON-NLS-1$
+            }
+        }
+        if (foundPlayer) txt.append("<BR>"); //$NON-NLS-1$
+
+        // Add a hint with keybind that the zones can be shown graphically
+        String keybindText = InputEvent.getModifiersExText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").modifiers);
+        if (!keybindText.isEmpty()) keybindText += "+";
+        keybindText += KeyEvent.getKeyText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").key);
+        txt.append(Messages.getString("BoardView1.Tooltip.ArtyAutoHint", keybindText));
+
+        txt.append("</TD></TR></TABLE>"); //$NON-NLS-1$
         return txt.toString();
     }
 
