@@ -226,12 +226,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     static final int FLY_OVER_LINE_WIDTH = 3;
 
     // FIXME : Fonts shouldn't ever be handled like this for accessibility reasons
-    private static final String fontName = "SansSerif";
-    private static Font FONT_7 = new Font(fontName, Font.PLAIN, 7);
-    private static Font FONT_8 = new Font(fontName, Font.PLAIN, 8);
-    private static Font FONT_9 = new Font(fontName, Font.PLAIN, 9);
-    private static Font FONT_10 = new Font(fontName, Font.PLAIN, 10);
-    private static Font FONT_12 = new Font(fontName, Font.PLAIN, 12);
+    private static final String SansSerif = "SansSerif";
+    private static Font FONT_7 = new Font(SansSerif, Font.PLAIN, 7);
+    private static Font FONT_8 = new Font(SansSerif, Font.PLAIN, 8);
+    private static Font FONT_9 = new Font(SansSerif, Font.PLAIN, 9);
+    private static Font FONT_10 = new Font(SansSerif, Font.PLAIN, 10);
+    private static Font FONT_12 = new Font(SansSerif, Font.PLAIN, 12);
 
     Dimension hex_size;
 
@@ -434,7 +434,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     private long totalTime;
     private long averageTime;
     private int frameCount;
-    private Font fpsFont = new Font("SansSerif", 0, 20); //$NON-NLS-1$
+    private Font fpsFont = new Font(SansSerif, 0, 20); //$NON-NLS-1$
 
 
     /**
@@ -2632,16 +2632,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         // draw special stuff for the hex
-        final Collection<SpecialHexDisplay> shdList = game.getBoard().getSpecialHexDisplay(c);
         try {
-            if (shdList != null) {
-                for (SpecialHexDisplay shd : shdList) {
-                    if (shd.drawNow(game.getPhase(), game.getRoundCount(), localPlayer)) {
-                        scaledImage = getScaledImage(shd.getType().getDefaultImage(), true);
-                        g.drawImage(scaledImage, 0, 0, this);
-                    }
-                }
-            }
+            drawSpecials(c, g);
         } catch (Exception e) {
             MegaMek.getLogger().error("Exception, probably can't load file.", e);
             drawCenteredString("Loading Error", 0, (int) (50 * scale), font_note, g);
@@ -2656,7 +2648,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         if (getDisplayInvalidHexInfo() && !hex.isValid(null)) {
             Point hexCenter = new Point((int) (HEX_W / 2 * scale), (int) (HEX_H / 2 * scale));
             drawCenteredText(g, Messages.getString("BoardEditor.INVALID"), hexCenter, Color.RED,
-                    false, new Font("SansSerif", Font.BOLD, 14));
+                    false, new Font(SansSerif, Font.BOLD, 14));
         }
 
         // write terrain level / water depth / building height
@@ -2782,6 +2774,19 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             hexImageCache.put(c, cacheEntry);
         }
         boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+    }
+
+    private void drawSpecials(Coords c, Graphics2D g) {
+        final Collection<SpecialHexDisplay> shdList = game.getBoard().getSpecialHexDisplay(c);
+        if (shdList == null) {
+            return;
+        }
+        for (SpecialHexDisplay shd : shdList) {
+            if (shd.drawNow(game.getPhase(), game.getRoundCount(), localPlayer)) {
+                Image scaledImage = getScaledImage(shd.getType().getDefaultImage(), true);
+                g.drawImage(scaledImage, 0, 0, this);
+            }
+        }
     }
 
     private void darkenHex(Coords c, GUIPreferences guip, BufferedImage hexImage) {
