@@ -5565,31 +5565,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         txt.append(getEntityText(point, mcoords));
 
         // Artillery attacks
-        for (ArtilleryAttackAction aaa : artilleryAttacks) {
-            // Default texts if no real names can be found
-            String wpName = Messages.getString("BoardView1.Artillery");
-            String ammoName = "Unknown";
-
-            // Get real weapon and ammo name
-            final Entity artyEnt = game.getEntity(aaa.getEntityId());
-            if (artyEnt != null) {
-                if (aaa.getWeaponId() > -1) {
-                    wpName = artyEnt.getEquipment(aaa.getWeaponId()).getName();
-                    if (aaa.getAmmoId() > -1) {
-                        ammoName = artyEnt.getEquipment(aaa.getAmmoId()).getName();
-                    }
-                }
-            }
-
-            txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">");
-            if (aaa.getTurnsTilHit() == 1)
-                txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttack1",
-                        wpName, ammoName));
-            else
-                txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttackN",
-                        wpName, ammoName, aaa.getTurnsTilHit()));
-            txt.append("</FONT></TD></TR></TABLE>");
-        }
+        txt.append(getArtilleryAttackText(artilleryAttacks));
 
         // Artillery fire adjustment
         if ((curWeapon != null) && (selectedEntity != null)) {
@@ -5666,6 +5642,37 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             ToolTipManager.sharedInstance().setDismissDelay(dismissDelay);
         }
 
+        return txt.toString();
+    }
+
+    private String getArtilleryAttackText(ArrayList<ArtilleryAttackAction> artilleryAttacks) {
+        StringBuilder txt = new StringBuilder();
+
+        for (ArtilleryAttackAction aaa : artilleryAttacks) {
+            // Default texts if no real names can be found
+            String wpName = Messages.getString("BoardView1.Artillery");
+            String ammoName = "Unknown";
+
+            // Get real weapon and ammo name
+            final Entity artyEnt = game.getEntity(aaa.getEntityId());
+            if (artyEnt != null) {
+                if (aaa.getWeaponId() > -1) {
+                    wpName = artyEnt.getEquipment(aaa.getWeaponId()).getName();
+                    if (aaa.getAmmoId() > -1) {
+                        ammoName = artyEnt.getEquipment(aaa.getAmmoId()).getName();
+                    }
+                }
+            }
+
+            txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">");
+            if (aaa.getTurnsTilHit() == 1)
+                txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttack1",
+                        wpName, ammoName));
+            else
+                txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttackN",
+                        wpName, ammoName, aaa.getTurnsTilHit()));
+            txt.append("</FONT></TD></TR></TABLE>");
+        }
         return txt.toString();
     }
 
