@@ -5536,7 +5536,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Hex Terrain
         if (GUIPreferences.getInstance().getShowMapHexPopup() && (mhex != null)) {
-            appendHexTerrainText(txt, mhex, mcoords);
+            txt.append(getHexTerrainText(mhex, mcoords));
         }
 
         // Show the player(s) that may deploy here
@@ -5563,7 +5563,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             if (foundPlayer) txt.append("<BR>"); //$NON-NLS-1$
 
             // Add a hint with keybind that the zones can be shown graphically
-            String keybindText = KeyEvent.getKeyModifiersText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").modifiers);
+            String keybindText = InputEvent.getModifiersExText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").modifiers);
             if (!keybindText.isEmpty()) keybindText += "+";
             keybindText += KeyEvent.getKeyText(KeyCommandBind.getBindByCmd("autoArtyDeployZone").key);
             txt.append(Messages.getString("BoardView1.Tooltip.ArtyAutoHint", keybindText));
@@ -5749,7 +5749,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         return txt.toString();
     }
 
-    private void appendHexTerrainText(StringBuilder txt, IHex mhex, Coords mcoords) {
+    private String getHexTerrainText(IHex mhex, Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
         txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
 
         txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
@@ -5947,6 +5948,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 txt.append("<br>"); //$NON-NLS-1$
             }
         }
+        return txt.toString();
     }
 
     private ArrayList<ArtilleryAttackAction> getArtilleryAttacksAtLocation(
