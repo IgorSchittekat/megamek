@@ -5524,7 +5524,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         prevTipX = point.x;
         prevTipY = point.y;
         final Coords mcoords = getCoordsAt(point);
-        final Mounted curWeapon = getSelectedArtilleryWeapon();
 
         if (game.getBoard().contains(mcoords))
             mhex = game.getBoard().getHex(mcoords);
@@ -5564,30 +5563,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Artillery attacks
         txt.append(getArtilleryAttackText(mcoords));
-
-        // Artillery fire adjustment
-        if ((curWeapon != null) && (selectedEntity != null)) {
-            // process targetted hexes
-            int amod = 0;
-            // Check the predesignated hexes
-            if (selectedEntity.getOwner().getArtyAutoHitHexes()
-                    .contains(mcoords)) {
-                amod = TargetRoll.AUTOMATIC_SUCCESS;
-            } else {
-                amod = selectedEntity.aTracker.getModifier(curWeapon, mcoords);
-            }
-
-            if (amod == TargetRoll.AUTOMATIC_SUCCESS) {
-                txt.append(Messages
-                        .getString("BoardView1.ArtilleryAutohit")); //$NON-NLS-1$
-                txt.append("<br>"); //$NON-NLS-1$
-            } else {
-                txt.append(Messages.getString(
-                        "BoardView1.ArtilleryAdjustment", //$NON-NLS-1$
-                        Integer.valueOf(amod)));
-                txt.append("<br>"); //$NON-NLS-1$
-            }
-        }
 
         final Collection<SpecialHexDisplay> shdList = game.getBoard()
                 .getSpecialHexDisplay(mcoords);
@@ -5670,6 +5645,27 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttackN",
                         wpName, ammoName, aaa.getTurnsTilHit()));
             txt.append("</FONT></TD></TR></TABLE>");
+        }
+
+        // Artillery fire adjustment
+        final Mounted curWeapon = getSelectedArtilleryWeapon();
+        if ((curWeapon != null) && (selectedEntity != null)) {
+            // process targetted hexes
+            int amod = 0;
+            // Check the predesignated hexes
+            if (selectedEntity.getOwner().getArtyAutoHitHexes().contains(mcoords)) {
+                amod = TargetRoll.AUTOMATIC_SUCCESS;
+            } else {
+                amod = selectedEntity.aTracker.getModifier(curWeapon, mcoords);
+            }
+
+            if (amod == TargetRoll.AUTOMATIC_SUCCESS) {
+                txt.append(Messages.getString("BoardView1.ArtilleryAutohit")); //$NON-NLS-1$
+                txt.append("<br>"); //$NON-NLS-1$
+            } else {
+                txt.append(Messages.getString("BoardView1.ArtilleryAdjustment", amod)); //$NON-NLS-1$
+                txt.append("<br>"); //$NON-NLS-1$
+            }
         }
         return txt.toString();
     }
