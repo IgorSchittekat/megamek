@@ -5524,8 +5524,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         prevTipX = point.x;
         prevTipY = point.y;
         final Coords mcoords = getCoordsAt(point);
-        final ArrayList<ArtilleryAttackAction> artilleryAttacks =
-                getArtilleryAttacksAtLocation(mcoords);
         final Mounted curWeapon = getSelectedArtilleryWeapon();
 
         if (game.getBoard().contains(mcoords))
@@ -5565,7 +5563,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         txt.append(getEntityText(point, mcoords));
 
         // Artillery attacks
-        txt.append(getArtilleryAttackText(artilleryAttacks));
+        txt.append(getArtilleryAttackText(mcoords));
 
         // Artillery fire adjustment
         if ((curWeapon != null) && (selectedEntity != null)) {
@@ -5645,10 +5643,10 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         return txt.toString();
     }
 
-    private String getArtilleryAttackText(ArrayList<ArtilleryAttackAction> artilleryAttacks) {
+    private String getArtilleryAttackText(Coords mcoords) {
         StringBuilder txt = new StringBuilder();
 
-        for (ArtilleryAttackAction aaa : artilleryAttacks) {
+        for (ArtilleryAttackAction aaa : getArtilleryAttacksAtLocation(mcoords)) {
             // Default texts if no real names can be found
             String wpName = Messages.getString("BoardView1.Artillery");
             String ammoName = "Unknown";
@@ -5971,8 +5969,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         return txt.toString();
     }
 
-    private ArrayList<ArtilleryAttackAction> getArtilleryAttacksAtLocation(
-            Coords c) {
+    private ArrayList<ArtilleryAttackAction> getArtilleryAttacksAtLocation(Coords c) {
         ArrayList<ArtilleryAttackAction> v = new ArrayList<ArtilleryAttackAction>();
         for (Enumeration<ArtilleryAttackAction> attacks = game
                 .getArtilleryAttacks(); attacks.hasMoreElements(); ) {
