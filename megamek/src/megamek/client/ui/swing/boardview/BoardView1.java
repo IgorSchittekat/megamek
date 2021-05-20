@@ -5504,7 +5504,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // If new instance of mouse event, redraw obscured hexes and elevations.
         repaint();
 
-        StringBuffer txt = new StringBuffer();
+        StringBuilder txt = new StringBuilder();
         IHex mhex = null;
         final Point point = e.getPoint();
         if (prevTipX > 0 && prevTipY > 0) {
@@ -5536,213 +5536,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Hex Terrain
         if (GUIPreferences.getInstance().getShowMapHexPopup() && (mhex != null)) {
-
-            txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-
-            txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
-                    mcoords.getBoardNum(), mhex.getLevel()));
-            txt.append("<br>"); //$NON-NLS-1$
-
-            // cycle through the terrains and report types found
-            // this will skip buildings and other constructed units
-            int[] terrainTypes = mhex.getTerrainTypes();
-            for (int i = 0; i < terrainTypes.length; i++) {
-                int terType = terrainTypes[i];
-                if (mhex.containsTerrain(terType)) {
-                    int tf = mhex.getTerrain(terType).getTerrainFactor();
-                    int ttl = mhex.getTerrain(terType).getLevel();
-                    String name = Terrains.getDisplayName(terType, ttl);
-                    if (tf > 0) {
-                        name = name + " (TF: " + tf + ")"; //$NON-NLS-1$ //$NON-NLS-2$
-                    }
-                    if (name != null) {
-                        txt.append(name);
-                        txt.append("<br>"); //$NON-NLS-1$
-                    }
-                }
-            }
-            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
-
-            // Distance from the selected unit and a planned movement end point
-            if ((selectedEntity != null) &&
-                    (selectedEntity.getPosition() != null)) {
-                int distance = selectedEntity
-                        .getPosition()
-                        .distance(mcoords);
-                txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                if (distance == 1) {
-                    txt.append(Messages.getString("BoardView1.Tooltip.Distance1")); //$NON-NLS-1$
-                } else {
-                    txt.append(Messages.getString("BoardView1.Tooltip.DistanceN", //$NON-NLS-1$
-                            distance));
-                }
-
-                if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_SENSORS)) {
-                    LosEffects los = fovHighlightingAndDarkening.getCachedLosEffects(selectedEntity.getPosition(), mcoords);
-                    int bracket = Compute.getSensorRangeBracket(selectedEntity, null,
-                            fovHighlightingAndDarkening.cachedAllECMInfo);
-                    int range = Compute.getSensorRangeByBracket(game, selectedEntity, null, los);
-
-                    int maxSensorRange = bracket * range;
-                    int minSensorRange = Math.max((bracket - 1) * range, 0);
-                    if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_INCLUSIVE_SENSOR_RANGE)) {
-                        minSensorRange = 0;
-                    }
-                    txt.append("<BR>");
-                    if ((distance > minSensorRange) && (distance <= maxSensorRange)) {
-                        txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexInRange"));
-                    } else {
-                        txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexNotInRange"));
-                    }
-                }
-
-                if ((game.getPhase() == Phase.PHASE_MOVEMENT) &&
-                        (movementTarget != null)) {
-                    txt.append("<BR>");
-                    int disPM = movementTarget.distance(mcoords);
-                    if (disPM == 1) {
-                        txt.append(Messages.getString("BoardView1.Tooltip.DistanceMove1")); //$NON-NLS-1$
-                    } else {
-                        txt.append(Messages.getString("BoardView1.Tooltip.DistanceMoveN", //$NON-NLS-1$
-                                disPM));
-                    }
-                }
-
-                txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
-            }
-
-            // Fuel Tank
-            if (mhex.containsTerrain(Terrains.FUEL_TANK)) {
-                // In the BoardEditor, buildings have no entry in the
-                // buildings list of the board, so get the info from the hex
-                if (clientgui == null) {
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
-                            Terrains.getEditorName(Terrains.FUEL_TANK),
-                            mhex.terrainLevel(Terrains.FUEL_TANK_CF),
-                            mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)));
-                } else {
-                    Building bldg = game.getBoard().getBuildingAt(mcoords);
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
-                            bldg.toString(),
-                            bldg.getCurrentCF(mcoords)));
-                }
-                txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
-            }
-
-            // Building
-            if (mhex.containsTerrain(Terrains.BUILDING)) {
-                // In the BoardEditor, buildings have no entry in the
-                // buildings list of the board, so get the info from the hex
-                if (clientgui == null) {
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.BLDG_ELEV),
-                            Terrains.getEditorName(Terrains.BUILDING),
-                            mhex.terrainLevel(Terrains.BLDG_CF),
-                            Math.max(mhex.terrainLevel(Terrains.BLDG_ARMOR), 0),
-                            BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()));
-                } else {
-                    Building bldg = game.getBoard().getBuildingAt(mcoords);
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#CCCC99 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.BLDG_ELEV),
-                            bldg.toString(),
-                            bldg.getCurrentCF(mcoords),
-                            bldg.getArmor(mcoords),
-                            bldg.getBasement(mcoords).getDesc()));
-
-                    if (bldg.getBasementCollapsed(mcoords)) {
-                        txt.append(Messages
-                                .getString("BoardView1.Tooltip.BldgBasementCollapsed")); //$NON-NLS-1$
-                    }
-                }
-                txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
-            }
-
-            // Bridge
-            if (mhex.containsTerrain(Terrains.BRIDGE)) {
-                // In the BoardEditor, buildings have no entry in the
-                // buildings list of the board, so get the info from the hex
-                if (clientgui == null) {
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.BRIDGE_ELEV),
-                            Terrains.getEditorName(Terrains.BRIDGE),
-                            mhex.terrainLevel(Terrains.BRIDGE_CF)));
-                } else {
-                    Building bldg = game.getBoard().getBuildingAt(mcoords);
-                    txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
-                            mhex.terrainLevel(Terrains.BRIDGE_ELEV),
-                            bldg.toString(),
-                            bldg.getCurrentCF(mcoords)));
-                }
-                txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
-            }
-
-            if (game.containsMinefield(mcoords)) {
-                Vector<Minefield> minefields = game.getMinefields(mcoords);
-                for (int i = 0; i < minefields.size(); i++) {
-                    Minefield mf = minefields.elementAt(i);
-                    String owner = " (" //$NON-NLS-1$
-                            + game.getPlayer(mf.getPlayerId()).getName()
-                            + ")"; //$NON-NLS-1$
-
-                    switch (mf.getType()) {
-                        case (Minefield.TYPE_CONVENTIONAL):
-                            txt.append(mf.getName()
-                                    + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            break;
-                        case (Minefield.TYPE_COMMAND_DETONATED):
-                            txt.append(mf.getName()
-                                    + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            break;
-                        case (Minefield.TYPE_VIBRABOMB):
-                            if (mf.getPlayerId() == localPlayer.getId()) {
-                                txt.append(mf.getName()
-                                        + Messages
-                                        .getString("BoardView1.minefield") //$NON-NLS-1$
-                                        + "(" + mf.getDensity() + ")" + "(" //$NON-NLS-1$
-                                        + mf.getSetting() + ") " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            } else {
-                                txt.append(mf.getName()
-                                        + Messages
-                                        .getString("BoardView1.minefield") //$NON-NLS-1$
-                                        + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            }
-                            break;
-                        case (Minefield.TYPE_ACTIVE):
-                            txt.append(mf.getName()
-                                    + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            break;
-                        case (Minefield.TYPE_INFERNO):
-                            txt.append(mf.getName()
-                                    + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                            break;
-                    }
-                    txt.append("<br>"); //$NON-NLS-1$
-                }
-            }
-
-            if (displayInvalidHexInfo) {
-                StringBuffer errBuff = new StringBuffer();
-                if (!mhex.isValid(errBuff)) {
-                    txt.append(Messages.getString("BoardView1.invalidHex"));
-                    txt.append("<br>"); //$NON-NLS-1$
-                    String errors = errBuff.toString();
-                    errors = errors.replace("\n", "<br>");
-                    txt.append(errors);
-                    txt.append("<br>"); //$NON-NLS-1$
-                }
-            }
+            appendHexTerrainText(txt, mhex, mcoords);
         }
 
         // Show the player(s) that may deploy here
@@ -5953,6 +5747,206 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         return txt.toString();
+    }
+
+    private void appendHexTerrainText(StringBuilder txt, IHex mhex, Coords mcoords) {
+        txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+
+        txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
+                mcoords.getBoardNum(), mhex.getLevel()));
+        txt.append("<br>"); //$NON-NLS-1$
+
+        // cycle through the terrains and report types found
+        // this will skip buildings and other constructed units
+        int[] terrainTypes = mhex.getTerrainTypes();
+        for (int terType : terrainTypes) {
+            if (mhex.containsTerrain(terType)) {
+                int tf = mhex.getTerrain(terType).getTerrainFactor();
+                int ttl = mhex.getTerrain(terType).getLevel();
+                String name = Terrains.getDisplayName(terType, ttl);
+                if (tf > 0) {
+                    name = name + " (TF: " + tf + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+                }
+                if (name != null) {
+                    txt.append(name);
+                    txt.append("<br>"); //$NON-NLS-1$
+                }
+            }
+        }
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+
+        // Distance from the selected unit and a planned movement end point
+        if ((selectedEntity != null) &&
+                (selectedEntity.getPosition() != null)) {
+            int distance = selectedEntity
+                    .getPosition()
+                    .distance(mcoords);
+            txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            if (distance == 1) {
+                txt.append(Messages.getString("BoardView1.Tooltip.Distance1")); //$NON-NLS-1$
+            } else {
+                txt.append(Messages.getString("BoardView1.Tooltip.DistanceN", //$NON-NLS-1$
+                        distance));
+            }
+
+            if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_SENSORS)) {
+                LosEffects los = fovHighlightingAndDarkening.getCachedLosEffects(selectedEntity.getPosition(), mcoords);
+                int bracket = Compute.getSensorRangeBracket(selectedEntity, null,
+                        fovHighlightingAndDarkening.cachedAllECMInfo);
+                int range = Compute.getSensorRangeByBracket(game, selectedEntity, null, los);
+
+                int maxSensorRange = bracket * range;
+                int minSensorRange = Math.max((bracket - 1) * range, 0);
+                if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_INCLUSIVE_SENSOR_RANGE)) {
+                    minSensorRange = 0;
+                }
+                txt.append("<BR>");
+                if ((distance > minSensorRange) && (distance <= maxSensorRange)) {
+                    txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexInRange"));
+                } else {
+                    txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexNotInRange"));
+                }
+            }
+
+            if ((game.getPhase() == Phase.PHASE_MOVEMENT) &&
+                    (movementTarget != null)) {
+                txt.append("<BR>");
+                int disPM = movementTarget.distance(mcoords);
+                if (disPM == 1) {
+                    txt.append(Messages.getString("BoardView1.Tooltip.DistanceMove1")); //$NON-NLS-1$
+                } else {
+                    txt.append(Messages.getString("BoardView1.Tooltip.DistanceMoveN", //$NON-NLS-1$
+                            disPM));
+                }
+            }
+
+            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        }
+
+        // Fuel Tank
+        if (mhex.containsTerrain(Terrains.FUEL_TANK)) {
+            // In the BoardEditor, buildings have no entry in the
+            // buildings list of the board, so get the info from the hex
+            if (clientgui == null) {
+                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
+                        Terrains.getEditorName(Terrains.FUEL_TANK),
+                        mhex.terrainLevel(Terrains.FUEL_TANK_CF),
+                        mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)));
+            } else {
+                Building bldg = game.getBoard().getBuildingAt(mcoords);
+                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
+                        bldg.toString(),
+                        bldg.getCurrentCF(mcoords)));
+            }
+            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        }
+
+        // Building
+        if (mhex.containsTerrain(Terrains.BUILDING)) {
+            // In the BoardEditor, buildings have no entry in the
+            // buildings list of the board, so get the info from the hex
+            if (clientgui == null) {
+                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.BLDG_ELEV),
+                        Terrains.getEditorName(Terrains.BUILDING),
+                        mhex.terrainLevel(Terrains.BLDG_CF),
+                        Math.max(mhex.terrainLevel(Terrains.BLDG_ARMOR), 0),
+                        BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()));
+            } else {
+                Building bldg = game.getBoard().getBuildingAt(mcoords);
+                txt.append("<TABLE BORDER=0 BGCOLOR=#CCCC99 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.BLDG_ELEV),
+                        bldg.toString(),
+                        bldg.getCurrentCF(mcoords),
+                        bldg.getArmor(mcoords),
+                        bldg.getBasement(mcoords).getDesc()));
+
+                if (bldg.getBasementCollapsed(mcoords)) {
+                    txt.append(Messages
+                            .getString("BoardView1.Tooltip.BldgBasementCollapsed")); //$NON-NLS-1$
+                }
+            }
+            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        }
+
+        // Bridge
+        if (mhex.containsTerrain(Terrains.BRIDGE)) {
+            // In the BoardEditor, buildings have no entry in the
+            // buildings list of the board, so get the info from the hex
+            if (clientgui == null) {
+                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.BRIDGE_ELEV),
+                        Terrains.getEditorName(Terrains.BRIDGE),
+                        mhex.terrainLevel(Terrains.BRIDGE_CF)));
+            } else {
+                Building bldg = game.getBoard().getBuildingAt(mcoords);
+                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+                txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
+                        mhex.terrainLevel(Terrains.BRIDGE_ELEV),
+                        bldg.toString(),
+                        bldg.getCurrentCF(mcoords)));
+            }
+            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        }
+
+        if (game.containsMinefield(mcoords)) {
+            Vector<Minefield> minefields = game.getMinefields(mcoords);
+            for (int i = 0; i < minefields.size(); i++) {
+                Minefield mf = minefields.elementAt(i);
+                String owner = " (" //$NON-NLS-1$
+                        + game.getPlayer(mf.getPlayerId()).getName()
+                        + ")"; //$NON-NLS-1$
+
+                switch (mf.getType()) {
+                    case (Minefield.TYPE_CONVENTIONAL):
+                    case (Minefield.TYPE_COMMAND_DETONATED):
+                        txt.append(mf.getName()
+                                + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
+                                + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                        break;
+                    case (Minefield.TYPE_VIBRABOMB):
+                        if (mf.getPlayerId() == localPlayer.getId()) {
+                            txt.append(mf.getName()
+                                    + Messages
+                                    .getString("BoardView1.minefield") //$NON-NLS-1$
+                                    + "(" + mf.getDensity() + ")" + "(" //$NON-NLS-1$
+                                    + mf.getSetting() + ") " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                        } else {
+                            txt.append(mf.getName()
+                                    + Messages
+                                    .getString("BoardView1.minefield") //$NON-NLS-1$
+                                    + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                        }
+                        break;
+                    case (Minefield.TYPE_ACTIVE):
+                    case (Minefield.TYPE_INFERNO):
+                        txt.append(mf.getName()
+                                + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
+                                + "(" + mf.getDensity() + ")" + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                        break;
+                }
+                txt.append("<br>"); //$NON-NLS-1$
+            }
+        }
+
+        if (displayInvalidHexInfo) {
+            StringBuffer errBuff = new StringBuffer();
+            if (!mhex.isValid(errBuff)) {
+                txt.append(Messages.getString("BoardView1.invalidHex"));
+                txt.append("<br>"); //$NON-NLS-1$
+                String errors = errBuff.toString();
+                errors = errors.replace("\n", "<br>");
+                txt.append(errors);
+                txt.append("<br>"); //$NON-NLS-1$
+            }
+        }
     }
 
     private ArrayList<ArtilleryAttackAction> getArtilleryAttacksAtLocation(
