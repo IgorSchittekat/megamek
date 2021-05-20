@@ -5561,42 +5561,9 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         txt.append(getEntityText(point, mcoords));
 
-        // Artillery attacks
         txt.append(getArtilleryAttackText(mcoords));
 
-        final Collection<SpecialHexDisplay> shdList = game.getBoard()
-                .getSpecialHexDisplay(mcoords);
-        final Phase currPhase = game.getPhase();
-        int round = game.getRoundCount();
-        if (shdList != null) {
-            boolean isHexAutoHit = localPlayer.getArtyAutoHitHexes().contains(
-                    mcoords);
-            for (SpecialHexDisplay shd : shdList) {
-                boolean isTypeAutoHit = shd.getType()
-                        == SpecialHexDisplay.Type.ARTILLERY_AUTOHIT;
-                // Don't draw if this SHD is obscured from this player
-                // The SHD list may also contain stale SHDs, so don't show
-                // tooltips for SHDs that aren't drawn.
-                // The exception is auto hits.  There will be an icon for auto
-                // hits, so we need to draw a tooltip
-                if (!shd.isObscured(localPlayer)
-                        && (shd.drawNow(currPhase, round, localPlayer)
-                        || (isHexAutoHit && isTypeAutoHit))) {
-                    if (shd.getType() == SpecialHexDisplay.Type.PLAYER_NOTE) {
-                        if (localPlayer.equals(shd.getOwner())) {
-                            txt.append("Note: ");
-                        } else {
-                            txt.append("Note (" + shd.getOwner().getName()
-                                    + "): ");
-                        }
-                    }
-                    String buf = shd.getInfo();
-                    buf = buf.replaceAll("\\n", "<br>");
-                    txt.append(buf);
-                    txt.append("<br>"); //$NON-NLS-1$
-                }
-            }
-        }
+        txt.append(getSpecialHexDisplayText(mcoords));
 
         txt.append("</html>"); //$NON-NLS-1$
 
@@ -5615,6 +5582,42 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             ToolTipManager.sharedInstance().setDismissDelay(dismissDelay);
         }
 
+        return txt.toString();
+    }
+
+    private String getSpecialHexDisplayText(Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        final Collection<SpecialHexDisplay> shdList = game.getBoard().getSpecialHexDisplay(mcoords);
+        if (shdList == null) {
+            return "";
+        }
+
+        final Phase currPhase = game.getPhase();
+        int round = game.getRoundCount();
+        boolean isHexAutoHit = localPlayer.getArtyAutoHitHexes().contains(mcoords);
+        for (SpecialHexDisplay shd : shdList) {
+            boolean isTypeAutoHit = shd.getType() == SpecialHexDisplay.Type.ARTILLERY_AUTOHIT;
+            // Don't draw if this SHD is obscured from this player
+            // The SHD list may also contain stale SHDs, so don't show
+            // tooltips for SHDs that aren't drawn.
+            // The exception is auto hits.  There will be an icon for auto
+            // hits, so we need to draw a tooltip
+            if (!shd.isObscured(localPlayer)
+                    && (shd.drawNow(currPhase, round, localPlayer)
+                    || (isHexAutoHit && isTypeAutoHit))) {
+                if (shd.getType() == SpecialHexDisplay.Type.PLAYER_NOTE) {
+                    if (localPlayer.equals(shd.getOwner())) {
+                        txt.append("Note: ");
+                    } else {
+                        txt.append("Note (" + shd.getOwner().getName() + "): ");
+                    }
+                }
+                String buf = shd.getInfo();
+                buf = buf.replaceAll("\\n", "<br>");
+                txt.append(buf);
+                txt.append("<br>"); //$NON-NLS-1$
+            }
+        }
         return txt.toString();
     }
 
