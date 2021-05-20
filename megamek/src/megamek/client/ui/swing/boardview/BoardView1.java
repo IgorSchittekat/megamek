@@ -2618,60 +2618,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
         }
 
-        // Shade and add static noise to hexes that are in an ECM field
-        if (ecmHexes != null) {
-            Color tint = ecmHexes.get(c);
-            if (tint != null) {
-                Color origColor = g.getColor();
-                g.setColor(tint);
-                AffineTransform sc = new AffineTransform();
-                sc.scale(scale, scale);
-                g.fill(sc.createTransformedShape(hexPoly));
-                g.setColor(origColor);
-                Image staticImage = getScaledImage(
-                        tileManager.getEcmStaticImage(tint), false);
-                g.drawImage(staticImage, 0, 0, staticImage.getWidth(null),
-                        staticImage.getHeight(null), this);
-            }
-        }
-        // Shade hexes that are in an ECCM field
-        if (eccmHexes != null) {
-            Color tint = eccmHexes.get(c);
-            if (tint != null) {
-                Color origColor = g.getColor();
-                g.setColor(tint);
-                AffineTransform sc = new AffineTransform();
-                sc.scale(scale, scale);
-                g.fill(sc.createTransformedShape(hexPoly));
-                g.setColor(origColor);
-            }
-        }
-        // Highlight hexes that contain the source of an ECM field
-        if (ecmCenters != null) {
-            Color tint = ecmCenters.get(c);
-            if (tint != null) {
-                drawHexBorder(g, tint.darker(), 5, 10);
-            }
-        }
+        shadeHexes(c, g);
 
-        // Highlight hexes that contain the source of an ECCM field
-        if (eccmCenters != null) {
-            Color tint = eccmCenters.get(c);
-            if (tint != null) {
-                drawHexBorder(g, tint.darker(), 5, 10);
-            }
-        }
+        highlightHexes(c, g);
 
         // Darken the hex for night-time, if applicable
-        if (guip.getBoolean(GUIPreferences.ADVANCED_DARKEN_MAP_AT_NIGHT)
-                && (game.isPositionIlluminated(c) == IGame.ILLUMINATED_NONE)
-                && (game.getPlanetaryConditions().getLight() > PlanetaryConditions.L_DAY)) {
-            for (int x = 0; x < hexImage.getWidth(); ++x) {
-                for (int y = 0; y < hexImage.getHeight(); ++y) {
-                    hexImage.setRGB(x, y, getNightDarkenedColor(hexImage.getRGB(x, y)));
-                }
-            }
-        }
+        darkenHex(c, guip, hexImage);
 
         // Set the text color according to Preferences or Light Gray in space
         g.setColor(guip.getMapTextColor());
@@ -2830,6 +2782,67 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             hexImageCache.put(c, cacheEntry);
         }
         boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+    }
+
+    private void darkenHex(Coords c, GUIPreferences guip, BufferedImage hexImage) {
+        if (guip.getBoolean(GUIPreferences.ADVANCED_DARKEN_MAP_AT_NIGHT)
+                && (game.isPositionIlluminated(c) == IGame.ILLUMINATED_NONE)
+                && (game.getPlanetaryConditions().getLight() > PlanetaryConditions.L_DAY)) {
+            for (int x = 0; x < hexImage.getWidth(); ++x) {
+                for (int y = 0; y < hexImage.getHeight(); ++y) {
+                    hexImage.setRGB(x, y, getNightDarkenedColor(hexImage.getRGB(x, y)));
+                }
+            }
+        }
+    }
+
+    private void highlightHexes(Coords c, Graphics2D g) {
+        // Highlight hexes that contain the source of an ECM field
+        if (ecmCenters != null) {
+            Color tint = ecmCenters.get(c);
+            if (tint != null) {
+                drawHexBorder(g, tint.darker(), 5, 10);
+            }
+        }
+
+        // Highlight hexes that contain the source of an ECCM field
+        if (eccmCenters != null) {
+            Color tint = eccmCenters.get(c);
+            if (tint != null) {
+                drawHexBorder(g, tint.darker(), 5, 10);
+            }
+        }
+    }
+
+    private void shadeHexes(Coords c, Graphics2D g) {
+        // Shade and add static noise to hexes that are in an ECM field
+        if (ecmHexes != null) {
+            Color tint = ecmHexes.get(c);
+            if (tint != null) {
+                Color origColor = g.getColor();
+                g.setColor(tint);
+                AffineTransform sc = new AffineTransform();
+                sc.scale(scale, scale);
+                g.fill(sc.createTransformedShape(hexPoly));
+                g.setColor(origColor);
+                Image staticImage = getScaledImage(
+                        tileManager.getEcmStaticImage(tint), false);
+                g.drawImage(staticImage, 0, 0, staticImage.getWidth(null),
+                        staticImage.getHeight(null), this);
+            }
+        }
+        // Shade hexes that are in an ECCM field
+        if (eccmHexes != null) {
+            Color tint = eccmHexes.get(c);
+            if (tint != null) {
+                Color origColor = g.getColor();
+                g.setColor(tint);
+                AffineTransform sc = new AffineTransform();
+                sc.scale(scale, scale);
+                g.fill(sc.createTransformedShape(hexPoly));
+                g.setColor(origColor);
+            }
+        }
     }
 
     private boolean drawSupers(boolean dontCache, Graphics2D g, IHex hex) {
