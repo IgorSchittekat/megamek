@@ -2546,21 +2546,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         int imgWidth = Math.min(scaledImage.getWidth(null),(int)(HEX_W*scale));
         int imgHeight = Math.min(scaledImage.getHeight(null),(int)(HEX_H*scale));
-
-        if (useIsometric()) {
-            int largestLevelDiff = 0;
-            for (int dir: allDirections) {
-                IHex adjHex = game.getBoard().getHexInDir(c, dir);
-                if (adjHex == null) {
-                    continue;
-                }
-                int levelDiff = Math.abs(hex.getLevel() - adjHex.getLevel());
-                if (levelDiff > largestLevelDiff) {
-                    largestLevelDiff = levelDiff;
-                }
-            }
-            imgHeight += HEX_ELEV * scale * largestLevelDiff;
-        }
+        imgHeight += getIsometricImgHeight(c, hex);
+        
         // If the base image isn't ready, we should signal a repaint and stop
         if ((imgWidth < 0) || (imgHeight < 0)) {
             repaint();
@@ -2585,8 +2572,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         // AO Hex Shadow in this hex when a higher one is adjacent
-        if (guip.getBoolean(GUIPreferences.AOHEXSHADOWS)
-               ) {
+        if (guip.getBoolean(GUIPreferences.AOHEXSHADOWS)) {
             for (int dir : allDirections) {
                 Shape ShadowShape = getElevationShadowArea(c, dir);
                 GradientPaint gpl = getElevationShadowGP(c, dir);
@@ -2598,25 +2584,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         // Orthos (bridges)
-        List<Image> orthos = tileManager.orthoFor(hex);
-        if (orthos != null) {
-            for (Image image : orthos) {
-                if (animatedImages.contains(image.hashCode())) {
-                    dontCache = true;
-                }
-                scaledImage = getScaledImage(image, true);
-                if (!useIsometric()) {
-                    g.drawImage(scaledImage, 0, 0, this);
-                }
-                // draw a shadow for bridge hex.
-                if (useIsometric()
-                        && !guip.getBoolean(GUIPreferences.SHADOWMAP)
-                        && (hex.terrainLevel(Terrains.BRIDGE_ELEV) > 0)) {
-                    Image shadow = createShadowMask(scaledImage);
-                    g.drawImage(shadow, 0, 0, this);
-                }
-            }
-        }
+        dontCache = drawOrthos(hex, dontCache, g);
 
         shadeHexes(c, g);
 
@@ -2654,7 +2622,96 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // write terrain level / water depth / building height
         writeLevelDepthHeight(hex, g);
 
-        // Used to make the following draw calls shorter
+        drawElevationBorders(c, g);
+
+        boolean hasLoS = fovHighlightingAndDarkening.draw(g, c, 0, 0,
+                saveBoardImage);
+
+        // draw mapsheet borders
+        drawMapsheetBorders(c, g);
+
+        if (!hasLoS && guip.getFovGrayscale()) {
+            // rework the pixels to grayscale
+            for (int x = 0; x < hexImage.getWidth(); ++x) {
+                for (int y = 0; y < hexImage.getHeight(); ++y) {
+                    int rgb = hexImage.getRGB(x, y);
+                    int rd = (rgb >> 16) & 0xFF;
+                    int gr = (rgb >> 8) & 0xFF;
+                    int bl = (rgb & 0xFF);
+                    int al = (rgb >> 24);
+
+                    int grayLevel = (rd + gr + bl) / 3;
+                    int gray = (al << 24) + (grayLevel << 16) + (grayLevel << 8) + grayLevel;
+                    hexImage.setRGB(x, y, gray);
+                }
+            }
+        }
+
+        cacheEntry = new HexImageCacheEntry(hexImage);
+        if (!dontCache) {
+            hexImageCache.put(c, cacheEntry);
+        }
+        boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+    }
+
+    private float getIsometricImgHeight(Coords c, IHex hex) {
+        if (!useIsometric()) {
+            return 0;
+        }
+        int largestLevelDiff = 0;
+        for (int dir: allDirections) {
+            IHex adjHex = game.getBoard().getHexInDir(c, dir);
+            if (adjHex == null) {
+                continue;
+            }
+            int levelDiff = Math.abs(hex.getLevel() - adjHex.getLevel());
+            if (levelDiff > largestLevelDiff) {
+                largestLevelDiff = levelDiff;
+            }
+        }
+        return HEX_ELEV * scale * largestLevelDiff;
+    }
+
+    private void drawMapsheetBorders(Coords c, Graphics2D g) {
+        int s21 = (int)(21*scale);
+        int s71 = (int)(71*scale);
+        int s35 = (int)(35*scale);
+        int s36 = (int)(36*scale);
+        int s62 = (int)(62*scale);
+        int s83 = (int)(83*scale);
+
+        if (!GUIPreferences.getInstance().getShowMapsheets()) {
+            return;
+        }
+        
+        g.setColor(GUIPreferences.getInstance().getColor(GUIPreferences.ADVANCED_MAPSHEET_COLOR));
+        if ((c.getX() % 16) == 0) {
+            // left edge of sheet (edge 4 & 5)
+            g.drawLine(s21, s71, 0, s36);
+            g.drawLine(0, s35, s21, 0);
+        } else if ((c.getX() % 16) == 15) {
+            // right edge of sheet (edge 1 & 2)
+            g.drawLine(s62, 0, s83, s35);
+            g.drawLine(s83, s36, s62, s71);
+        }
+        if ((c.getY() % 17) == 0) {
+            // top edge of sheet (edge 0 and possible 1 & 5)
+            g.drawLine(s21, 0, s62, 0);
+            if ((c.getX() % 2) == 0) {
+                g.drawLine(s62, 0, s83, s35);
+                g.drawLine(0, s35, s21, 0);
+            }
+        } else if ((c.getY() % 17) == 16) {
+            // bottom edge of sheet (edge 3 and possible 2 & 4)
+            g.drawLine(s62, s71, s21, s71);
+            if ((c.getX() % 2) == 1) {
+                g.drawLine(s83, s36, s62, s71);
+                g.drawLine(s21, s71, 0, s36);
+            }
+        }
+    }
+
+    private void drawElevationBorders(Coords c, Graphics2D g) {
         int s21 = (int)(21*scale);
         int s71 = (int)(71*scale);
         int s35 = (int)(35*scale);
@@ -2670,6 +2727,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         Point p6 = new Point(s21, s71);
         Point p7 = new Point(0, s36);
         Point p8 = new Point(0, s35);
+
+        GUIPreferences guip = GUIPreferences.getInstance();
 
         g.setColor(Color.black);
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
@@ -2718,62 +2777,30 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
 
         }
+    }
 
-        boolean hasLoS = fovHighlightingAndDarkening.draw(g, c, 0, 0,
-                saveBoardImage);
-
-        // draw mapsheet borders
-        if (GUIPreferences.getInstance().getShowMapsheets()) {
-            g.setColor(GUIPreferences.getInstance().getColor(
-                    GUIPreferences.ADVANCED_MAPSHEET_COLOR));
-            if ((c.getX() % 16) == 0) {
-                // left edge of sheet (edge 4 & 5)
-                g.drawLine(s21, s71, 0, s36);
-                g.drawLine(0, s35, s21, 0);
-            } else if ((c.getX() % 16) == 15) {
-                // right edge of sheet (edge 1 & 2)
-                g.drawLine(s62, 0, s83, s35);
-                g.drawLine(s83, s36, s62, s71);
+    private boolean drawOrthos(IHex hex, boolean dontCache, Graphics2D g) {
+        List<Image> orthos = tileManager.orthoFor(hex);
+        if (orthos == null) {
+            return dontCache;
+        }
+        for (Image image : orthos) {
+            if (animatedImages.contains(image.hashCode())) {
+                dontCache = true;
             }
-            if ((c.getY() % 17) == 0) {
-                // top edge of sheet (edge 0 and possible 1 & 5)
-                g.drawLine(s21, 0, s62, 0);
-                if ((c.getX() % 2) == 0) {
-                    g.drawLine(s62, 0, s83, s35);
-                    g.drawLine(0, s35, s21, 0);
-                }
-            } else if ((c.getY() % 17) == 16) {
-                // bottom edge of sheet (edge 3 and possible 2 & 4)
-                g.drawLine(s62, s71, s21, s71);
-                if ((c.getX() % 2) == 1) {
-                    g.drawLine(s83, s36, s62, s71);
-                    g.drawLine(s21, s71, 0, s36);
-                }
+            Image scaledImage = getScaledImage(image, true);
+            if (!useIsometric()) {
+                g.drawImage(scaledImage, 0, 0, this);
+            }
+            // draw a shadow for bridge hex.
+            if (useIsometric()
+                    && !GUIPreferences.getInstance().getBoolean(GUIPreferences.SHADOWMAP)
+                    && (hex.terrainLevel(Terrains.BRIDGE_ELEV) > 0)) {
+                Image shadow = createShadowMask(scaledImage);
+                g.drawImage(shadow, 0, 0, this);
             }
         }
-
-        if (!hasLoS && guip.getFovGrayscale()) {
-            // rework the pixels to grayscale
-            for (int x = 0; x < hexImage.getWidth(); ++x) {
-                for (int y = 0; y < hexImage.getHeight(); ++y) {
-                    int rgb = hexImage.getRGB(x, y);
-                    int rd = (rgb >> 16) & 0xFF;
-                    int gr = (rgb >> 8) & 0xFF;
-                    int bl = (rgb & 0xFF);
-                    int al = (rgb >> 24);
-
-                    int grayLevel = (rd + gr + bl) / 3;
-                    int gray = (al << 24) + (grayLevel << 16) + (grayLevel << 8) + grayLevel;
-                    hexImage.setRGB(x, y, gray);
-                }
-            }
-        }
-
-        cacheEntry = new HexImageCacheEntry(hexImage);
-        if (!dontCache) {
-            hexImageCache.put(c, cacheEntry);
-        }
-        boardGraph.drawImage(cacheEntry.hexImage, hexLoc.x, hexLoc.y, this);
+        return dontCache;
     }
 
     private void drawSpecials(Coords c, Graphics2D g) {
