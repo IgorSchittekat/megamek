@@ -5768,77 +5768,11 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
     private String getHexTerrainText(IHex mhex, Coords mcoords) {
         StringBuilder txt = new StringBuilder();
-        txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-
-        txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
-                mcoords.getBoardNum(), mhex.getLevel()));
-        txt.append("<br>"); //$NON-NLS-1$
-
-        // cycle through the terrains and report types found
-        // this will skip buildings and other constructed units
-        int[] terrainTypes = mhex.getTerrainTypes();
-        for (int terType : terrainTypes) {
-            if (mhex.containsTerrain(terType)) {
-                int tf = mhex.getTerrain(terType).getTerrainFactor();
-                int ttl = mhex.getTerrain(terType).getLevel();
-                String name = Terrains.getDisplayName(terType, ttl);
-                if (tf > 0) {
-                    name = name + " (TF: " + tf + ")"; //$NON-NLS-1$ //$NON-NLS-2$
-                }
-                if (name != null) {
-                    txt.append(name);
-                    txt.append("<br>"); //$NON-NLS-1$
-                }
-            }
-        }
-        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        txt.append(getHexTerrainTableText(mhex, mcoords));
 
         // Distance from the selected unit and a planned movement end point
-        if ((selectedEntity != null) &&
-                (selectedEntity.getPosition() != null)) {
-            int distance = selectedEntity
-                    .getPosition()
-                    .distance(mcoords);
-            txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-            if (distance == 1) {
-                txt.append(Messages.getString("BoardView1.Tooltip.Distance1")); //$NON-NLS-1$
-            } else {
-                txt.append(Messages.getString("BoardView1.Tooltip.DistanceN", //$NON-NLS-1$
-                        distance));
-            }
-
-            if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_SENSORS)) {
-                LosEffects los = fovHighlightingAndDarkening.getCachedLosEffects(selectedEntity.getPosition(), mcoords);
-                int bracket = Compute.getSensorRangeBracket(selectedEntity, null,
-                        fovHighlightingAndDarkening.cachedAllECMInfo);
-                int range = Compute.getSensorRangeByBracket(game, selectedEntity, null, los);
-
-                int maxSensorRange = bracket * range;
-                int minSensorRange = Math.max((bracket - 1) * range, 0);
-                if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_INCLUSIVE_SENSOR_RANGE)) {
-                    minSensorRange = 0;
-                }
-                txt.append("<BR>");
-                if ((distance > minSensorRange) && (distance <= maxSensorRange)) {
-                    txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexInRange"));
-                } else {
-                    txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexNotInRange"));
-                }
-            }
-
-            if ((game.getPhase() == Phase.PHASE_MOVEMENT) &&
-                    (movementTarget != null)) {
-                txt.append("<BR>");
-                int disPM = movementTarget.distance(mcoords);
-                if (disPM == 1) {
-                    txt.append(Messages.getString("BoardView1.Tooltip.DistanceMove1")); //$NON-NLS-1$
-                } else {
-                    txt.append(Messages.getString("BoardView1.Tooltip.DistanceMoveN", //$NON-NLS-1$
-                            disPM));
-                }
-            }
-
-            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        if ((selectedEntity != null) && (selectedEntity.getPosition() != null)) {
+            txt.append(getDistanceFromUnitToEndpoint(mcoords));
         }
 
         // Fuel Tank
@@ -5965,6 +5899,81 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 txt.append("<br>"); //$NON-NLS-1$
             }
         }
+        return txt.toString();
+    }
+
+    private String getDistanceFromUnitToEndpoint(Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        int distance = selectedEntity.getPosition().distance(mcoords);
+        txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+        if (distance == 1) {
+            txt.append(Messages.getString("BoardView1.Tooltip.Distance1")); //$NON-NLS-1$
+        } else {
+            txt.append(Messages.getString("BoardView1.Tooltip.DistanceN", //$NON-NLS-1$
+                    distance));
+        }
+
+        if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_SENSORS)) {
+            LosEffects los = fovHighlightingAndDarkening.getCachedLosEffects(selectedEntity.getPosition(), mcoords);
+            int bracket = Compute.getSensorRangeBracket(selectedEntity, null,
+                    fovHighlightingAndDarkening.cachedAllECMInfo);
+            int range = Compute.getSensorRangeByBracket(game, selectedEntity, null, los);
+
+            int maxSensorRange = bracket * range;
+            int minSensorRange = Math.max((bracket - 1) * range, 0);
+            if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_INCLUSIVE_SENSOR_RANGE)) {
+                minSensorRange = 0;
+            }
+            txt.append("<BR>");
+            if ((distance > minSensorRange) && (distance <= maxSensorRange)) {
+                txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexInRange"));
+            } else {
+                txt.append(Messages.getString("BoardView1.Tooltip.SensorsHexNotInRange"));
+            }
+        }
+
+        if ((game.getPhase() == Phase.PHASE_MOVEMENT) &&
+                (movementTarget != null)) {
+            txt.append("<BR>");
+            int disPM = movementTarget.distance(mcoords);
+            if (disPM == 1) {
+                txt.append(Messages.getString("BoardView1.Tooltip.DistanceMove1")); //$NON-NLS-1$
+            } else {
+                txt.append(Messages.getString("BoardView1.Tooltip.DistanceMoveN", //$NON-NLS-1$
+                        disPM));
+            }
+        }
+
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        return txt.toString();
+    }
+
+    private String getHexTerrainTableText(IHex mhex, Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+
+        txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
+                mcoords.getBoardNum(), mhex.getLevel()));
+        txt.append("<br>"); //$NON-NLS-1$
+
+        // cycle through the terrains and report types found
+        // this will skip buildings and other constructed units
+        int[] terrainTypes = mhex.getTerrainTypes();
+        for (int terType : terrainTypes) {
+            if (mhex.containsTerrain(terType)) {
+                int tf = mhex.getTerrain(terType).getTerrainFactor();
+                int ttl = mhex.getTerrain(terType).getLevel();
+                String name = Terrains.getDisplayName(terType, ttl);
+                if (tf > 0) {
+                    name = name + " (TF: " + tf + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+                }
+                if (name != null) {
+                    txt.append(name);
+                    txt.append("<br>"); //$NON-NLS-1$
+                }
+            }
+        }
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
         return txt.toString();
     }
 
