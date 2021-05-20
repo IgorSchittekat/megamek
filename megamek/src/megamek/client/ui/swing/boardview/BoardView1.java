@@ -15,67 +15,6 @@
  */
 package megamek.client.ui.swing.boardview;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Composite;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Toolkit;
-import java.awt.Transparency;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ConvolveOp;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.awt.image.Kernel;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.ScrollPaneLayout;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.plaf.metal.DefaultMetalTheme;
-import javax.swing.plaf.metal.MetalTheme;
-
 import megamek.MegaMek;
 import megamek.client.TimerSingleton;
 import megamek.client.bot.princess.BotGeometry.ConvexBoardArea;
@@ -101,66 +40,12 @@ import megamek.client.ui.swing.util.MegaMekController;
 import megamek.client.ui.swing.widget.MegamekBorder;
 import megamek.client.ui.swing.widget.SkinSpecification;
 import megamek.client.ui.swing.widget.SkinXMLHandler;
-import megamek.common.ArtilleryTracker;
-import megamek.common.Building;
+import megamek.common.*;
 import megamek.common.Building.BasementType;
-import megamek.common.Compute;
-import megamek.common.ComputeECM;
-import megamek.common.Configuration;
-import megamek.common.Coords;
-import megamek.common.ECMInfo;
-import megamek.common.Entity;
-import megamek.common.EntityVisibilityUtils;
-import megamek.common.Flare;
-import megamek.common.GunEmplacement;
-import megamek.common.IBoard;
-import megamek.common.IGame;
 import megamek.common.IGame.Phase;
-import megamek.common.IHex;
-import megamek.common.IPlayer;
-import megamek.common.ITerrain;
-import megamek.common.Infantry;
-import megamek.common.LosEffects;
-import megamek.common.Mech;
-import megamek.common.Minefield;
-import megamek.common.Mounted;
-import megamek.common.MovePath;
 import megamek.common.MovePath.MoveStepType;
-import megamek.common.MoveStep;
-import megamek.common.PlanetaryConditions;
-import megamek.common.QuadMech;
-import megamek.common.SpecialHexDisplay;
-import megamek.common.TargetRoll;
-import megamek.common.Targetable;
-import megamek.common.Terrains;
-import megamek.common.ToHitData;
-import megamek.common.TripodMech;
-import megamek.common.UnitLocation;
-import megamek.common.WeaponType;
-import megamek.common.actions.ArtilleryAttackAction;
-import megamek.common.actions.AttackAction;
-import megamek.common.actions.ChargeAttackAction;
-import megamek.common.actions.ClubAttackAction;
-import megamek.common.actions.DfaAttackAction;
-import megamek.common.actions.EntityAction;
-import megamek.common.actions.KickAttackAction;
-import megamek.common.actions.PhysicalAttackAction;
-import megamek.common.actions.ProtomechPhysicalAttackAction;
-import megamek.common.actions.PunchAttackAction;
-import megamek.common.actions.PushAttackAction;
-import megamek.common.actions.SearchlightAttackAction;
-import megamek.common.actions.WeaponAttackAction;
-import megamek.common.event.BoardEvent;
-import megamek.common.event.BoardListener;
-import megamek.common.event.GameBoardChangeEvent;
-import megamek.common.event.GameBoardNewEvent;
-import megamek.common.event.GameEntityChangeEvent;
-import megamek.common.event.GameEntityNewEvent;
-import megamek.common.event.GameEntityRemoveEvent;
-import megamek.common.event.GameListener;
-import megamek.common.event.GameListenerAdapter;
-import megamek.common.event.GameNewActionEvent;
-import megamek.common.event.GamePhaseChangeEvent;
+import megamek.common.actions.*;
+import megamek.common.event.*;
 import megamek.common.logging.LogLevel;
 import megamek.common.options.GameOptions;
 import megamek.common.options.OptionsConstants;
@@ -174,30 +59,49 @@ import megamek.common.util.FiringSolution;
 import megamek.common.util.ImageUtil;
 import megamek.common.util.fileUtils.MegaMekFile;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.metal.MetalTheme;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.image.*;
+import java.io.File;
+import java.util.List;
+import java.util.Queue;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Displays the board; lets the user scroll around and select points on it.
  */
 public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         BoardListener, MouseListener, IPreferenceChangeListener {
 
-    private static final long serialVersionUID = -5582195884759007416L;
-
-    private static final int BOARD_HEX_CLICK = 1;
-    private static final int BOARD_HEX_DOUBLECLICK = 2;
-    private static final int BOARD_HEX_DRAG = 3;
-    private static final int BOARD_HEX_POPUP = 4;
-
     // the dimensions of megamek's hex images
     public static final int HEX_W = HexTileset.HEX_W;
     public static final int HEX_H = HexTileset.HEX_H;
     public static final int HEX_DIAG = (int) Math.round(Math.sqrt(HEX_W * HEX_W + HEX_H * HEX_H));
-
-    private static final int HEX_WC = HEX_W - (HEX_W / 4);
+    public static final int[] allDirections = {0, 1, 2, 3, 4, 5};
     static final int HEX_ELEV = 12;
-
+    // the index of zoom factor 1.00f
+    static final int BASE_ZOOM_INDEX = 7;
+    // line width of the c3 network lines
+    static final int C3_LINE_WIDTH = 1;
+    // line width of the fly over lines
+    static final int FLY_OVER_LINE_WIDTH = 3;
+    private static final long serialVersionUID = -5582195884759007416L;
+    private static final int BOARD_HEX_CLICK = 1;
+    private static final int BOARD_HEX_DOUBLECLICK = 2;
+    private static final int BOARD_HEX_DRAG = 3;
+    private static final int BOARD_HEX_POPUP = 4;
+    private static final int HEX_WC = HEX_W - (HEX_W / 4);
     private static final float[] ZOOM_FACTORS = {0.30f, 0.41f, 0.50f, 0.60f,
             0.68f, 0.79f, 0.90f, 1.00f, 1.09f, 1.17f, 1.3f};
-
     private static final int[] ZOOM_SCALE_TYPES = {
             ImageUtil.IMAGE_SCALE_AVG_FILTER, ImageUtil.IMAGE_SCALE_AVG_FILTER,
             ImageUtil.IMAGE_SCALE_BICUBIC, ImageUtil.IMAGE_SCALE_BICUBIC,
@@ -205,126 +109,27 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             ImageUtil.IMAGE_SCALE_BICUBIC, ImageUtil.IMAGE_SCALE_BICUBIC,
             ImageUtil.IMAGE_SCALE_BICUBIC, ImageUtil.IMAGE_SCALE_BICUBIC,
             ImageUtil.IMAGE_SCALE_BICUBIC};
-
-    public static final int[] allDirections = {0, 1, 2, 3, 4, 5};
-
-    // Set to TRUE to draw hexes with isometric elevation.
-    private boolean drawIsometric = GUIPreferences.getInstance().getIsometricEnabled();
-
-    int DROPSHDW_DIST = 20;
-
-    // the index of zoom factor 1.00f
-    static final int BASE_ZOOM_INDEX = 7;
-
-    // Initial zoom index
-    public int zoomIndex = BASE_ZOOM_INDEX;
-
-    // line width of the c3 network lines
-    static final int C3_LINE_WIDTH = 1;
-
-    // line width of the fly over lines
-    static final int FLY_OVER_LINE_WIDTH = 3;
-
     // FIXME : Fonts shouldn't ever be handled like this for accessibility reasons
     private static final String SansSerif = "SansSerif";
-    private static Font FONT_7 = new Font(SansSerif, Font.PLAIN, 7);
-    private static Font FONT_8 = new Font(SansSerif, Font.PLAIN, 8);
-    private static Font FONT_9 = new Font(SansSerif, Font.PLAIN, 9);
-    private static Font FONT_10 = new Font(SansSerif, Font.PLAIN, 10);
-    private static Font FONT_12 = new Font(SansSerif, Font.PLAIN, 12);
-
-    Dimension hex_size;
-
-    private Font font_note = FONT_10;
-    private Font font_hexnum = FONT_10;
-    private Font font_elev = FONT_9;
-    private Font font_minefield = FONT_12;
-
-    public final IGame game;
-    ClientGUI clientgui;
-
-    private Dimension boardSize;
-    private Dimension preferredSize = new Dimension(0, 0);
-
-    // scrolly stuff:
-    private JScrollPane scrollpane = null;
-    private JScrollBar vbar;
-    private JScrollBar hbar;
-    private int scrollXDifference = 0;
-    private int scrollYDifference = 0;
-    // are we drag-scrolling?
-    private boolean dragging = false;
-    /**
-     * True when the right mouse button was pressed to start a drag
-     */
-    private boolean shouldScroll = false;
-
-    // entity sprites
-    private Queue<EntitySprite> entitySprites = new PriorityQueue<>();
-    private Queue<IsometricSprite> isometricSprites = new PriorityQueue<>();
-
-    private ArrayList<FlareSprite> flareSprites = new ArrayList<>();
-    /**
-     * A Map that maps an Entity ID and a secondary position to a Sprite. Note
-     * that the key is a List where the first entry will be the Entity ID and
-     * the second entry will be which secondary position the sprite belongs to;
-     * if the Entity has no secondary positions, the first element will be the
-     * ID and the second element will be -1.
-     */
-    private Map<List<Integer>, EntitySprite> entitySpriteIds = new HashMap<>();
-    /**
-     * A Map that maps an Entity ID and a secondary position to a Sprite. Note
-     * that the key is a List where the first entry will be the Entity ID and
-     * the second entry will be which secondary position the sprite belongs to;
-     * if the Entity has no secondary positions, the first element will be the
-     * ID and the second element will be -1.
-     */
-    private Map<List<Integer>, IsometricSprite> isometricSpriteIds = new HashMap<>();
-
-    // sprites for the three selection cursors
-    private CursorSprite cursorSprite;
-    private CursorSprite highlightSprite;
-    private CursorSprite selectedSprite;
-    private CursorSprite firstLOSSprite;
-    private CursorSprite secondLOSSprite;
-
-    // sprite for current movement
-    ArrayList<StepSprite> pathSprites = new ArrayList<>();
-
-    private ArrayList<Coords> strafingCoords = new ArrayList<>(5);
-
-    private ArrayList<FiringSolutionSprite> firingSprites = new ArrayList<>();
-
-    private ArrayList<MovementEnvelopeSprite> moveEnvSprites = new ArrayList<>();
-    private ArrayList<MovementModifierEnvelopeSprite> moveModEnvSprites = new ArrayList<>();
-
-    // vector of sprites for all firing lines
-    ArrayList<AttackSprite> attackSprites = new ArrayList<>();
-
-    // vector of sprites for all movement paths (using vectored movement)
-    private ArrayList<MovementSprite> movementSprites = new ArrayList<>();
-
-    // vector of sprites for C3 network lines
-    private ArrayList<C3Sprite> c3Sprites = new ArrayList<>();
-
-    // list of sprites for declared VTOL/airmech bombing/strafing targets
-    private ArrayList<VTOLAttackSprite> vtolAttackSprites = new ArrayList<>();
-
-    // vector of sprites for aero flyover lines
-    private ArrayList<FlyOverSprite> flyOverSprites = new ArrayList<>();
-
-    // List of sprites for the weapon field of fire
-    private ArrayList<HexSprite> fieldofFireSprites = new ArrayList<>();
-    public int[][] fieldofFireRanges = {new int[5], new int[5]};
-    public int fieldofFireWpArc;
-    public Entity fieldofFireUnit;
-    public int fieldofFireWpLoc;
-    // int because it acts as an array index
-    public int fieldofFireWpUnderwater = 0;
+    private static final Font FONT_7 = new Font(SansSerif, Font.PLAIN, 7);
+    private static final Font FONT_8 = new Font(SansSerif, Font.PLAIN, 8);
+    private static final Font FONT_9 = new Font(SansSerif, Font.PLAIN, 9);
+    private static final Font FONT_10 = new Font(SansSerif, Font.PLAIN, 10);
+    private static final Font FONT_12 = new Font(SansSerif, Font.PLAIN, 12);
     private static final String[] rangeTexts = {"min", "S", "M", "L", "E"};
-
-    TilesetManager tileManager;
-
+    private static final Kernel kernel = new Kernel(5, 5,
+            new float[]{
+                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
+                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
+                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
+                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
+                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f});
+    private static final BufferedImageOp blurOp = new ConvolveOp(kernel);
+    private static final int FRAMES = 24;
+    /**
+     * Speed of soft centering of the board, less is faster
+     */
+    private static final int SOFT_CENTER_SPEED = 8;
     // polygons for a few things
     static Polygon hexPoly;
 
@@ -341,81 +146,179 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         hexPoly.addPoint(0, 35);
     }
 
+    public final IGame game;
+    protected final RedrawWorker redrawWorker = new RedrawWorker();
+    private final Font font_note = FONT_10;
+    private final ArrayList<FlareSprite> flareSprites = new ArrayList<>();
+    // sprites for the three selection cursors
+    private final CursorSprite cursorSprite;
+    private final CursorSprite highlightSprite;
+    private final CursorSprite selectedSprite;
+    private final CursorSprite firstLOSSprite;
+    private final CursorSprite secondLOSSprite;
+    private final ArrayList<Coords> strafingCoords = new ArrayList<>(5);
+    private final ArrayList<FiringSolutionSprite> firingSprites = new ArrayList<>();
+    private final ArrayList<MovementEnvelopeSprite> moveEnvSprites = new ArrayList<>();
+    private final ArrayList<MovementModifierEnvelopeSprite> moveModEnvSprites = new ArrayList<>();
+    // vector of sprites for all movement paths (using vectored movement)
+    private final ArrayList<MovementSprite> movementSprites = new ArrayList<>();
+    // vector of sprites for C3 network lines
+    private final ArrayList<C3Sprite> c3Sprites = new ArrayList<>();
+    // list of sprites for declared VTOL/airmech bombing/strafing targets
+    private final ArrayList<VTOLAttackSprite> vtolAttackSprites = new ArrayList<>();
+    // vector of sprites for aero flyover lines
+    private final ArrayList<FlyOverSprite> flyOverSprites = new ArrayList<>();
+    // List of sprites for the weapon field of fire
+    private final ArrayList<HexSprite> fieldofFireSprites = new ArrayList<>();
+    private final ImageCache<Integer, BufferedImage> shadowImageCache = new ImageCache<>();
+    private final Set<Integer> animatedImages = new HashSet<>();
+    // Move units step by step
+    private final ArrayList<MovingUnit> movingUnits = new ArrayList<>();
+    private final ArrayList<GhostEntitySprite> ghostEntitySprites = new ArrayList<>();
+    private final Font fpsFont = new Font(SansSerif, 0, 20); //$NON-NLS-1$
+    private final String FILENAME_FLARE_IMAGE = "flare.png";
+    private final String FILENAME_RADAR_BLIP_IMAGE = "radarBlip.png";
+    private final Image flareImage;
+    private final Image radarBlipImage;
+    /**
+     * The final position of a soft centering relative to board size (x, y=0...1).
+     */
+    private final Point2D softCenterTarget = new Point2D.Double();
+    /**
+     * Stores the correct tooltip dismiss delay so it can be restored when exiting the boardview
+     */
+    private final int dismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
+    // Initial zoom index
+    public int zoomIndex = BASE_ZOOM_INDEX;
+    public int[][] fieldofFireRanges = {new int[5], new int[5]};
+    public int fieldofFireWpArc;
+    public Entity fieldofFireUnit;
+    public int fieldofFireWpLoc;
+    // int because it acts as an array index
+    public int fieldofFireWpUnderwater = 0;
+    /**
+     * Keeps track of whether all deployment zones should
+     * be shown in the Arty Auto Hit Designation phase
+     */
+    public boolean showAllDeployment = false;
+    protected transient ArrayList<BoardViewListener> boardListeners = new ArrayList<>();
+    int DROPSHDW_DIST = 20;
+    Dimension hex_size;
+    ClientGUI clientgui;
+    // sprite for current movement
+    ArrayList<StepSprite> pathSprites = new ArrayList<>();
+    // vector of sprites for all firing lines
+    ArrayList<AttackSprite> attackSprites = new ArrayList<>();
+    TilesetManager tileManager;
     Shape[] movementPolys;
     Shape[] facingPolys;
     Shape[] finalFacingPolys;
     Shape upArrow;
     Shape downArrow;
-
     // Image to hold the complete board shadow map
     BufferedImage shadowMap;
     double[] lightDirection = {-19, 7};
-    private static Kernel kernel = new Kernel(5, 5,
-            new float[]{
-                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
-                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
-                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
-                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f,
-                    1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f, 1f / 25f});
-    private static BufferedImageOp blurOp = new ConvolveOp(kernel);
+    // Initial scale factor for sprites and map
+    float scale = 1.00f;
+    // Displayables (Chat box, etc.)
+    ArrayList<IDisplayable> displayables = new ArrayList<>();
+    Coords selected;
+    // selected entity and weapon for artillery display
+    Entity selectedEntity = null;
+    BufferedImage bvBgImage = null;
+    boolean bvBgShouldTile = false;
+    BufferedImage scrollPaneBgBuffer = null;
+    Image scrollPaneBgImg = null;
+    List<Image> boardBackgrounds = new ArrayList<>();
+    FovHighlightingAndDarkening fovHighlightingAndDarkening;
+    /**
+     * Cache that stores hex images for different coords
+     */
+    ImageCache<Coords, HexImageCacheEntry> hexImageCache;
+    // Used to track the previous x/y for tooltip display
+    int prevTipX = -1, prevTipY = -1;
+    /**
+     * Flag to indicate if we should display informatin about illegal terrain in hexes.
+     */
+    boolean displayInvalidHexInfo = false;
+    /**
+     * A map overlay showing some important keybinds.
+     */
+    KeyBindingsOverlay keybindOverlay;
+    AbstractAction DoNothing = new AbstractAction() {
+        private static final long serialVersionUID = 5944877465265121983L;
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+    };
+    // Set to TRUE to draw hexes with isometric elevation.
+    private boolean drawIsometric = GUIPreferences.getInstance().getIsometricEnabled();
+    private Font font_hexnum = FONT_10;
+    private Font font_elev = FONT_9;
+    private Font font_minefield = FONT_12;
+    private Dimension boardSize;
+    private Dimension preferredSize = new Dimension(0, 0);
+    // scrolly stuff:
+    private JScrollPane scrollpane = null;
+    private JScrollBar vbar;
+    private JScrollBar hbar;
+    private int scrollXDifference = 0;
+    private int scrollYDifference = 0;
+    // are we drag-scrolling?
+    private boolean dragging = false;
+    /**
+     * True when the right mouse button was pressed to start a drag
+     */
+    private boolean shouldScroll = false;
+    // entity sprites
+    private Queue<EntitySprite> entitySprites = new PriorityQueue<>();
+    private Queue<IsometricSprite> isometricSprites = new PriorityQueue<>();
+    /**
+     * A Map that maps an Entity ID and a secondary position to a Sprite. Note
+     * that the key is a List where the first entry will be the Entity ID and
+     * the second entry will be which secondary position the sprite belongs to;
+     * if the Entity has no secondary positions, the first element will be the
+     * ID and the second element will be -1.
+     */
+    private Map<List<Integer>, EntitySprite> entitySpriteIds = new HashMap<>();
+    /**
+     * A Map that maps an Entity ID and a secondary position to a Sprite. Note
+     * that the key is a List where the first entry will be the Entity ID and
+     * the second entry will be which secondary position the sprite belongs to;
+     * if the Entity has no secondary positions, the first element will be the
+     * ID and the second element will be -1.
+     */
+    private Map<List<Integer>, IsometricSprite> isometricSpriteIds = new HashMap<>();
     // the player who owns this BoardView's client
     private IPlayer localPlayer = null;
-
     /**
      * Stores the currently deploying entity, used for highlighting deployment
      * hexes.
      */
     private Entity en_Deployer = null;
-
     // should be able to turn it off(board editor)
     private boolean useLOSTool = true;
-
-    // Initial scale factor for sprites and map
-    float scale = 1.00f;
     private ImageCache<Integer, Image> scaledImageCache = new ImageCache<>();
-    private ImageCache<Integer, BufferedImage> shadowImageCache = new ImageCache<>();
-
-    private Set<Integer> animatedImages = new HashSet<>();
-
-    // Displayables (Chat box, etc.)
-    ArrayList<IDisplayable> displayables = new ArrayList<>();
-
-    // Move units step by step
-    private ArrayList<MovingUnit> movingUnits = new ArrayList<>();
-
     private long moveWait = 0;
-
     // moving entity sprites
     private List<MovingEntitySprite> movingEntitySprites = new ArrayList<>();
     private HashMap<Integer, MovingEntitySprite> movingEntitySpriteIds = new HashMap<>();
-    private ArrayList<GhostEntitySprite> ghostEntitySprites = new ArrayList<>();
-
-    protected transient ArrayList<BoardViewListener> boardListeners = new ArrayList<>();
-
     // wreck sprites
     private ArrayList<WreckSprite> wreckSprites = new ArrayList<WreckSprite>();
     private ArrayList<IsometricWreckSprite> isometricWreckSprites = new ArrayList<>();
-
     private Coords rulerStart;
     private Coords rulerEnd;
     private Color rulerStartColor;
     private Color rulerEndColor;
-
     private Coords lastCursor;
     private Coords highlighted;
-    Coords selected;
     private Coords firstLOS;
-
     /**
      * stores the theme last selected to override all hex themes
      */
     private String selectedTheme = null;
-
-    // selected entity and weapon for artillery display
-    Entity selectedEntity = null;
     private Mounted selectedWeapon = null;
-
     // hexes with ECM effect
     private Map<Coords, Color> ecmHexes = null;
     // hexes that are teh centers of ECM effects
@@ -425,102 +328,213 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     // hexes that are teh centers of ECCM effects
     private Map<Coords, Color> eccmCenters = null;
 
+    // Soft Centering ---
     // reference to our timertask for redraw
     private TimerTask ourTask = null;
-
-    BufferedImage bvBgImage = null;
-    boolean bvBgShouldTile = false;
-    BufferedImage scrollPaneBgBuffer = null;
-    Image scrollPaneBgImg = null;
-
-    List<Image> boardBackgrounds = new ArrayList<>();
-
-    private static final int FRAMES = 24;
     private long totalTime;
     private long averageTime;
     private int frameCount;
-    private Font fpsFont = new Font(SansSerif, 0, 20); //$NON-NLS-1$
-
-
     /**
      * Keeps track of whether we have an active ChatterBox2
      */
     private boolean chatterBoxActive = false;
 
+    // Tooltip Info ---
     /**
      * Keeps track of whether an outside source tells the BoardView that it
      * should ignore keyboard commands.
      */
     private boolean shouldIgnoreKeys = false;
-
-    FovHighlightingAndDarkening fovHighlightingAndDarkening;
-
-    private String FILENAME_FLARE_IMAGE = "flare.png";
-
-    private String FILENAME_RADAR_BLIP_IMAGE = "radarBlip.png";
-
-    private Image flareImage;
-
-    private Image radarBlipImage;
-
-    /**
-     * Cache that stores hex images for different coords
-     */
-    ImageCache<Coords, HexImageCacheEntry> hexImageCache;
-
-
-    /**
-     * Keeps track of whether all deployment zones should
-     * be shown in the Arty Auto Hit Designation phase
-     */
-    public boolean showAllDeployment = false;
-
     private long paintCompsStartTime;
-
     private Rectangle displayablesRect = new Rectangle();
-
-    // Soft Centering ---
-
     /**
      * True when the board is in the process of centering to a spot.
      */
     private boolean isSoftCentering = false;
-    /**
-     * The final position of a soft centering relative to board size (x, y=0...1).
-     */
-    private Point2D softCenterTarget = new Point2D.Double();
     private Point2D oldCenter = new Point2D.Double();
     private long waitTimer;
-    /**
-     * Speed of soft centering of the board, less is faster
-     */
-    private static final int SOFT_CENTER_SPEED = 8;
+    private final GameListener gameListener = new GameListenerAdapter() {
 
-    // Tooltip Info ---
+        @Override
+        public void gameEntityNew(GameEntityNewEvent e) {
+            updateEcmList();
+            redrawAllEntities();
+            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
+                refreshMoveVectors();
+            }
+        }
+
+        @Override
+        public void gameEntityRemove(GameEntityRemoveEvent e) {
+            updateEcmList();
+            redrawAllEntities();
+            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
+                refreshMoveVectors();
+            }
+        }
+
+        @Override
+        public void gameEntityChange(GameEntityChangeEvent e) {
+            final Vector<UnitLocation> mp = e.getMovePath();
+            final Entity en = e.getEntity();
+            final GameOptions gopts = game.getOptions();
+            GUIPreferences guip = GUIPreferences.getInstance();
+
+            updateEcmList();
+
+            //For Entities that have converted to another mode, check for a different sprite
+            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT
+                    && en.isConvertingNow()) {
+                tileManager.reloadImage(en);
+            }
+
+            // for units that have been blown up, damaged or ejected, force a reload
+            if ((e.getOldEntity() != null) &&
+                    ((en.getDamageLevel() != e.getOldEntity().getDamageLevel()) ||
+                            (en.isDestroyed() != e.getOldEntity().isDestroyed()) ||
+                            (en.getCrew().isEjected() != e.getOldEntity().getCrew().isEjected()))) {
+                tileManager.reloadImage(en);
+            }
+
+            redrawAllEntities();
+            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
+                refreshMoveVectors();
+            }
+            if ((mp != null) && (mp.size() > 0) && guip.getShowMoveStep()
+                    && !gopts.booleanOption(OptionsConstants.INIT_SIMULTANEOUS_MOVEMENT)) {
+                if ((localPlayer == null)
+                        || !game.getOptions().booleanOption(OptionsConstants.ADVANCED_DOUBLE_BLIND)
+                        || !en.getOwner().isEnemyOf(localPlayer)
+                        || en.hasSeenEntity(localPlayer)) {
+                    addMovingUnit(en, mp);
+                }
+            }
+        }
+
+        @Override
+        public void gameNewAction(GameNewActionEvent e) {
+            EntityAction ea = e.getAction();
+            if (ea instanceof AttackAction) {
+                addAttack((AttackAction) ea);
+            }
+        }
+
+        @Override
+        public void gameBoardNew(GameBoardNewEvent e) {
+            IBoard b = e.getOldBoard();
+            if (b != null) {
+                b.removeBoardListener(BoardView1.this);
+            }
+            b = e.getNewBoard();
+            if (b != null) {
+                b.addBoardListener(BoardView1.this);
+            }
+            boardBackgrounds.clear();
+            if (b.hasBoardBackground()) {
+                ListIterator<Boolean> flipItHoriz = b.getFlipBGHoriz()
+                        .listIterator();
+                ListIterator<Boolean> flipItVert = b.getFlipBGVert()
+                        .listIterator();
+                for (String path : b.getBackgroundPaths()) {
+                    boolean flipHoriz = flipItHoriz.next();
+                    boolean flipVert = flipItVert.next();
+                    if (path == null) {
+                        boardBackgrounds.add(null);
+                    } else {
+                        Image bgImg = ImageUtil.loadImageFromFile(path);
+                        ImageProducer prod = bgImg.getSource();
+                        if (flipHoriz || flipVert) {
+                            AffineTransform at = new AffineTransform();
+
+                            if (flipHoriz) {
+                                at.concatenate(AffineTransform
+                                        .getScaleInstance(1, -1));
+                            }
+                            if (flipVert) {
+                                at.concatenate(AffineTransform
+                                        .getTranslateInstance(0,
+                                                -bgImg.getHeight(null)));
+                            }
+                            ((Graphics2D) bgImg.getGraphics()).setTransform(at);
+                        }
+                        boardBackgrounds.add(Toolkit.getDefaultToolkit()
+                                .createImage(prod));
+                    }
+                }
+            }
+            clearHexImageCache();
+            updateBoard();
+            clearShadowMap();
+        }
+
+        @Override
+        public void gameBoardChanged(GameBoardChangeEvent e) {
+            clearHexImageCache();
+            boardChanged();
+        }
+
+        @Override
+        public void gamePhaseChange(GamePhaseChangeEvent e) {
+            if (GUIPreferences.getInstance().getGameSummaryBoardView() && ((e.getOldPhase() == Phase.PHASE_DEPLOYMENT)
+                    || (e.getOldPhase() == Phase.PHASE_MOVEMENT) || (e.getOldPhase() == Phase.PHASE_TARGETING)
+                    || (e.getOldPhase() == Phase.PHASE_FIRING) || (e.getOldPhase() == Phase.PHASE_PHYSICAL))) {
+                File dir = new File(Configuration.gameSummaryImagesBVDir(), game.getUUIDString());
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                File imgFile = new File(dir, "round_" + game.getRoundCount() + "_" + e.getOldPhase().ordinal() + "_"
+                        + IGame.Phase.getDisplayableName(e.getOldPhase()) + ".png");
+                try {
+                    ImageIO.write(getEntireBoardImage(false), "png", imgFile);
+                } catch (Exception ex) {
+                    MegaMek.getLogger().error(ex);
+                }
+            }
+
+            refreshAttacks();
+
+            // Clear some information regardless of what phase it is
+            clearFiringSolutionData();
+            clearMovementEnvelope();
+
+            switch (e.getNewPhase()) {
+                case PHASE_MOVEMENT:
+                    refreshMoveVectors();
+                case PHASE_FIRING:
+                    clearAllMoveVectors();
+                case PHASE_PHYSICAL:
+                    refreshAttacks();
+                    break;
+                case PHASE_INITIATIVE:
+                    clearAllAttacks();
+                    break;
+                case PHASE_END:
+                case PHASE_VICTORY:
+                    clearSprites();
+                case PHASE_LOUNGE:
+                    clearHexImageCache();
+                    clearAllMoveVectors();
+                    clearAllAttacks();
+                    clearSprites();
+                    select(null);
+                    cursor(null);
+                    highlight(null);
+                default:
+            }
+            for (Entity en : game.getEntitiesVector()) {
+                if ((en.getDamageLevel() != Entity.DMG_NONE) &&
+                        ((en.damageThisRound != 0) || (en instanceof GunEmplacement))) {
+                    tileManager.reloadImage(en);
+                }
+            }
+
+        }
+    };
     /**
      * Holds the final Coords for a planned movement. Set by MovementDisplay,
      * used to display the distance in the board tooltip.
      */
     private Coords movementTarget;
-
-    // Used to track the previous x/y for tooltip display
-    int prevTipX = -1, prevTipY = -1;
-
-    /**
-     * Flag to indicate if we should display informatin about illegal terrain in hexes.
-     */
-    boolean displayInvalidHexInfo = false;
-
-    /**
-     * Stores the correct tooltip dismiss delay so it can be restored when exiting the boardview
-     */
-    private int dismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
-
-    /**
-     * A map overlay showing some important keybinds.
-     */
-    KeyBindingsOverlay keybindOverlay;
-
 
     /**
      * Construct a new board view for the specified game
@@ -809,11 +823,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
                     @Override
                     public boolean shouldPerformAction() {
-                        if (shouldIgnoreKeyCommands() || (selectedEntity == null)) {
-                            return false;
-                        } else {
-                            return true;
-                        }
+                        return !shouldIgnoreKeyCommands() && (selectedEntity != null);
                     }
 
                     @Override
@@ -1028,8 +1038,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 || (game.getPhase() == Phase.PHASE_INITIATIVE_REPORT)
                 || shouldIgnoreKeys;
     }
-
-    protected final RedrawWorker redrawWorker = new RedrawWorker();
 
     /**
      * this should only be called once!! this will cause a timer to schedule
@@ -1467,7 +1475,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
                 drawHexBorder(g, p, Color.yellow, 0, 3);
                 String s = x.toString();
-                this.drawCenteredText((Graphics2D) g, s, p, Color.yellow, false);
+                this.drawCenteredText(g, s, p, Color.yellow, false);
             }
         }
     }
@@ -1593,8 +1601,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // the shadowmap needs to be painted as if scale == 1
         // therefore some of the methods of boardview1 cannot be used
-        int width = game.getBoard().getWidth() * HEX_WC + (int) (HEX_W / 4);
-        int height = game.getBoard().getHeight() * (int) (HEX_H) + (int) (HEX_H / 2);
+        int width = game.getBoard().getWidth() * HEX_WC + (HEX_W / 4);
+        int height = game.getBoard().getHeight() * HEX_H + (HEX_H / 2);
 
         GraphicsConfiguration config = GraphicsEnvironment
                 .getLocalGraphicsEnvironment().getDefaultScreenDevice()
@@ -1603,7 +1611,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         shadowMap = config.createCompatibleImage(width, height,
                 Transparency.TRANSLUCENT);
 
-        Graphics2D g = (Graphics2D) (shadowMap.createGraphics());
+        Graphics2D g = shadowMap.createGraphics();
 
         if ((game.getPlanetaryConditions().getLight() == PlanetaryConditions.L_MOONLESS) ||
                 (game.getPlanetaryConditions().getLight() == PlanetaryConditions.L_PITCH_BLACK)) {
@@ -1966,6 +1974,20 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     /**
+     * Darkens a hexes in the viewing area if there is no line of sight between
+     * them and the supplied source hex. Used in non-isometric view.
+     *
+     * @param p
+     *            The source hex for which line of sight originates
+     * @param g
+     *            The graphics object to draw on.
+     * @param col
+     *            The what color to use.
+     * @param outOfFOV
+     *            The destination hex for computing the line of sight
+     */
+
+    /**
      * Draw an outline around legal deployment hexes
      */
     private void drawDeployment(Graphics g) {
@@ -2023,20 +2045,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
         }
     }
-
-    /**
-     * Darkens a hexes in the viewing area if there is no line of sight between
-     * them and the supplied source hex. Used in non-isometric view.
-     *
-     * @param p
-     *            The source hex for which line of sight originates
-     * @param g
-     *            The graphics object to draw on.
-     * @param col
-     *            The what color to use.
-     * @param outOfFOV
-     *            The destination hex for computing the line of sight
-     */
 
     /**
      * Draw a layer of a solid color (alpha possible) on the hex at Point p no
@@ -2103,6 +2111,13 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     private void drawHexBorder(Graphics g, Point p, Color col, double pad) {
         drawHexBorder(g, p, col, pad, 1);
     }
+
+    /*
+     * NOTENOTENOTE: (itmo) wouldnt this be simpler with two arrays. One with
+     * the strings {"BoardView1.thunderblaablaa","BoardView1.Conventi.."} one
+     * with the offsets {51,51,42} etc Preferably indexed by an enum: enum{
+     * Conventional, Thunder; } or something?
+     */
 
     /**
      * returns the weapon selected in the mech display, or null if none selected
@@ -2213,13 +2228,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
         }
     }
-
-    /*
-     * NOTENOTENOTE: (itmo) wouldnt this be simpler with two arrays. One with
-     * the strings {"BoardView1.thunderblaablaa","BoardView1.Conventi.."} one
-     * with the offsets {51,51,42} etc Preferably indexed by an enum: enum{
-     * Conventional, Thunder; } or something?
-     */
 
     /**
      * Writes "MINEFIELD" in minefield hexes...
@@ -2979,7 +2987,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     p2SRC.x, p2SRC.y, null);
             g.setComposite(svComp);
         }
-        ;
     }
 
     private Graphics2D drawImage(Coords c, Image scaledImage, boolean standardTile, BufferedImage hexImage) {
@@ -3245,6 +3252,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         switch (game.getPlanetaryConditions().getLight()) {
             case PlanetaryConditions.L_FULL_MOON:
+            case PlanetaryConditions.L_MOONLESS:
                 rd = rd / 4; // 1/4 red
                 gr = gr / 4; // 1/4 green
                 bl = bl / 2; // half blue
@@ -3261,11 +3269,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 gr = gy + gr / 5;
                 bl = gy + bl / 5;
                 break;
-            case PlanetaryConditions.L_MOONLESS:
-                rd = rd / 4;
-                gr = gr / 4;
-                bl = bl / 2;
-                break;
             case PlanetaryConditions.L_DUSK:
                 bl = bl * 3 / 4;
                 break;
@@ -3279,7 +3282,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
      * Generates a Shape drawing area for the hex shadow effect in a lower hex
      * when a higher hex is found in direction.
      */
-    private final Shape getElevationShadowArea(Coords src, int direction) {
+    private Shape getElevationShadowArea(Coords src, int direction) {
         final IHex srcHex = game.getBoard().getHex(src);
         final IHex destHex = game.getBoard().getHexInDir(src, direction);
 
@@ -3304,7 +3307,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
      * Generates a fill gradient which is rotated and aligned properly for
      * the drawing area for a hex shadow effect in a lower hex.
      */
-    private final GradientPaint getElevationShadowGP(Coords src, int direction) {
+    private GradientPaint getElevationShadowGP(Coords src, int direction) {
         final IHex srcHex = game.getBoard().getHex(src);
         final IHex destHex = game.getBoard().getHexInDir(src, direction);
 
@@ -3459,7 +3462,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
     public void redrawMovingEntity(Entity entity, Coords position, int facing,
                                    int elevation) {
-        Integer entityId = Integer.valueOf(entity.getId());
+        Integer entityId = entity.getId();
         List<Integer> spriteKey = getIdAndLoc(entityId, -1);
         EntitySprite sprite = entitySpriteIds.get(spriteKey);
         IsometricSprite isoSprite = isometricSpriteIds.get(spriteKey);
@@ -3554,7 +3557,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
      * to prevent annoying ConcurrentModificationExceptions
      */
     public void redrawEntity(Entity entity, Entity oldEntity) {
-        Integer entityId = Integer.valueOf(entity.getId());
+        Integer entityId = entity.getId();
         if (oldEntity == null) {
             oldEntity = entity;
         }
@@ -3682,34 +3685,18 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         isometricSpriteIds = newIsoSpriteIds;
 
         // Remove C3 sprites
-        for (Iterator<C3Sprite> i = c3Sprites.iterator(); i.hasNext(); ) {
-            final C3Sprite c3sprite = i.next();
-            if ((c3sprite.entityId == entity.getId())
-                    || (c3sprite.masterId == entity.getId())) {
-                i.remove();
-            }
-        }
+        c3Sprites.removeIf(c3sprite -> (c3sprite.entityId == entity.getId())
+                || (c3sprite.masterId == entity.getId()));
 
         // Update C3 link, if necessary
         if (entity.hasC3() || entity.hasC3i() || entity.hasActiveNovaCEWS() || entity.hasNavalC3()) {
             addC3Link(entity);
         }
 
-        for (Iterator<VTOLAttackSprite> iter = vtolAttackSprites.iterator(); iter.hasNext(); ) {
-            final VTOLAttackSprite s = iter.next();
-            if (s.getEntity().getId() == entity.getId()) {
-                iter.remove();
-            }
-        }
+        vtolAttackSprites.removeIf(s -> s.getEntity().getId() == entity.getId());
 
         // Remove Flyover Sprites
-        Iterator<FlyOverSprite> flyOverIt = flyOverSprites.iterator();
-        while (flyOverIt.hasNext()) {
-            final FlyOverSprite flyOverSprite = flyOverIt.next();
-            if (flyOverSprite.getEntityId() == entity.getId()) {
-                flyOverIt.remove();
-            }
-        }
+        flyOverSprites.removeIf(flyOverSprite -> flyOverSprite.getEntityId() == entity.getId());
 
         // Add Flyover path, if necessary
         if ((entity.isAirborne() || entity.isMakingVTOLGroundAttack())
@@ -3978,8 +3965,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         yrel = Math.max(0, yrel);
         yrel = Math.min(1, yrel);
         Point p = new Point(
-                (int) ((double) boardSize.getWidth() * xrel) + HEX_W,
-                (int) ((double) boardSize.getHeight() * yrel) + HEX_H);
+                (int) (boardSize.getWidth() * xrel) + HEX_W,
+                (int) (boardSize.getHeight() * yrel) + HEX_H);
         JScrollBar vscroll = scrollpane.getVerticalScrollBar();
         vscroll.setValue(p.y - (vscroll.getVisibleAmount() / 2));
         JScrollBar hscroll = scrollpane.getHorizontalScrollBar();
@@ -4331,12 +4318,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         drawCenteredText(g2D, text, pos, color, translucent);
     }
 
-    public void setLocalPlayer(IPlayer p) {
-        localPlayer = p;
-    }
-
     public IPlayer getLocalPlayer() {
         return localPlayer;
+    }
+
+    public void setLocalPlayer(IPlayer p) {
+        localPlayer = p;
     }
 
     /**
@@ -4533,12 +4520,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             return;
         }
         int entityId = e.getId();
-        for (Iterator<AttackSprite> i = attackSprites.iterator(); i.hasNext(); ) {
-            AttackSprite sprite = i.next();
-            if (sprite.getEntityId() == entityId) {
-                i.remove();
-            }
-        }
+        attackSprites.removeIf(sprite -> sprite.getEntityId() == entityId);
         repaint(100);
     }
 
@@ -4556,9 +4538,9 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
         for (Enumeration<AttackAction> i = game.getCharges(); i
                 .hasMoreElements(); ) {
-            EntityAction ea = i.nextElement();
+            AttackAction ea = i.nextElement();
             if (ea instanceof PhysicalAttackAction) {
-                addAttack((AttackAction) ea);
+                addAttack(ea);
             }
         }
         repaint(100);
@@ -4627,7 +4609,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             Entity ae = chooseEntity(c1);
             Entity te = chooseEntity(c2);
 
-            StringBuffer message = new StringBuffer();
+            StringBuilder message = new StringBuilder();
             LosEffects le;
             if ((ae == null) || (te == null)) {
                 boolean mechInFirst = GUIPreferences.getInstance()
@@ -4648,68 +4630,68 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 le = LosEffects.calculateLos(game, ai);
                 message.append(Messages
                         .getString(
-                                "BoardView1.Attacker", new Object[]{ //$NON-NLS-1$
-                                        mechInFirst ? Messages
-                                                .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
-                                        c1.getBoardNum()}));
+                                "BoardView1.Attacker", //$NON-NLS-1$
+                                mechInFirst ? Messages
+                                        .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
+                                c1.getBoardNum()));
                 message.append(Messages
                         .getString(
-                                "BoardView1.Target", new Object[]{ //$NON-NLS-1$
-                                        mechInSecond ? Messages
-                                                .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
-                                        c2.getBoardNum()}));
+                                "BoardView1.Target", //$NON-NLS-1$
+                                mechInSecond ? Messages
+                                        .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
+                                c2.getBoardNum()));
             } else {
                 le = LosEffects.calculateLos(game, ae.getId(), te);
                 message.append(Messages.getString(
-                        "BoardView1.Attacker", new Object[]{ //$NON-NLS-1$
-                                ae.getDisplayName(), c1.getBoardNum()}));
+                        "BoardView1.Attacker", //$NON-NLS-1$
+                        ae.getDisplayName(), c1.getBoardNum()));
                 message.append(Messages.getString(
-                        "BoardView1.Target", new Object[]{ //$NON-NLS-1$
-                                te.getDisplayName(), c2.getBoardNum()}));
+                        "BoardView1.Target", //$NON-NLS-1$
+                        te.getDisplayName(), c2.getBoardNum()));
             }
             // Check to see if LoS is blocked
             if (!le.canSee()) {
                 message.append(Messages.getString("BoardView1.LOSBlocked",
-                        new Object[]{ //$NON-NLS-1$
-                                Integer.valueOf(c1.distance(c2))}));
+                        //$NON-NLS-1$
+                        c1.distance(c2)));
                 ToHitData thd = le.losModifiers(game);
-                message.append("\t" + thd.getDesc() + "\n");
+                message.append("\t").append(thd.getDesc()).append("\n");
             } else {
                 message.append(Messages.getString("BoardView1.LOSNotBlocked",
-                        new Object[]{ //$NON-NLS-1$
-                                Integer.valueOf(c1.distance(c2))}));
+                        //$NON-NLS-1$
+                        c1.distance(c2)));
                 if (le.getHeavyWoods() > 0) {
                     message.append(Messages.getString(
-                            "BoardView1.HeavyWoods", new Object[]{ //$NON-NLS-1$
-                                    Integer.valueOf(le.getHeavyWoods())}));
+                            "BoardView1.HeavyWoods", //$NON-NLS-1$
+                            le.getHeavyWoods()));
                 }
                 if (le.getLightWoods() > 0) {
                     message.append(Messages.getString(
-                            "BoardView1.LightWoods", new Object[]{ //$NON-NLS-1$
-                                    Integer.valueOf(le.getLightWoods())}));
+                            "BoardView1.LightWoods", //$NON-NLS-1$
+                            le.getLightWoods()));
                 }
                 if (le.getLightSmoke() > 0) {
                     message.append(Messages.getString(
-                            "BoardView1.LightSmoke", new Object[]{ //$NON-NLS-1$
-                                    Integer.valueOf(le.getLightSmoke())}));
+                            "BoardView1.LightSmoke", //$NON-NLS-1$
+                            le.getLightSmoke()));
                 }
                 if (le.getHeavySmoke() > 0) {
                     message.append(Messages.getString(
-                            "BoardView1.HeavySmoke", new Object[]{ //$NON-NLS-1$
-                                    Integer.valueOf(le.getHeavySmoke())}));
+                            "BoardView1.HeavySmoke", //$NON-NLS-1$
+                            le.getHeavySmoke()));
                 }
                 if (le.isTargetCover() && le.canSee()) {
                     message.append(Messages
                             .getString(
-                                    "BoardView1.TargetPartialCover", new Object[]{ //$NON-NLS-1$
-                                            LosEffects.getCoverName(
-                                                    le.getTargetCover(), true)}));
+                                    "BoardView1.TargetPartialCover", //$NON-NLS-1$
+                                    LosEffects.getCoverName(
+                                            le.getTargetCover(), true)));
                 }
                 if (le.isAttackerCover() && le.canSee()) {
                     message.append(Messages.getString(
-                            "BoardView1.AttackerPartialCover", new Object[]{ //$NON-NLS-1$
-                                    LosEffects.getCoverName(le.getAttackerCover(),
-                                            false)}));
+                            "BoardView1.AttackerPartialCover", //$NON-NLS-1$
+                            LosEffects.getCoverName(le.getAttackerCover(),
+                                    false)));
                 }
             }
             JOptionPane.showMessageDialog(getRootPane(), message.toString(),
@@ -4877,8 +4859,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             mouseAction(getCoordsAt(point), BOARD_HEX_POPUP, me.getModifiers());
             return;
         }
-        for (int i = 0; i < displayables.size(); i++) {
-            IDisplayable disp = displayables.get(i);
+        for (IDisplayable disp : displayables) {
             double width = scrollpane.getViewport().getSize()
                     .getWidth();
             double height = scrollpane.getViewport().getSize()
@@ -4916,8 +4897,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             shouldScroll = false;
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
-        for (int i = 0; i < displayables.size(); i++) {
-            IDisplayable disp = displayables.get(i);
+        for (IDisplayable disp : displayables) {
             if (disp.isReleased()) {
                 return;
             }
@@ -4950,17 +4930,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     public void mouseClicked(MouseEvent me) {
     }
 
-    private class MovingUnit {
-        public Entity entity;
-
-        public ArrayList<UnitLocation> path;
-
-        MovingUnit(Entity entity, Vector<UnitLocation> path) {
-            this.entity = entity;
-            this.path = new ArrayList<UnitLocation>(path);
-        }
-    }
-
     /**
      * Determine if the tile manager's images have been loaded.
      *
@@ -4980,6 +4949,13 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     /**
+     * @return Returns the lastCursor.
+     */
+    public Coords getLastCursor() {
+        return lastCursor;
+    }
+
+    /**
      * @param lastCursor The lastCursor to set.
      */
     public void setLastCursor(Coords lastCursor) {
@@ -4987,10 +4963,10 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     /**
-     * @return Returns the lastCursor.
+     * @return Returns the highlighted.
      */
-    public Coords getLastCursor() {
-        return lastCursor;
+    public Coords getHighlighted() {
+        return highlighted;
     }
 
     /**
@@ -5001,10 +4977,10 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     /**
-     * @return Returns the highlighted.
+     * @return Returns the selected.
      */
-    public Coords getHighlighted() {
-        return highlighted;
+    public Coords getSelected() {
+        return selected;
     }
 
     /**
@@ -5018,10 +4994,10 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     /**
-     * @return Returns the selected.
+     * @return Returns the firstLOS.
      */
-    public Coords getSelected() {
-        return selected;
+    public Coords getFirstLOS() {
+        return firstLOS;
     }
 
     /**
@@ -5029,13 +5005,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
      */
     public void setFirstLOS(Coords firstLOS) {
         this.firstLOS = firstLOS;
-    }
-
-    /**
-     * @return Returns the firstLOS.
-     */
-    public Coords getFirstLOS() {
-        return firstLOS;
     }
 
     /**
@@ -5100,11 +5069,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
     public synchronized void highlightSelectedEntity() {
         for (EntitySprite sprite : entitySprites) {
-            if (sprite.entity.equals(selectedEntity)) {
-                sprite.setSelected(true);
-            } else {
-                sprite.setSelected(false);
-            }
+            sprite.setSelected(sprite.entity.equals(selectedEntity));
         }
     }
 
@@ -5238,184 +5203,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         repaint();
     }
 
-    private GameListener gameListener = new GameListenerAdapter() {
-
-        @Override
-        public void gameEntityNew(GameEntityNewEvent e) {
-            updateEcmList();
-            redrawAllEntities();
-            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
-                refreshMoveVectors();
-            }
-        }
-
-        @Override
-        public void gameEntityRemove(GameEntityRemoveEvent e) {
-            updateEcmList();
-            redrawAllEntities();
-            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
-                refreshMoveVectors();
-            }
-        }
-
-        @Override
-        public void gameEntityChange(GameEntityChangeEvent e) {
-            final Vector<UnitLocation> mp = e.getMovePath();
-            final Entity en = e.getEntity();
-            final GameOptions gopts = game.getOptions();
-            GUIPreferences guip = GUIPreferences.getInstance();
-
-            updateEcmList();
-
-            //For Entities that have converted to another mode, check for a different sprite
-            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT
-                    && en.isConvertingNow()) {
-                tileManager.reloadImage(en);
-            }
-
-            // for units that have been blown up, damaged or ejected, force a reload
-            if ((e.getOldEntity() != null) &&
-                    ((en.getDamageLevel() != e.getOldEntity().getDamageLevel()) ||
-                            (en.isDestroyed() != e.getOldEntity().isDestroyed()) ||
-                            (en.getCrew().isEjected() != e.getOldEntity().getCrew().isEjected()))) {
-                tileManager.reloadImage(en);
-            }
-
-            redrawAllEntities();
-            if (game.getPhase() == IGame.Phase.PHASE_MOVEMENT) {
-                refreshMoveVectors();
-            }
-            if ((mp != null) && (mp.size() > 0) && guip.getShowMoveStep()
-                    && !gopts.booleanOption(OptionsConstants.INIT_SIMULTANEOUS_MOVEMENT)) {
-                if ((localPlayer == null)
-                        || !game.getOptions().booleanOption(OptionsConstants.ADVANCED_DOUBLE_BLIND)
-                        || !en.getOwner().isEnemyOf(localPlayer)
-                        || en.hasSeenEntity(localPlayer)) {
-                    addMovingUnit(en, mp);
-                }
-            }
-        }
-
-        @Override
-        public void gameNewAction(GameNewActionEvent e) {
-            EntityAction ea = e.getAction();
-            if (ea instanceof AttackAction) {
-                addAttack((AttackAction) ea);
-            }
-        }
-
-        @Override
-        public void gameBoardNew(GameBoardNewEvent e) {
-            IBoard b = e.getOldBoard();
-            if (b != null) {
-                b.removeBoardListener(BoardView1.this);
-            }
-            b = e.getNewBoard();
-            if (b != null) {
-                b.addBoardListener(BoardView1.this);
-            }
-            boardBackgrounds.clear();
-            if (b.hasBoardBackground()) {
-                ListIterator<Boolean> flipItHoriz = b.getFlipBGHoriz()
-                        .listIterator();
-                ListIterator<Boolean> flipItVert = b.getFlipBGVert()
-                        .listIterator();
-                for (String path : b.getBackgroundPaths()) {
-                    boolean flipHoriz = flipItHoriz.next();
-                    boolean flipVert = flipItVert.next();
-                    if (path == null) {
-                        boardBackgrounds.add(null);
-                    } else {
-                        Image bgImg = ImageUtil.loadImageFromFile(path);
-                        ImageProducer prod = bgImg.getSource();
-                        if (flipHoriz || flipVert) {
-                            AffineTransform at = new AffineTransform();
-
-                            if (flipHoriz) {
-                                at.concatenate(AffineTransform
-                                        .getScaleInstance(1, -1));
-                            }
-                            if (flipVert) {
-                                at.concatenate(AffineTransform
-                                        .getTranslateInstance(0,
-                                                -bgImg.getHeight(null)));
-                            }
-                            ((Graphics2D) bgImg.getGraphics()).setTransform(at);
-                        }
-                        boardBackgrounds.add(Toolkit.getDefaultToolkit()
-                                .createImage(prod));
-                    }
-                }
-            }
-            clearHexImageCache();
-            updateBoard();
-            clearShadowMap();
-        }
-
-        @Override
-        public void gameBoardChanged(GameBoardChangeEvent e) {
-            clearHexImageCache();
-            boardChanged();
-        }
-
-        @Override
-        public void gamePhaseChange(GamePhaseChangeEvent e) {
-            if (GUIPreferences.getInstance().getGameSummaryBoardView() && ((e.getOldPhase() == Phase.PHASE_DEPLOYMENT)
-                    || (e.getOldPhase() == Phase.PHASE_MOVEMENT) || (e.getOldPhase() == Phase.PHASE_TARGETING)
-                    || (e.getOldPhase() == Phase.PHASE_FIRING) || (e.getOldPhase() == Phase.PHASE_PHYSICAL))) {
-                File dir = new File(Configuration.gameSummaryImagesBVDir(), game.getUUIDString());
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                File imgFile = new File(dir, "round_" + game.getRoundCount() + "_" + e.getOldPhase().ordinal() + "_"
-                        + IGame.Phase.getDisplayableName(e.getOldPhase()) + ".png");
-                try {
-                    ImageIO.write(getEntireBoardImage(false), "png", imgFile);
-                } catch (Exception ex) {
-                    MegaMek.getLogger().error(ex);
-                }
-            }
-
-            refreshAttacks();
-
-            // Clear some information regardless of what phase it is
-            clearFiringSolutionData();
-            clearMovementEnvelope();
-
-            switch (e.getNewPhase()) {
-                case PHASE_MOVEMENT:
-                    refreshMoveVectors();
-                case PHASE_FIRING:
-                    clearAllMoveVectors();
-                case PHASE_PHYSICAL:
-                    refreshAttacks();
-                    break;
-                case PHASE_INITIATIVE:
-                    clearAllAttacks();
-                    break;
-                case PHASE_END:
-                case PHASE_VICTORY:
-                    clearSprites();
-                case PHASE_LOUNGE:
-                    clearHexImageCache();
-                    clearAllMoveVectors();
-                    clearAllAttacks();
-                    clearSprites();
-                    select(null);
-                    cursor(null);
-                    highlight(null);
-                default:
-            }
-            for (Entity en : game.getEntitiesVector()) {
-                if ((en.getDamageLevel() != Entity.DMG_NONE) &&
-                        ((en.damageThisRound != 0) || (en instanceof GunEmplacement))) {
-                    tileManager.reloadImage(en);
-                }
-            }
-
-        }
-    };
-
     synchronized void boardChanged() {
         redrawAllEntities();
         redrawAllFlares();
@@ -5435,38 +5222,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     public synchronized void updateBoard() {
         updateBoardSize();
         redrawAllEntities();
-    }
-
-    /**
-     * the old redrawworker converted to a runnable which is called now and then
-     * from the event thread
-     */
-    protected class RedrawWorker implements Runnable {
-
-        protected long lastTime = System.currentTimeMillis();
-
-        protected long currentTime = System.currentTimeMillis();
-
-        public void run() {
-            currentTime = System.currentTimeMillis();
-            if (isShowing()) {
-                boolean redraw = false;
-                for (int i = 0; i < displayables.size(); i++) {
-                    IDisplayable disp = displayables.get(i);
-                    if (!disp.isSliding()) {
-                        disp.setIdleTime(currentTime - lastTime, true);
-                    } else {
-                        redraw = redraw || disp.slide();
-                    }
-                }
-                redraw = redraw || doMoveUnits(currentTime - lastTime);
-                if (redraw) {
-                    repaint();
-                }
-                centerOnHexSoftStep(currentTime - lastTime);
-            }
-            lastTime = currentTime;
-        }
     }
 
     public synchronized void selectEntity(Entity e) {
@@ -5687,12 +5442,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     @Override
-    public void setPreferredSize(Dimension d) {
-        super.setPreferredSize(d);
-        preferredSize = new Dimension(d);
-    }
-
-    @Override
     public Dimension getPreferredSize() {
         // If the board is small, we want the preferred size to fill the whole
         //  ScrollPane viewport, for purposes of drawing the tiled background
@@ -5702,6 +5451,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         return new Dimension(
                 Math.max(boardSize.width + (2 * HEX_W), preferredSize.width),
                 Math.max(boardSize.height + (2 * HEX_W), preferredSize.height));
+    }
+
+    @Override
+    public void setPreferredSize(Dimension d) {
+        super.setPreferredSize(d);
+        preferredSize = new Dimension(d);
     }
 
     /**
@@ -5730,7 +5485,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     .showInputDialog(
                             null,
                             Messages.getString(
-                                    "BoardView1.ChooseEntityDialog.message", new Object[]{pos.getBoardNum()}), //$NON-NLS-1$
+                                    "BoardView1.ChooseEntityDialog.message", pos.getBoardNum()), //$NON-NLS-1$
                             Messages.getString("BoardView1.ChooseEntityDialog.title"), //$NON-NLS-1$
                             JOptionPane.QUESTION_MESSAGE, null, SharedUtility
                                     .getDisplayArray(entities), null);
@@ -5740,7 +5495,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // Return the chosen unit.
         return choice;
     }
-
 
     /**
      * The text to be displayed when the mouse is at a certain point.
@@ -5764,7 +5518,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 // goes away and does not reappear until the mouse
                 // has moved more than the suppression distance
                 ToolTipManager.sharedInstance().setDismissDelay(0);
-                return new String(""); //$NON-NLS-1$
+                return ""; //$NON-NLS-1$
             }
         }
         prevTipX = point.x;
@@ -5786,12 +5540,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             txt.append("<TABLE BORDER=0 BGCOLOR=#DDFFDD width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
 
             txt.append(Messages.getString("BoardView1.Tooltip.Hex", //$NON-NLS-1$
-                    new Object[]{mcoords.getBoardNum(), mhex.getLevel()}));
+                    mcoords.getBoardNum(), mhex.getLevel()));
             txt.append("<br>"); //$NON-NLS-1$
 
             // cycle through the terrains and report types found
             // this will skip buildings and other constructed units
-            int terrainTypes[] = mhex.getTerrainTypes();
+            int[] terrainTypes = mhex.getTerrainTypes();
             for (int i = 0; i < terrainTypes.length; i++) {
                 int terType = terrainTypes[i];
                 if (mhex.containsTerrain(terType)) {
@@ -5820,7 +5574,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     txt.append(Messages.getString("BoardView1.Tooltip.Distance1")); //$NON-NLS-1$
                 } else {
                     txt.append(Messages.getString("BoardView1.Tooltip.DistanceN", //$NON-NLS-1$
-                            new Object[]{distance}));
+                            distance));
                 }
 
                 if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_SENSORS)) {
@@ -5850,7 +5604,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                         txt.append(Messages.getString("BoardView1.Tooltip.DistanceMove1")); //$NON-NLS-1$
                     } else {
                         txt.append(Messages.getString("BoardView1.Tooltip.DistanceMoveN", //$NON-NLS-1$
-                                new Object[]{disPM}));
+                                disPM));
                     }
                 }
 
@@ -5863,20 +5617,18 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 // buildings list of the board, so get the info from the hex
                 if (clientgui == null) {
                     txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
                             Terrains.getEditorName(Terrains.FUEL_TANK),
                             mhex.terrainLevel(Terrains.FUEL_TANK_CF),
-                            mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)
-                    }));
+                            mhex.terrainLevel(Terrains.FUEL_TANK_MAGN)));
                 } else {
                     Building bldg = game.getBoard().getBuildingAt(mcoords);
                     txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.FuelTank", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.FUEL_TANK_ELEV),
                             bldg.toString(),
-                            bldg.getCurrentCF(mcoords)
-                    }));
+                            bldg.getCurrentCF(mcoords)));
                 }
                 txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
             }
@@ -5887,23 +5639,21 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 // buildings list of the board, so get the info from the hex
                 if (clientgui == null) {
                     txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Building", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.BLDG_ELEV),
                             Terrains.getEditorName(Terrains.BUILDING),
                             mhex.terrainLevel(Terrains.BLDG_CF),
                             Math.max(mhex.terrainLevel(Terrains.BLDG_ARMOR), 0),
-                            BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()
-                    }));
+                            BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()));
                 } else {
                     Building bldg = game.getBoard().getBuildingAt(mcoords);
                     txt.append("<TABLE BORDER=0 BGCOLOR=#CCCC99 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Building", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.BLDG_ELEV),
                             bldg.toString(),
                             bldg.getCurrentCF(mcoords),
                             bldg.getArmor(mcoords),
-                            bldg.getBasement(mcoords).getDesc()
-                    }));
+                            bldg.getBasement(mcoords).getDesc()));
 
                     if (bldg.getBasementCollapsed(mcoords)) {
                         txt.append(Messages
@@ -5919,19 +5669,17 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 // buildings list of the board, so get the info from the hex
                 if (clientgui == null) {
                     txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.BRIDGE_ELEV),
                             Terrains.getEditorName(Terrains.BRIDGE),
-                            mhex.terrainLevel(Terrains.BRIDGE_CF),
-                    }));
+                            mhex.terrainLevel(Terrains.BRIDGE_CF)));
                 } else {
                     Building bldg = game.getBoard().getBuildingAt(mcoords);
                     txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", new Object[]{ //$NON-NLS-1$
+                    txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
                             mhex.terrainLevel(Terrains.BRIDGE_ELEV),
                             bldg.toString(),
-                            bldg.getCurrentCF(mcoords),
-                    }));
+                            bldg.getCurrentCF(mcoords)));
                 }
                 txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
             }
@@ -6122,10 +5870,10 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             txt.append("<TABLE BORDER=0 BGCOLOR=#FFDDDD width=100%><TR><TD><FONT color=\"black\">");
             if (aaa.getTurnsTilHit() == 1)
                 txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttack1",
-                        new Object[]{wpName, ammoName}));
+                        wpName, ammoName));
             else
                 txt.append(Messages.getString("BoardView1.Tooltip.ArtilleryAttackN",
-                        new Object[]{wpName, ammoName, aaa.getTurnsTilHit()}));
+                        wpName, ammoName, aaa.getTurnsTilHit()));
             txt.append("</FONT></TD></TR></TABLE>");
         }
 
@@ -6148,7 +5896,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             } else {
                 txt.append(Messages.getString(
                         "BoardView1.ArtilleryAdjustment", //$NON-NLS-1$
-                        new Object[]{Integer.valueOf(amod)}));
+                        Integer.valueOf(amod)));
                 txt.append("<br>"); //$NON-NLS-1$
             }
         }
@@ -6191,7 +5939,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Check to see if the tool tip is completely empty
         if (txt.toString().equals("<html></html>")) { //$NON-NLS-1$
-            return new String(""); //$NON-NLS-1$
+            return ""; //$NON-NLS-1$
         }
 
         // Now that a valid tooltip text seems to be present,
@@ -6319,14 +6067,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         return scrollpane;
     }
-
-    AbstractAction DoNothing = new AbstractAction() {
-        private static final long serialVersionUID = 5944877465265121983L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-        }
-    };
 
     /**
      * refresh the IDisplayables
@@ -6903,12 +6643,12 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         return hexImage;
     }
 
-    public void setDisplayInvalidHexInfo(boolean v) {
-        displayInvalidHexInfo = v;
-    }
-
     public boolean getDisplayInvalidHexInfo() {
         return displayInvalidHexInfo;
+    }
+
+    public void setDisplayInvalidHexInfo(boolean v) {
+        displayInvalidHexInfo = v;
     }
 
     public Rectangle getDisplayablesRect() {
@@ -6918,5 +6658,48 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     public void toggleKeybindsOverlay() {
         keybindOverlay.setVisible(!keybindOverlay.isVisible());
         repaint();
+    }
+
+    private class MovingUnit {
+        public Entity entity;
+
+        public ArrayList<UnitLocation> path;
+
+        MovingUnit(Entity entity, Vector<UnitLocation> path) {
+            this.entity = entity;
+            this.path = new ArrayList<UnitLocation>(path);
+        }
+    }
+
+    /**
+     * the old redrawworker converted to a runnable which is called now and then
+     * from the event thread
+     */
+    protected class RedrawWorker implements Runnable {
+
+        protected long lastTime = System.currentTimeMillis();
+
+        protected long currentTime = System.currentTimeMillis();
+
+        public void run() {
+            currentTime = System.currentTimeMillis();
+            if (isShowing()) {
+                boolean redraw = false;
+                for (int i = 0; i < displayables.size(); i++) {
+                    IDisplayable disp = displayables.get(i);
+                    if (!disp.isSliding()) {
+                        disp.setIdleTime(currentTime - lastTime, true);
+                    } else {
+                        redraw = redraw || disp.slide();
+                    }
+                }
+                redraw = redraw || doMoveUnits(currentTime - lastTime);
+                if (redraw) {
+                    repaint();
+                }
+                centerOnHexSoftStep(currentTime - lastTime);
+            }
+            lastTime = currentTime;
+        }
     }
 }
