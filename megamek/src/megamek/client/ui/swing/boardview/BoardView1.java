@@ -5782,92 +5782,19 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // Building
         if (mhex.containsTerrain(Terrains.BUILDING)) {
-            // In the BoardEditor, buildings have no entry in the
-            // buildings list of the board, so get the info from the hex
-            if (clientgui == null) {
-                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.BLDG_ELEV),
-                        Terrains.getEditorName(Terrains.BUILDING),
-                        mhex.terrainLevel(Terrains.BLDG_CF),
-                        Math.max(mhex.terrainLevel(Terrains.BLDG_ARMOR), 0),
-                        BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()));
-            } else {
-                Building bldg = game.getBoard().getBuildingAt(mcoords);
-                txt.append("<TABLE BORDER=0 BGCOLOR=#CCCC99 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.BLDG_ELEV),
-                        bldg.toString(),
-                        bldg.getCurrentCF(mcoords),
-                        bldg.getArmor(mcoords),
-                        bldg.getBasement(mcoords).getDesc()));
-
-                if (bldg.getBasementCollapsed(mcoords)) {
-                    txt.append(Messages
-                            .getString("BoardView1.Tooltip.BldgBasementCollapsed")); //$NON-NLS-1$
-                }
-            }
-            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+            txt.append(getBuildingText(mhex, mcoords));
         }
 
         // Bridge
         if (mhex.containsTerrain(Terrains.BRIDGE)) {
-            // In the BoardEditor, buildings have no entry in the
-            // buildings list of the board, so get the info from the hex
-            if (clientgui == null) {
-                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.BRIDGE_ELEV),
-                        Terrains.getEditorName(Terrains.BRIDGE),
-                        mhex.terrainLevel(Terrains.BRIDGE_CF)));
-            } else {
-                Building bldg = game.getBoard().getBuildingAt(mcoords);
-                txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
-                txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
-                        mhex.terrainLevel(Terrains.BRIDGE_ELEV),
-                        bldg.toString(),
-                        bldg.getCurrentCF(mcoords)));
-            }
-            txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+            txt.append(getBridgeText(mhex, mcoords));
         }
 
+        // Minefields
         if (game.containsMinefield(mcoords)) {
             Vector<Minefield> minefields = game.getMinefields(mcoords);
-            for (int i = 0; i < minefields.size(); i++) {
-                Minefield mf = minefields.elementAt(i);
-                String owner = " (" //$NON-NLS-1$
-                        + game.getPlayer(mf.getPlayerId()).getName()
-                        + ")"; //$NON-NLS-1$
-
-                switch (mf.getType()) {
-                    case (Minefield.TYPE_CONVENTIONAL):
-                    case (Minefield.TYPE_COMMAND_DETONATED):
-                        txt.append(mf.getName()
-                                + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                        break;
-                    case (Minefield.TYPE_VIBRABOMB):
-                        if (mf.getPlayerId() == localPlayer.getId()) {
-                            txt.append(mf.getName()
-                                    + Messages
-                                    .getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + "(" //$NON-NLS-1$
-                                    + mf.getSetting() + ") " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                        } else {
-                            txt.append(mf.getName()
-                                    + Messages
-                                    .getString("BoardView1.minefield") //$NON-NLS-1$
-                                    + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                        }
-                        break;
-                    case (Minefield.TYPE_ACTIVE):
-                    case (Minefield.TYPE_INFERNO):
-                        txt.append(mf.getName()
-                                + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
-                                + "(" + mf.getDensity() + ")" + owner); //$NON-NLS-1$ //$NON-NLS-2$
-                        break;
-                }
-                txt.append("<br>"); //$NON-NLS-1$
+            for (Minefield mf : minefields) {
+                txt.append(getMinefieldText(mf));
             }
         }
 
@@ -5882,6 +5809,97 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 txt.append("<br>"); //$NON-NLS-1$
             }
         }
+        return txt.toString();
+    }
+
+    private String getMinefieldText(Minefield mf) {
+        StringBuilder txt = new StringBuilder();
+        String owner = " (" //$NON-NLS-1$
+                + game.getPlayer(mf.getPlayerId()).getName()
+                + ")"; //$NON-NLS-1$
+
+        switch (mf.getType()) {
+            case (Minefield.TYPE_CONVENTIONAL):
+            case (Minefield.TYPE_COMMAND_DETONATED):
+                txt.append(mf.getName()
+                        + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
+                        + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                break;
+            case (Minefield.TYPE_VIBRABOMB):
+                if (mf.getPlayerId() == localPlayer.getId()) {
+                    txt.append(mf.getName()
+                            + Messages
+                            .getString("BoardView1.minefield") //$NON-NLS-1$
+                            + "(" + mf.getDensity() + ")" + "(" //$NON-NLS-1$
+                            + mf.getSetting() + ") " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                } else {
+                    txt.append(mf.getName()
+                            + Messages
+                            .getString("BoardView1.minefield") //$NON-NLS-1$
+                            + "(" + mf.getDensity() + ")" + " " + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+                break;
+            case (Minefield.TYPE_ACTIVE):
+            case (Minefield.TYPE_INFERNO):
+                txt.append(mf.getName()
+                        + Messages.getString("BoardView1.minefield") //$NON-NLS-1$
+                        + "(" + mf.getDensity() + ")" + owner); //$NON-NLS-1$ //$NON-NLS-2$
+                break;
+        }
+        txt.append("<br>"); //$NON-NLS-1$
+        return txt.toString();
+    }
+
+    private String getBridgeText(IHex mhex, Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        // In the BoardEditor, buildings have no entry in the
+        // buildings list of the board, so get the info from the hex
+        if (clientgui == null) {
+            txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.BRIDGE_ELEV),
+                    Terrains.getEditorName(Terrains.BRIDGE),
+                    mhex.terrainLevel(Terrains.BRIDGE_CF)));
+        } else {
+            Building bldg = game.getBoard().getBuildingAt(mcoords);
+            txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.Bridge", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.BRIDGE_ELEV),
+                    bldg.toString(),
+                    bldg.getCurrentCF(mcoords)));
+        }
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
+        return txt.toString();
+    }
+
+    private String getBuildingText(IHex mhex, Coords mcoords) {
+        StringBuilder txt = new StringBuilder();
+        // In the BoardEditor, buildings have no entry in the
+        // buildings list of the board, so get the info from the hex
+        if (clientgui == null) {
+            txt.append("<TABLE BORDER=0 BGCOLOR=#999999 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.BLDG_ELEV),
+                    Terrains.getEditorName(Terrains.BUILDING),
+                    mhex.terrainLevel(Terrains.BLDG_CF),
+                    Math.max(mhex.terrainLevel(Terrains.BLDG_ARMOR), 0),
+                    BasementType.getType(mhex.terrainLevel(Terrains.BLDG_BASEMENT_TYPE)).toString()));
+        } else {
+            Building bldg = game.getBoard().getBuildingAt(mcoords);
+            txt.append("<TABLE BORDER=0 BGCOLOR=#CCCC99 width=100%><TR><TD><FONT color=\"black\">"); //$NON-NLS-1$
+            txt.append(Messages.getString("BoardView1.Tooltip.Building", //$NON-NLS-1$
+                    mhex.terrainLevel(Terrains.BLDG_ELEV),
+                    bldg.toString(),
+                    bldg.getCurrentCF(mcoords),
+                    bldg.getArmor(mcoords),
+                    bldg.getBasement(mcoords).getDesc()));
+
+            if (bldg.getBasementCollapsed(mcoords)) {
+                txt.append(Messages
+                        .getString("BoardView1.Tooltip.BldgBasementCollapsed")); //$NON-NLS-1$
+            }
+        }
+        txt.append("</FONT></TD></TR></TABLE>"); //$NON-NLS-1$
         return txt.toString();
     }
 
