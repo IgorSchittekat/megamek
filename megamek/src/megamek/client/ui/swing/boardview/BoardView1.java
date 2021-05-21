@@ -6347,35 +6347,32 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // If the field of fire is not dispalyed
         // for the active unit, then don't change anything
-        if (fieldofFireUnit.equals(ce)) {
-
-            fieldofFireWpUnderwater = 0;
-            // check if the weapon ends up underwater
-            IHex hex = game.getBoard().getHex(cmd.getFinalCoords());
-
-            if ((hex.terrainLevel(Terrains.WATER) > 0) && !cmd.isJumping()
-                    && (cmd.getFinalElevation() < 0)) {
-                if ((fieldofFireUnit instanceof Mech) && !fieldofFireUnit.isProne()
-                        && (hex.terrainLevel(Terrains.WATER) == 1)) {
-                    if ((fieldofFireWpLoc == Mech.LOC_RLEG)
-                            || (fieldofFireWpLoc == Mech.LOC_LLEG))
-                        fieldofFireWpUnderwater = 1;
-
-                    if (fieldofFireUnit instanceof QuadMech) {
-                        if ((fieldofFireWpLoc == Mech.LOC_RARM)
-                                || (fieldofFireWpLoc == Mech.LOC_LARM))
-                            fieldofFireWpUnderwater = 1;
-                    }
-                    if (fieldofFireUnit instanceof TripodMech) {
-                        if (fieldofFireWpLoc == Mech.LOC_CLEG)
-                            fieldofFireWpUnderwater = 1;
-                    }
-                } else {
-                    fieldofFireWpUnderwater = 1;
-                }
-            }
-            setWeaponFieldofFire(cmd.getFinalFacing(), cmd.getFinalCoords());
+        if (!fieldofFireUnit.equals(ce)) {
+            return;
         }
+
+        fieldofFireWpUnderwater = 0;
+        // check if the weapon ends up underwater
+        IHex hex = game.getBoard().getHex(cmd.getFinalCoords());
+
+        if ((hex.terrainLevel(Terrains.WATER) > 0) && !cmd.isJumping() && (cmd.getFinalElevation() < 0)) {
+            if ((fieldofFireUnit instanceof Mech) && !fieldofFireUnit.isProne() && (hex.terrainLevel(Terrains.WATER) == 1)) {
+                if ((fieldofFireWpLoc == Mech.LOC_RLEG) || (fieldofFireWpLoc == Mech.LOC_LLEG))
+                    fieldofFireWpUnderwater = 1;
+
+                if (fieldofFireUnit instanceof QuadMech) {
+                    if ((fieldofFireWpLoc == Mech.LOC_RARM) || (fieldofFireWpLoc == Mech.LOC_LARM))
+                        fieldofFireWpUnderwater = 1;
+                }
+                if (fieldofFireUnit instanceof TripodMech) {
+                    if (fieldofFireWpLoc == Mech.LOC_CLEG)
+                        fieldofFireWpUnderwater = 1;
+                }
+            } else {
+                fieldofFireWpUnderwater = 1;
+            }
+        }
+        setWeaponFieldofFire(cmd.getFinalFacing(), cmd.getFinalCoords());
     }
 
     // prepares the sprites for a field of fire
@@ -6410,13 +6407,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
 
             // Remove hexes that are not on the board or not in the arc
-            for (Iterator<Coords> iterator = fieldFire.get(bracket).iterator(); iterator.hasNext(); ) {
-                Coords h = iterator.next();
-                if (!game.getBoard().contains(h)
-                        || !Compute.isInArc(c, fac, h, fieldofFireWpArc)) {
-                    iterator.remove();
-                }
-            }
+            fieldFire.get(bracket).removeIf(h -> !game.getBoard().contains(h)
+                    || !Compute.isInArc(c, fac, h, fieldofFireWpArc));
         }
 
         // create the sprites
