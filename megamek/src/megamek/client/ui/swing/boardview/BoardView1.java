@@ -1487,19 +1487,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         HashMap<Integer, Set<Coords>> shadowCastingHexes = createShadowcastingHexes(board, sortedHexes);
 
         // 2) Create clipping areas
-        HashMap<Integer, Shape> levelClips = new HashMap<Integer, Shape>();
-        for (Integer h : sortedHexes.keySet()) {
-            Path2D path = new Path2D.Float();
-            for (Coords c : sortedHexes.get(h)) {
-                Point p = getHexLocationLargeTile(c.getX(), c.getY(), 1);
-                AffineTransform t = AffineTransform.getTranslateInstance(p.x + HEX_W / 2, p.y + HEX_H / 2);
-                t.scale(1.02, 1.02);
-                t.translate(-HEX_W / 2, -HEX_H / 2);
-                path.append(t.createTransformedShape(hexPoly), false);
-            }
-            levelClips.put(h, path);
-        }
-
+        HashMap<Integer, Shape> levelClips = createLevelClips(sortedHexes);
 
         // 3) Find all level differences
         final int maxDiff = 35; // limit all diffs to this value
@@ -1660,6 +1648,22 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         long tT5 = System.nanoTime() - stT;
         MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private HashMap<Integer, Shape> createLevelClips(HashMap<Integer, Set<Coords>> sortedHexes) {
+        HashMap<Integer, Shape> levelClips = new HashMap<Integer, Shape>();
+        for (Integer h : sortedHexes.keySet()) {
+            Path2D path = new Path2D.Float();
+            for (Coords c : sortedHexes.get(h)) {
+                Point p = getHexLocationLargeTile(c.getX(), c.getY(), 1);
+                AffineTransform t = AffineTransform.getTranslateInstance(p.x + HEX_W / 2, p.y + HEX_H / 2);
+                t.scale(1.02, 1.02);
+                t.translate(-HEX_W / 2, -HEX_H / 2);
+                path.append(t.createTransformedShape(hexPoly), false);
+            }
+            levelClips.put(h, path);
+        }
+        return levelClips;
     }
 
     private HashMap<Integer, Set<Coords>> createShadowcastingHexes(IBoard board, HashMap<Integer, Set<Coords>> sortedHexes) {
