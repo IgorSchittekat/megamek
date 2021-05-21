@@ -61,34 +61,9 @@ public class DestructionAwareDestinationPathfinder extends BoardEdgePathFinder {
      * be viable.
      */
     public BulldozerMovePath findPathToCoords(Entity entity, Set<Coords> destinationCoords, boolean jump, BoardClusterTracker clusterTracker) {
-        BulldozerMovePath startPath = new BulldozerMovePath(entity.getGame(), entity);
-        
-        // if we're calculating a jump path and the entity has jump mp and can jump, start off with a jump
-        // if we're trying to calc a jump path and the entity does not have jump mp, we're done
-        if (jump && (startPath.getCachedEntityState().getJumpMPWithTerrain() > 0) &&
-                !entity.isProne() && !entity.isHullDown() && 
-                (entity.getGame().getPlanetaryConditions().getWindStrength() != PlanetaryConditions.WI_TORNADO_F4)) {
-            startPath.addStep(MoveStepType.START_JUMP);
-        // if we specified a jump path, but can't actually jump
-        } else if (jump) {
+        BulldozerMovePath startPath = getStartPath(entity, jump);
+        if (startPath == null) {
             return null;
-        // can't "climb into" anything while jumping
-        } else { 
-            if(entity.hasETypeFlag(Entity.ETYPE_INFANTRY)) {
-                startPath.addStep(MoveStepType.CLIMB_MODE_OFF);
-            } else {
-                startPath.addStep(MoveStepType.CLIMB_MODE_ON);
-            }
-        }
-        
-        // if we're on the ground, let's try to get up first before moving 
-        if(entity.isProne() || entity.isHullDown()) {
-            startPath.addStep(MoveStepType.GET_UP);
-            
-            // if we can't even get up, no need to do anything else
-            if(!startPath.isMoveLegal()) {
-                return null;
-            }
         }
 
         Coords closest = getClosestCoords(destinationCoords, entity);
@@ -122,7 +97,40 @@ public class DestructionAwareDestinationPathfinder extends BoardEdgePathFinder {
   
         return bestPath;
     }
-    
+
+    private BulldozerMovePath getStartPath(Entity entity, boolean jump) {
+        BulldozerMovePath startPath = new BulldozerMovePath(entity.getGame(), entity);
+
+        // if we're calculating a jump path and the entity has jump mp and can jump, start off with a jump
+        // if we're trying to calc a jump path and the entity does not have jump mp, we're done
+        if (jump && (startPath.getCachedEntityState().getJumpMPWithTerrain() > 0) &&
+                !entity.isProne() && !entity.isHullDown() && 
+                (entity.getGame().getPlanetaryConditions().getWindStrength() != PlanetaryConditions.WI_TORNADO_F4)) {
+            startPath.addStep(MoveStepType.START_JUMP);
+        // if we specified a jump path, but can't actually jump
+        } else if (jump) {
+            return null;
+        // can't "climb into" anything while jumping
+        } else { 
+            if(entity.hasETypeFlag(Entity.ETYPE_INFANTRY)) {
+                startPath.addStep(MoveStepType.CLIMB_MODE_OFF);
+            } else {
+                startPath.addStep(MoveStepType.CLIMB_MODE_ON);
+            }
+        }
+
+        // if we're on the ground, let's try to get up first before moving 
+        if(entity.isProne() || entity.isHullDown()) {
+            startPath.addStep(MoveStepType.GET_UP);
+            
+            // if we can't even get up, no need to do anything else
+            if(!startPath.isMoveLegal()) {
+                return null;
+            }
+        }
+        return startPath;
+    }
+
     /**
      * Calculates the closest coordinates to the given entity
      * Coordinates which you have to blow up to get into are considered to be further
@@ -156,7 +164,7 @@ public class DestructionAwareDestinationPathfinder extends BoardEdgePathFinder {
      * Function that generates all possible "legal" moves resulting from the given path
      * and updates the set of visited coordinates so we don't visit them again.
      * @param parentPath The path for which to generate child nodes
-     * @param visitedCoords Set of visited coordinates so we don't loop around
+     * @param shortestPathsToCoords Set of visited coordinates so we don't loop around
      * @return List of valid children. Between 0 and 3 inclusive.
      */
     protected List<BulldozerMovePath> generateChildNodes(BulldozerMovePath parentPath, Map<Coords, BulldozerMovePath> shortestPathsToCoords,
@@ -293,7 +301,7 @@ public class DestructionAwareDestinationPathfinder extends BoardEdgePathFinder {
 
         /**
          * Constructor - initializes the destination edge.
-         * @param targetRegion Destination edge
+         * @param destination Destination edge
          */
         public AStarComparator(Coords destination) {
             this.destination = destination;
