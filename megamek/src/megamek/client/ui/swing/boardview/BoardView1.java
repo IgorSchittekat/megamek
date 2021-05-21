@@ -2358,56 +2358,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         int drawHeight = (int) (view.height / ys) + 3;
 
         // draw some hexes.
-        if (useIsometric()) {
-            IBoard board = game.getBoard();
-            for (int y = 0; y < drawHeight; y++) {
-                // Half of each row is one-half hex
-                // farther back (above) the other; draw those first
-                for (int s = 0; s <= 1; s++) {
-                    for (int x = s; x < drawWidth + s + 1; x = x + 2) {
-                        // For s == 0 the x coordinate MUST be an even number
-                        // to get correct occlusion; drawX may be any int though
-                        Coords c = new Coords(x + drawX / 2 * 2, y + drawY);
-                        IHex hex = board.getHex(c);
-                        if ((hex != null)) {
-                            drawHex(c, g, saveBoardImage);
-                            if (GUIPreferences.getInstance()
-                                    .getShowFieldOfFire()) {
-                                drawHexSpritesForHex(c, g, fieldofFireSprites);
-                            }
-                            drawHexSpritesForHex(c, g, moveEnvSprites);
-                            drawHexSpritesForHex(c, g, moveModEnvSprites);
-                            if ((en_Deployer != null)
-                                    && board.isLegalDeployment(c,
-                                    en_Deployer.getStartingPos())) {
-                                drawHexBorder(g, getHexLocation(c),
-                                        Color.yellow);
-                            }
-                            drawOrthograph(c, g);
-                        }
-                    }
-                }
-                for (int x = 0; x < drawWidth; x++) {
-                    Coords c = new Coords(x + drawX, y + drawY);
-                    IHex hex = board.getHex(c);
-                    if (hex != null) {
-                        if (!saveBoardImage) {
-                            if (GUIPreferences.getInstance().getShowWrecks()) {
-                                drawIsometricWreckSpritesForHex(c, g,
-                                        isometricWreckSprites);
-                            }
-                            drawIsometricSpritesForHex(c, g, isometricSprites);
-                        }
-                    }
-                }
-            }
-            if (!saveBoardImage) {
-                // If we are using Isometric rendering, redraw the entity
-                // sprites at 50% transparent so sprites hidden behind hills can
-                // still be seen by the user.
-                drawIsometricSprites(g, isometricSprites);
-            }
-        } else {
+        if (!useIsometric()) {
             // Draw hexes without regard to elevation when
             // not using Isometric, since it does not matter.
             for (int i = 0; i < drawHeight; i++) {
@@ -2416,6 +2367,52 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     drawHex(c, g, saveBoardImage);
                 }
             }
+            return;
+        }
+        IBoard board = game.getBoard();
+        for (int y = 0; y < drawHeight; y++) {
+            // Half of each row is one-half hex
+            // farther back (above) the other; draw those first
+            for (int s = 0; s <= 1; s++) {
+                for (int x = s; x < drawWidth + s + 1; x = x + 2) {
+                    // For s == 0 the x coordinate MUST be an even number
+                    // to get correct occlusion; drawX may be any int though
+                    Coords c = new Coords(x + drawX / 2 * 2, y + drawY);
+                    IHex hex = board.getHex(c);
+                    if ((hex == null)) {
+                        continue;
+                    }
+                    drawHex(c, g, saveBoardImage);
+                    if (GUIPreferences.getInstance()
+                            .getShowFieldOfFire()) {
+                        drawHexSpritesForHex(c, g, fieldofFireSprites);
+                    }
+                    drawHexSpritesForHex(c, g, moveEnvSprites);
+                    drawHexSpritesForHex(c, g, moveModEnvSprites);
+                    if ((en_Deployer != null)
+                            && board.isLegalDeployment(c, en_Deployer.getStartingPos())) {
+                        drawHexBorder(g, getHexLocation(c), Color.yellow);
+                    }
+                    drawOrthograph(c, g);
+                }
+            }
+            for (int x = 0; x < drawWidth; x++) {
+                Coords c = new Coords(x + drawX, y + drawY);
+                IHex hex = board.getHex(c);
+                if (hex == null || saveBoardImage) {
+                    continue;
+                }
+                if (GUIPreferences.getInstance().getShowWrecks()) {
+                    drawIsometricWreckSpritesForHex(c, g, isometricWreckSprites);
+                }
+                drawIsometricSpritesForHex(c, g, isometricSprites);
+            }
+        }
+        if (!saveBoardImage) {
+            // If we are using Isometric rendering, redraw the entity
+            // sprites at 50% transparent so sprites hidden behind hills can
+            // still be seen by the user.
+            drawIsometricSprites(g, isometricSprites);
         }
     }
 
