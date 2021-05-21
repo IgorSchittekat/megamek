@@ -3424,45 +3424,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // If the entity we are updating doesn't have a position, ensure we
         // remove all of its old sprites
         if (entity.getPosition() == null) {
-            Iterator<EntitySprite> spriteIter;
-
-            // Remove Entity Sprites
-            spriteIter = entitySprites.iterator();
-            while (spriteIter.hasNext()) {
-                EntitySprite sprite = spriteIter.next();
-                if (sprite.entity.equals(entity)) {
-                    spriteIter.remove();
-                }
-            }
-
-            //  Update ID -> Sprite map
-            spriteIter = entitySpriteIds.values().iterator();
-            while (spriteIter.hasNext()) {
-                EntitySprite sprite = spriteIter.next();
-                if (sprite.entity.equals(entity)) {
-                    spriteIter.remove();
-                }
-            }
-
-            Iterator<IsometricSprite> isoSpriteIter;
-
-            // Remove IsometricSprites
-            isoSpriteIter = isometricSprites.iterator();
-            while (isoSpriteIter.hasNext()) {
-                IsometricSprite sprite = isoSpriteIter.next();
-                if (sprite.entity.equals(entity)) {
-                    isoSpriteIter.remove();
-                }
-            }
-
-            // Update ID -> Iso Sprite Map
-            isoSpriteIter = isometricSpriteIds.values().iterator();
-            while (isoSpriteIter.hasNext()) {
-                IsometricSprite sprite = isoSpriteIter.next();
-                if (sprite.entity.equals(entity)) {
-                    isoSpriteIter.remove();
-                }
-            }
+            removeOldSprites(entity);
         }
 
         // Create a copy of the sprite list
@@ -3566,6 +3528,48 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         updateEcmList();
         highlightSelectedEntity();
         scheduleRedraw();
+    }
+
+    private void removeOldSprites(Entity entity) {
+        Iterator<EntitySprite> spriteIter;
+
+        // Remove Entity Sprites
+        spriteIter = entitySprites.iterator();
+        while (spriteIter.hasNext()) {
+            EntitySprite sprite = spriteIter.next();
+            if (sprite.entity.equals(entity)) {
+                spriteIter.remove();
+            }
+        }
+
+        //  Update ID -> Sprite map
+        spriteIter = entitySpriteIds.values().iterator();
+        while (spriteIter.hasNext()) {
+            EntitySprite sprite = spriteIter.next();
+            if (sprite.entity.equals(entity)) {
+                spriteIter.remove();
+            }
+        }
+
+        Iterator<IsometricSprite> isoSpriteIter;
+
+        // Remove IsometricSprites
+        isoSpriteIter = isometricSprites.iterator();
+        while (isoSpriteIter.hasNext()) {
+            IsometricSprite sprite = isoSpriteIter.next();
+            if (sprite.entity.equals(entity)) {
+                isoSpriteIter.remove();
+            }
+        }
+
+        // Update ID -> Iso Sprite Map
+        isoSpriteIter = isometricSpriteIds.values().iterator();
+        while (isoSpriteIter.hasNext()) {
+            IsometricSprite sprite = isoSpriteIter.next();
+            if (sprite.entity.equals(entity)) {
+                isoSpriteIter.remove();
+            }
+        }
     }
 
     /**
