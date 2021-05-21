@@ -2950,24 +2950,25 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         if (!useIsometric()) {
             orthY = oHexLoc.y;
         }
-        if (tileManager.orthoFor(oHex) != null) {
-            for (Image image : tileManager.orthoFor(oHex)) {
-                BufferedImage scaledImage = ImageUtil.createAcceleratedImage(getScaledImage(image, true));
+        if (tileManager.orthoFor(oHex) == null) {
+            return;
+        }
+        for (Image image : tileManager.orthoFor(oHex)) {
+            BufferedImage scaledImage = ImageUtil.createAcceleratedImage(getScaledImage(image, true));
 
-                // Darken the hex for night-time, if applicable
-                if (GUIPreferences.getInstance().getBoolean(GUIPreferences.ADVANCED_DARKEN_MAP_AT_NIGHT)
-                        && (game.isPositionIlluminated(c) == IGame.ILLUMINATED_NONE)
-                        && (game.getPlanetaryConditions().getLight() > PlanetaryConditions.L_DAY)) {
-                    for (int x = 0; x < scaledImage.getWidth(null); ++x) {
-                        for (int y = 0; y < scaledImage.getHeight(); ++y) {
-                            scaledImage.setRGB(x, y, getNightDarkenedColor(scaledImage.getRGB(x, y)));
-                        }
+            // Darken the hex for night-time, if applicable
+            if (GUIPreferences.getInstance().getBoolean(GUIPreferences.ADVANCED_DARKEN_MAP_AT_NIGHT)
+                    && (game.isPositionIlluminated(c) == IGame.ILLUMINATED_NONE)
+                    && (game.getPlanetaryConditions().getLight() > PlanetaryConditions.L_DAY)) {
+                for (int x = 0; x < scaledImage.getWidth(null); ++x) {
+                    for (int y = 0; y < scaledImage.getHeight(); ++y) {
+                        scaledImage.setRGB(x, y, getNightDarkenedColor(scaledImage.getRGB(x, y)));
                     }
                 }
-
-                // draw orthogonal
-                boardGraph.drawImage(scaledImage, orthX, orthY, this);
             }
+
+            // draw orthogonal
+            boardGraph.drawImage(scaledImage, orthX, orthY, this);
         }
     }
 
