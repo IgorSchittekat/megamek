@@ -1483,38 +1483,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         // Shadows for elevation
-        // 1a) Sort the board hexes by elevation
-        // 1b) Create a reduced list of shadowcasting hexes
-        double angle = Math.atan2(-lightDirection[1], lightDirection[0]);
-        int mDir = (int) (0.5 + 1.5 - angle / Math.PI * 3); // +0.5 to counter the (int)
-        int[] sDirs = {mDir % 6, (mDir + 1) % 6, (mDir + 5) % 6};
         HashMap<Integer, Set<Coords>> sortedHexes = new HashMap<Integer, Set<Coords>>();
-        HashMap<Integer, Set<Coords>> shadowCastingHexes = new HashMap<Integer, Set<Coords>>();
-        for (Coords c : allBoardHexes()) {
-            IHex hex = board.getHex(c);
-            int level = hex.getLevel();
-            if (!sortedHexes.containsKey(level)) { // no hexes yet for this height
-                sortedHexes.put(level, new HashSet<Coords>());
-            }
-            if (!shadowCastingHexes.containsKey(level)) { // no hexes yet for this height
-                shadowCastingHexes.put(level, new HashSet<Coords>());
-            }
-            sortedHexes.get(level).add(c);
-            // add a hex to the shadowcasting hexes only
-            // if it is nor surrounded by same height hexes
-            boolean surrounded = true;
-            for (int dir : sDirs) {
-                if (!board.contains(c.translated(dir))) {
-                    surrounded = false;
-                } else {
-                    IHex nhex = board.getHex(c.translated(dir));
-                    int lv = nhex.getLevel();
-                    if (lv < level)
-                        surrounded = false;
-                }
-            }
-            if (!surrounded) shadowCastingHexes.get(level).add(c);
-        }
+        HashMap<Integer, Set<Coords>> shadowCastingHexes = createShadowcastingHexes(board, sortedHexes);
 
         // 2) Create clipping areas
         HashMap<Integer, Shape> levelClips = new HashMap<Integer, Shape>();
@@ -1690,6 +1660,41 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         long tT5 = System.nanoTime() - stT;
         MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private HashMap<Integer, Set<Coords>> createShadowcastingHexes(IBoard board, HashMap<Integer, Set<Coords>> sortedHexes) {
+        // 1a) Sort the board hexes by elevation
+        // 1b) Create a reduced list of shadowcasting hexes
+        HashMap<Integer, Set<Coords>> shadowCastingHexes = new HashMap<Integer, Set<Coords>>();
+        double angle = Math.atan2(-lightDirection[1], lightDirection[0]);
+        int mDir = (int) (0.5 + 1.5 - angle / Math.PI * 3); // +0.5 to counter the (int)
+        int[] sDirs = {mDir % 6, (mDir + 1) % 6, (mDir + 5) % 6};
+        for (Coords c : allBoardHexes()) {
+            IHex hex = board.getHex(c);
+            int level = hex.getLevel();
+            if (!sortedHexes.containsKey(level)) { // no hexes yet for this height
+                sortedHexes.put(level, new HashSet<Coords>());
+            }
+            if (!shadowCastingHexes.containsKey(level)) { // no hexes yet for this height
+                shadowCastingHexes.put(level, new HashSet<Coords>());
+            }
+            sortedHexes.get(level).add(c);
+            // add a hex to the shadowcasting hexes only
+            // if it is nor surrounded by same height hexes
+            boolean surrounded = true;
+            for (int dir : sDirs) {
+                if (!board.contains(c.translated(dir))) {
+                    surrounded = false;
+                } else {
+                    IHex nhex = board.getHex(c.translated(dir));
+                    int lv = nhex.getLevel();
+                    if (lv < level)
+                        surrounded = false;
+                }
+            }
+            if (!surrounded) shadowCastingHexes.get(level).add(c);
+        }
+        return shadowCastingHexes;
     }
 
     public void clearShadowMap() {
