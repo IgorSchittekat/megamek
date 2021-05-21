@@ -4500,100 +4500,101 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     protected void secondLOSHex(Coords c2, Coords c1) {
-        if (useLOSTool) {
-
-            Entity ae = chooseEntity(c1);
-            Entity te = chooseEntity(c2);
-
-            StringBuilder message = new StringBuilder();
-            LosEffects le;
-            if ((ae == null) || (te == null)) {
-                boolean mechInFirst = GUIPreferences.getInstance()
-                        .getMechInFirst();
-                boolean mechInSecond = GUIPreferences.getInstance()
-                        .getMechInSecond();
-                LosEffects.AttackInfo ai = new LosEffects.AttackInfo();
-                ai.attackPos = c1;
-                ai.targetPos = c2;
-                ai.attackHeight = mechInFirst ? 1 : 0;
-                ai.targetHeight = mechInSecond ? 1 : 0;
-                ai.targetIsMech = mechInSecond;
-                ai.attackerIsMech = mechInFirst;
-                ai.attackAbsHeight = game.getBoard().getHex(c1).floor()
-                        + ai.attackHeight;
-                ai.targetAbsHeight = game.getBoard().getHex(c2).floor()
-                        + ai.targetHeight;
-                le = LosEffects.calculateLos(game, ai);
-                message.append(Messages
-                        .getString(
-                                "BoardView1.Attacker", //$NON-NLS-1$
-                                mechInFirst ? Messages
-                                        .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
-                                c1.getBoardNum()));
-                message.append(Messages
-                        .getString(
-                                "BoardView1.Target", //$NON-NLS-1$
-                                mechInSecond ? Messages
-                                        .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
-                                c2.getBoardNum()));
-            } else {
-                le = LosEffects.calculateLos(game, ae.getId(), te);
-                message.append(Messages.getString(
-                        "BoardView1.Attacker", //$NON-NLS-1$
-                        ae.getDisplayName(), c1.getBoardNum()));
-                message.append(Messages.getString(
-                        "BoardView1.Target", //$NON-NLS-1$
-                        te.getDisplayName(), c2.getBoardNum()));
-            }
-            // Check to see if LoS is blocked
-            if (!le.canSee()) {
-                message.append(Messages.getString("BoardView1.LOSBlocked",
-                        //$NON-NLS-1$
-                        c1.distance(c2)));
-                ToHitData thd = le.losModifiers(game);
-                message.append("\t").append(thd.getDesc()).append("\n");
-            } else {
-                message.append(Messages.getString("BoardView1.LOSNotBlocked",
-                        //$NON-NLS-1$
-                        c1.distance(c2)));
-                if (le.getHeavyWoods() > 0) {
-                    message.append(Messages.getString(
-                            "BoardView1.HeavyWoods", //$NON-NLS-1$
-                            le.getHeavyWoods()));
-                }
-                if (le.getLightWoods() > 0) {
-                    message.append(Messages.getString(
-                            "BoardView1.LightWoods", //$NON-NLS-1$
-                            le.getLightWoods()));
-                }
-                if (le.getLightSmoke() > 0) {
-                    message.append(Messages.getString(
-                            "BoardView1.LightSmoke", //$NON-NLS-1$
-                            le.getLightSmoke()));
-                }
-                if (le.getHeavySmoke() > 0) {
-                    message.append(Messages.getString(
-                            "BoardView1.HeavySmoke", //$NON-NLS-1$
-                            le.getHeavySmoke()));
-                }
-                if (le.isTargetCover() && le.canSee()) {
-                    message.append(Messages
-                            .getString(
-                                    "BoardView1.TargetPartialCover", //$NON-NLS-1$
-                                    LosEffects.getCoverName(
-                                            le.getTargetCover(), true)));
-                }
-                if (le.isAttackerCover() && le.canSee()) {
-                    message.append(Messages.getString(
-                            "BoardView1.AttackerPartialCover", //$NON-NLS-1$
-                            LosEffects.getCoverName(le.getAttackerCover(),
-                                    false)));
-                }
-            }
-            JOptionPane.showMessageDialog(getRootPane(), message.toString(),
-                    Messages.getString("BoardView1.LOSTitle"),
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (!useLOSTool) {
+            return;
         }
+
+        Entity ae = chooseEntity(c1);
+        Entity te = chooseEntity(c2);
+
+        StringBuilder message = new StringBuilder();
+        LosEffects le;
+        if ((ae == null) || (te == null)) {
+            boolean mechInFirst = GUIPreferences.getInstance()
+                    .getMechInFirst();
+            boolean mechInSecond = GUIPreferences.getInstance()
+                    .getMechInSecond();
+            LosEffects.AttackInfo ai = new LosEffects.AttackInfo();
+            ai.attackPos = c1;
+            ai.targetPos = c2;
+            ai.attackHeight = mechInFirst ? 1 : 0;
+            ai.targetHeight = mechInSecond ? 1 : 0;
+            ai.targetIsMech = mechInSecond;
+            ai.attackerIsMech = mechInFirst;
+            ai.attackAbsHeight = game.getBoard().getHex(c1).floor()
+                    + ai.attackHeight;
+            ai.targetAbsHeight = game.getBoard().getHex(c2).floor()
+                    + ai.targetHeight;
+            le = LosEffects.calculateLos(game, ai);
+            message.append(Messages
+                    .getString(
+                            "BoardView1.Attacker", //$NON-NLS-1$
+                            mechInFirst ? Messages
+                                    .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
+                            c1.getBoardNum()));
+            message.append(Messages
+                    .getString(
+                            "BoardView1.Target", //$NON-NLS-1$
+                            mechInSecond ? Messages
+                                    .getString("BoardView1.Mech") : Messages.getString("BoardView1.NonMech"), //$NON-NLS-1$ //$NON-NLS-2$
+                            c2.getBoardNum()));
+        } else {
+            le = LosEffects.calculateLos(game, ae.getId(), te);
+            message.append(Messages.getString(
+                    "BoardView1.Attacker", //$NON-NLS-1$
+                    ae.getDisplayName(), c1.getBoardNum()));
+            message.append(Messages.getString(
+                    "BoardView1.Target", //$NON-NLS-1$
+                    te.getDisplayName(), c2.getBoardNum()));
+        }
+        // Check to see if LoS is blocked
+        if (!le.canSee()) {
+            message.append(Messages.getString("BoardView1.LOSBlocked",
+                    //$NON-NLS-1$
+                    c1.distance(c2)));
+            ToHitData thd = le.losModifiers(game);
+            message.append("\t").append(thd.getDesc()).append("\n");
+        } else {
+            message.append(Messages.getString("BoardView1.LOSNotBlocked",
+                    //$NON-NLS-1$
+                    c1.distance(c2)));
+            if (le.getHeavyWoods() > 0) {
+                message.append(Messages.getString(
+                        "BoardView1.HeavyWoods", //$NON-NLS-1$
+                        le.getHeavyWoods()));
+            }
+            if (le.getLightWoods() > 0) {
+                message.append(Messages.getString(
+                        "BoardView1.LightWoods", //$NON-NLS-1$
+                        le.getLightWoods()));
+            }
+            if (le.getLightSmoke() > 0) {
+                message.append(Messages.getString(
+                        "BoardView1.LightSmoke", //$NON-NLS-1$
+                        le.getLightSmoke()));
+            }
+            if (le.getHeavySmoke() > 0) {
+                message.append(Messages.getString(
+                        "BoardView1.HeavySmoke", //$NON-NLS-1$
+                        le.getHeavySmoke()));
+            }
+            if (le.isTargetCover() && le.canSee()) {
+                message.append(Messages
+                        .getString(
+                                "BoardView1.TargetPartialCover", //$NON-NLS-1$
+                                LosEffects.getCoverName(
+                                        le.getTargetCover(), true)));
+            }
+            if (le.isAttackerCover() && le.canSee()) {
+                message.append(Messages.getString(
+                        "BoardView1.AttackerPartialCover", //$NON-NLS-1$
+                        LosEffects.getCoverName(le.getAttackerCover(),
+                                false)));
+            }
+        }
+        JOptionPane.showMessageDialog(getRootPane(), message.toString(),
+                Messages.getString("BoardView1.LOSTitle"),
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
