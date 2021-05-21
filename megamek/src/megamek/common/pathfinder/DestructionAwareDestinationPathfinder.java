@@ -138,13 +138,14 @@ public class DestructionAwareDestinationPathfinder extends BoardEdgePathFinder {
             
             int levelingCost = BulldozerMovePath.calculateLevelingCost(coords, entity);
             boolean canLevel = levelingCost > BulldozerMovePath.CANNOT_LEVEL;
-            
-            if(!entity.isLocationProhibited(coords) || canLevel) {
-                int distance = coords.distance(entity.getPosition()) + (canLevel ? levelingCost : 0);
-                if(distance < bestDistance) {
-                    bestDistance = distance;
-                    bestCoords = coords;
-                }
+
+            if (entity.isLocationProhibited(coords) && !canLevel) {
+                continue;
+            }
+            int distance = coords.distance(entity.getPosition()) + (canLevel ? levelingCost : 0);
+            if(distance < bestDistance) {
+                bestDistance = distance;
+                bestCoords = coords;
             }
         }
         
