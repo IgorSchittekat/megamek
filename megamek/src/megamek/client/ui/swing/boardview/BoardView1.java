@@ -1497,29 +1497,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         Map<Integer, BufferedImage> hS = elevationShadow(hexShadow, config, lDiffs);
 
         // 5) Actually draw the elevation shadows
-        for (int shadowed = board.getMinElevation();
-             shadowed < board.getMaxElevation();
-             shadowed++) {
-            if (levelClips.get(shadowed) == null) continue;
-
-            Shape saveClip = g.getClip();
-            g.setClip(levelClips.get(shadowed));
-
-            for (int shadowcaster = shadowed + 1;
-                 shadowcaster <= board.getMaxElevation();
-                 shadowcaster++) {
-                if (levelClips.get(shadowcaster) == null) continue;
-                int lDiff = shadowcaster - shadowed;
-
-                for (Coords c : shadowCastingHexes.get(shadowcaster)) {
-                    Point2D p0 = getHexLocationLargeTile(c.getX(), c.getY(), 1);
-                    g.drawImage(hS.get(Math.min(lDiff, maxDiff)),
-                            (int) p0.getX() - (int) (Math.abs(lightDirection[0]) * Math.min(lDiff, maxDiff) + HEX_W),
-                            (int) p0.getY() - (int) (Math.abs(lightDirection[1]) * Math.min(lDiff, maxDiff) + HEX_H), null);
-                }
-            }
-            g.setClip(saveClip);
-        }
+        drawElevationShaddows(board, g, shadowCastingHexes, levelClips, maxDiff, hS);
 
         int n = 5;
         double deltaX = lightDirection[0] / n;
@@ -1605,6 +1583,32 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         long tT5 = System.nanoTime() - stT;
         MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private void drawElevationShaddows(IBoard board, Graphics2D g, HashMap<Integer, Set<Coords>> shadowCastingHexes, HashMap<Integer, Shape> levelClips, int maxDiff, Map<Integer, BufferedImage> hS) {
+        for (int shadowed = board.getMinElevation();
+             shadowed < board.getMaxElevation();
+             shadowed++) {
+            if (levelClips.get(shadowed) == null) continue;
+
+            Shape saveClip = g.getClip();
+            g.setClip(levelClips.get(shadowed));
+
+            for (int shadowcaster = shadowed + 1;
+                 shadowcaster <= board.getMaxElevation();
+                 shadowcaster++) {
+                if (levelClips.get(shadowcaster) == null) continue;
+                int lDiff = shadowcaster - shadowed;
+
+                for (Coords c : shadowCastingHexes.get(shadowcaster)) {
+                    Point2D p0 = getHexLocationLargeTile(c.getX(), c.getY(), 1);
+                    g.drawImage(hS.get(Math.min(lDiff, maxDiff)),
+                            (int) p0.getX() - (int) (Math.abs(lightDirection[0]) * Math.min(lDiff, maxDiff) + HEX_W),
+                            (int) p0.getY() - (int) (Math.abs(lightDirection[1]) * Math.min(lDiff, maxDiff) + HEX_H), null);
+                }
+            }
+            g.setClip(saveClip);
+        }
     }
 
     private Map<Integer, BufferedImage> elevationShadow(Image hexShadow, GraphicsConfiguration config, Set<Integer> lDiffs) {
