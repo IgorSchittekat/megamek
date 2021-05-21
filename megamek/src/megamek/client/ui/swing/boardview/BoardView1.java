@@ -1491,21 +1491,8 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         // 3) Find all level differences
         final int maxDiff = 35; // limit all diffs to this value
-        Set<Integer> lDiffs = new TreeSet<Integer>();
-        for (int shadowed = board.getMinElevation();
-             shadowed < board.getMaxElevation();
-             shadowed++) {
-            if (levelClips.get(shadowed) == null) continue;
-
-            for (int shadowcaster = shadowed + 1;
-                 shadowcaster <= board.getMaxElevation();
-                 shadowcaster++) {
-                if (levelClips.get(shadowcaster) == null) continue;
-
-                lDiffs.add(Math.min(shadowcaster - shadowed, maxDiff));
-            }
-        }
-
+        Set<Integer> lDiffs = getLevelDifferences(board, levelClips, maxDiff);
+        
         // 4) Elevation Shadow images for all level differences present
         int n = 10;
         double deltaX = lightDirection[0] / n;
@@ -1648,6 +1635,24 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         long tT5 = System.nanoTime() - stT;
         MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private Set<Integer> getLevelDifferences(IBoard board, HashMap<Integer, Shape> levelClips, int maxDiff) {
+        Set<Integer> lDiffs = new TreeSet<Integer>();
+        for (int shadowed = board.getMinElevation();
+             shadowed < board.getMaxElevation();
+             shadowed++) {
+            if (levelClips.get(shadowed) == null) continue;
+
+            for (int shadowcaster = shadowed + 1;
+                 shadowcaster <= board.getMaxElevation();
+                 shadowcaster++) {
+                if (levelClips.get(shadowcaster) == null) continue;
+
+                lDiffs.add(Math.min(shadowcaster - shadowed, maxDiff));
+            }
+        }
+        return lDiffs;
     }
 
     private HashMap<Integer, Shape> createLevelClips(HashMap<Integer, Set<Coords>> sortedHexes) {
