@@ -1533,61 +1533,68 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     IHex hex = board.getHex(c);
                     List<Image> supers = tileManager.supersFor(hex);
 
-                    if (!supers.isEmpty()) {
-                        Image lastSuper = createBlurredShadow(supers.get(supers.size() - 1));
-                        if (lastSuper == null) {
-                            clearShadowMap();
-                            return;
-                        }
-                        if (hex.containsTerrain(Terrains.WOODS) ||
-                                hex.containsTerrain(Terrains.JUNGLE)) {
-                            // Woods are 2 levels high, but then shadows
-                            // appear very extreme, therefore only
-                            // 1.5 levels: (shadowcaster+1.5-shadowed)
-                            double shadowHeight = .75 * hex.terrainLevel(Terrains.FOLIAGE_ELEV);
-                            p1.setLocation(p0);
-                            if ((shadowcaster + shadowHeight - shadowed) > 0) {
-                                for (int i = 0; i < n * (shadowcaster + shadowHeight - shadowed); i++) {
-                                    g.drawImage(lastSuper, (int) p1.getX(), (int) p1.getY(), null);
-                                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
-                                }
-                            }
-                        }
+                    if (woodsAndBuildingShadows(g, n, deltaX, deltaY, shadowed, shadowcaster, p0, p1, hex, supers)) return;
 
-
-                        // Buildings Shadow
-                        if (hex.containsTerrain(Terrains.BUILDING)) {
-                            int h = hex.terrainLevel(Terrains.BLDG_ELEV);
-                            if ((shadowcaster + h - shadowed) > 0) {
-                                p1.setLocation(p0);
-                                for (int i = 0; i < (n * (shadowcaster + h - shadowed)); i++) {
-                                    g.drawImage(lastSuper, (int) p1.getX(), (int) p1.getY(), null);
-                                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
-                                }
-                            }
-                        }
-                    }
                     // Bridge Shadow
-                    if (hex.containsTerrain(Terrains.BRIDGE)) {
-                        supers = tileManager.orthoFor(hex);
-                        if (supers.isEmpty()) break;
-                        Image maskB = createBlurredShadow(supers.get(supers.size() - 1));
-                        if (maskB == null) {
-                            clearShadowMap();
-                            return;
-                        }
-                        int h = hex.terrainLevel(Terrains.BRIDGE_ELEV);
-                        p1.setLocation(p0.getX() + deltaX * n * (shadowcaster + h - shadowed),
-                                p0.getY() + deltaY * n * (shadowcaster + h - shadowed));
-                        // the shadowmask is translucent, therefore draw n times
-                        // stupid hack
-                        for (int i = 0; i < n; i++)
-                            g.drawImage(maskB, (int) p1.getX(), (int) p1.getY(), null);
+                    if (!hex.containsTerrain(Terrains.BRIDGE)) {
+                        continue;
                     }
+                    supers = tileManager.orthoFor(hex);
+                    if (supers.isEmpty()) break;
+                    Image maskB = createBlurredShadow(supers.get(supers.size() - 1));
+                    if (maskB == null) {
+                        clearShadowMap();
+                        return;
+                    }
+                    int h = hex.terrainLevel(Terrains.BRIDGE_ELEV);
+                    p1.setLocation(p0.getX() + deltaX * n * (shadowcaster + h - shadowed),
+                            p0.getY() + deltaY * n * (shadowcaster + h - shadowed));
+                    // the shadowmask is translucent, therefore draw n times
+                    // stupid hack
+                    for (int i = 0; i < n; i++)
+                        g.drawImage(maskB, (int) p1.getX(), (int) p1.getY(), null);
                 }
             }
             g.setClip(saveClip);
         }
+    }
+
+    private boolean woodsAndBuildingShadows(Graphics2D g, int n, double deltaX, double deltaY, int shadowed, int shadowcaster, Point2D p0, Point2D p1, IHex hex, List<Image> supers) {
+        if (!supers.isEmpty()) {
+            Image lastSuper = createBlurredShadow(supers.get(supers.size() - 1));
+            if (lastSuper == null) {
+                clearShadowMap();
+                return true;
+            }
+            if (hex.containsTerrain(Terrains.WOODS) ||
+                    hex.containsTerrain(Terrains.JUNGLE)) {
+                // Woods are 2 levels high, but then shadows
+                // appear very extreme, therefore only
+                // 1.5 levels: (shadowcaster+1.5-shadowed)
+                double shadowHeight = .75 * hex.terrainLevel(Terrains.FOLIAGE_ELEV);
+                p1.setLocation(p0);
+                if ((shadowcaster + shadowHeight - shadowed) > 0) {
+                    for (int i = 0; i < n * (shadowcaster + shadowHeight - shadowed); i++) {
+                        g.drawImage(lastSuper, (int) p1.getX(), (int) p1.getY(), null);
+                        p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
+                    }
+                }
+            }
+
+
+            // Buildings Shadow
+            if (hex.containsTerrain(Terrains.BUILDING)) {
+                int h = hex.terrainLevel(Terrains.BLDG_ELEV);
+                if ((shadowcaster + h - shadowed) > 0) {
+                    p1.setLocation(p0);
+                    for (int i = 0; i < (n * (shadowcaster + h - shadowed)); i++) {
+                        g.drawImage(lastSuper, (int) p1.getX(), (int) p1.getY(), null);
+                        p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void drawElevationShaddows(IBoard board, Graphics2D g, HashMap<Integer, Set<Coords>> shadowCastingHexes, HashMap<Integer, Shape> levelClips, int maxDiff, Map<Integer, BufferedImage> hS) {
