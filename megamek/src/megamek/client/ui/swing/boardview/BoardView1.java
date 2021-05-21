@@ -1071,43 +1071,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         Rectangle viewRect = scrollpane.getVisibleRect();
         if (bvBgShouldTile && (bvBgImage != null)) {
-            Rectangle clipping = g.getClipBounds();
-            int x = 0;
-            int y = 0;
-            int w = bvBgImage.getWidth();
-            int h = bvBgImage.getHeight();
-            while (y < clipping.getHeight()) {
-                int yRem = 0;
-                if (y == 0) {
-                    yRem = clipping.y % h;
-                }
-                x = 0;
-                while (x < clipping.getWidth()) {
-                    int xRem = 0;
-                    if (x == 0) {
-                        xRem = clipping.x % w;
-                    }
-                    if ((xRem > 0) || (yRem > 0)) {
-                        try {
-                            g.drawImage(bvBgImage.getSubimage(xRem, yRem, w - xRem, h - yRem),
-                                    clipping.x + x, clipping.y + y, this);
-                        } catch (Exception e) {
-                            // if we somehow messed up the math, log the error and simply act as if we have no background image.
-                            Rectangle rasterBounds = bvBgImage.getRaster().getBounds();
-
-                            String errorData = String.format("Error drawing background image. Raster Bounds: %.2f, %.2f, width:%.2f, height:%.2f, Attempted Draw Coordinates: %d, %d, width:%d, height:%d",
-                                    rasterBounds.getMinX(), rasterBounds.getMinY(), rasterBounds.getWidth(), rasterBounds.getHeight(),
-                                    xRem, yRem, w - xRem, h - yRem);
-                            MegaMek.getLogger().error(errorData);
-                        }
-                    } else {
-                        g.drawImage(bvBgImage, clipping.x + x, clipping.y + y,
-                                this);
-                    }
-                    x += w - xRem;
-                }
-                y += h - yRem;
-            }
+            drawClipping(g);
         } else if (bvBgImage != null) {
             g.drawImage(bvBgImage, -getX(), -getY(), (int) viewRect.getWidth(),
                     (int) viewRect.getHeight(), this);
@@ -1264,6 +1228,50 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         //renderMovementBoundingBox((Graphics2D) g);
         //renderDonut(g, new Coords(10, 10), 2);
         //renderApproxHexDirection((Graphics2D) g);
+    }
+
+    private void drawClipping(Graphics g) {
+        Rectangle clipping = g.getClipBounds();
+        int x = 0;
+        int y = 0;
+        int w = bvBgImage.getWidth();
+        int h = bvBgImage.getHeight();
+        while (y < clipping.getHeight()) {
+            int yRem = 0;
+            if (y == 0) {
+                yRem = clipping.y % h;
+            }
+            x = 0;
+            while (x < clipping.getWidth()) {
+                int xRem = 0;
+                if (x == 0) {
+                    xRem = clipping.x % w;
+                }
+                drawClipping(g, clipping, x, y, w, h, yRem, xRem);
+                x += w - xRem;
+            }
+            y += h - yRem;
+        }
+    }
+
+    private void drawClipping(Graphics g, Rectangle clipping, int x, int y, int w, int h, int yRem, int xRem) {
+        if ((xRem > 0) || (yRem > 0)) {
+            try {
+                g.drawImage(bvBgImage.getSubimage(xRem, yRem, w - xRem, h - yRem),
+                        clipping.x + x, clipping.y + y, this);
+            } catch (Exception e) {
+                // if we somehow messed up the math, log the error and simply act as if we have no background image.
+                Rectangle rasterBounds = bvBgImage.getRaster().getBounds();
+
+                String errorData = String.format("Error drawing background image. Raster Bounds: %.2f, %.2f, width:%.2f, height:%.2f, Attempted Draw Coordinates: %d, %d, width:%d, height:%d",
+                        rasterBounds.getMinX(), rasterBounds.getMinY(), rasterBounds.getWidth(), rasterBounds.getHeight(),
+                        xRem, yRem, w - xRem, h - yRem);
+                MegaMek.getLogger().error(errorData);
+            }
+        } else {
+            g.drawImage(bvBgImage, clipping.x + x, clipping.y + y,
+                    this);
+        }
     }
 
     /**
