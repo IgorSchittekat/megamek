@@ -5202,42 +5202,9 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                     && !ecmInfo.getEntity().hasDetectedEntity(localPlayer)) {
                 continue;
             }
-            final Coords ecmPos = ecmInfo.getPos();
-            final int range = ecmInfo.getRange();
 
             // Add each Coords within range to the list of ECM Coords
-            for (int x = -range; x <= range; x++) {
-                for (int y = -range; y <= range; y++) {
-                    Coords c = new Coords(x + ecmPos.getX(), y + ecmPos.getY());
-                    int dist = ecmPos.distance(c);
-                    int dir = ecmInfo.getDirection();
-                    // Direction is the facing of the owning Entity
-                    boolean inArc = (dir == -1)
-                            || Compute
-                            .isInArc(ecmPos, dir, c, Compute.ARC_NOSE);
-                    if ((dist > range) || !inArc) {
-                        continue;
-                    }
-
-                    // Check for allied ECCM or enemy ECM
-                    if ((!ecmInfo.isOpposed(localPlayer) && ecmInfo.isECCM())
-                            || (ecmInfo.isOpposed(localPlayer) && ecmInfo.isECCM())) {
-                        ECMEffects ecmEffects = eccmAffectedCoords.get(c);
-                        if (ecmEffects == null) {
-                            ecmEffects = new ECMEffects();
-                            eccmAffectedCoords.put(c, ecmEffects);
-                        }
-                        ecmEffects.addECM(ecmInfo);
-                    } else {
-                        ECMEffects ecmEffects = ecmAffectedCoords.get(c);
-                        if (ecmEffects == null) {
-                            ecmEffects = new ECMEffects();
-                            ecmAffectedCoords.put(c, ecmEffects);
-                        }
-                        ecmEffects.addECM(ecmInfo);
-                    }
-                }
-            }
+            addCoordsToECMCoords(ecmAffectedCoords, eccmAffectedCoords, ecmInfo);
         }
 
         // Finally, determine the color for each affected hex
@@ -5275,6 +5242,44 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         }
 
         repaint();
+    }
+
+    private void addCoordsToECMCoords(Map<Coords, ECMEffects> ecmAffectedCoords, Map<Coords, ECMEffects> eccmAffectedCoords, ECMInfo ecmInfo) {
+        final Coords ecmPos = ecmInfo.getPos();
+        final int range = ecmInfo.getRange();
+
+        for (int x = -range; x <= range; x++) {
+            for (int y = -range; y <= range; y++) {
+                Coords c = new Coords(x + ecmPos.getX(), y + ecmPos.getY());
+                int dist = ecmPos.distance(c);
+                int dir = ecmInfo.getDirection();
+                // Direction is the facing of the owning Entity
+                boolean inArc = (dir == -1)
+                        || Compute
+                        .isInArc(ecmPos, dir, c, Compute.ARC_NOSE);
+                if ((dist > range) || !inArc) {
+                    continue;
+                }
+
+                // Check for allied ECCM or enemy ECM
+                if ((!ecmInfo.isOpposed(localPlayer) && ecmInfo.isECCM())
+                        || (ecmInfo.isOpposed(localPlayer) && ecmInfo.isECCM())) {
+                    ECMEffects ecmEffects = eccmAffectedCoords.get(c);
+                    if (ecmEffects == null) {
+                        ecmEffects = new ECMEffects();
+                        eccmAffectedCoords.put(c, ecmEffects);
+                    }
+                    ecmEffects.addECM(ecmInfo);
+                } else {
+                    ECMEffects ecmEffects = ecmAffectedCoords.get(c);
+                    if (ecmEffects == null) {
+                        ecmEffects = new ECMEffects();
+                        ecmAffectedCoords.put(c, ecmEffects);
+                    }
+                    ecmEffects.addECM(ecmInfo);
+                }
+            }
+        }
     }
 
     private void processAffectedCoords(Coords c, ECMEffects ecm,
