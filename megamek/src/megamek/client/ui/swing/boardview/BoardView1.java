@@ -4053,22 +4053,23 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             // those with the same movement type,
             // send this to the Sprite so it paints only
             // the borders of the movement type areas
-            int mvAdjType;
             int edgesToPaint = 0;
             // cycle through hexes
             for (int dir = 0; dir < 6; dir++) {
-                mvAdjType = 0;
+                int mvAdjType = 0;
                 Coords adjacentHex = loc.translated(dir);
                 // get the movement type
                 Integer Adjmv = mvEnvData.get(adjacentHex);
-                if (Adjmv != null) {
-                    if (gear == MovementDisplay.GEAR_JUMP) {
-                        if (Adjmv <= jump) mvAdjType = 1;
-                    } else {
-                        if (Adjmv <= walk) mvAdjType = 2;
-                        else if (Adjmv <= run) mvAdjType = 3;
-                        else mvAdjType = 4;
-                    }
+                if (Adjmv == null) {
+                    edgesToPaint += (1 << dir);
+                    continue;
+                }
+                if (gear == MovementDisplay.GEAR_JUMP) {
+                    if (Adjmv <= jump) mvAdjType = 1;
+                } else {
+                    if (Adjmv <= walk) mvAdjType = 2;
+                    else if (Adjmv <= run) mvAdjType = 3;
+                    else mvAdjType = 4;
                 }
                 // other movement type: paint a border in this direction
                 if (mvAdjType != mvType) edgesToPaint += (1 << dir);
