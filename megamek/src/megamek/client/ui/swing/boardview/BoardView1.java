@@ -1492,39 +1492,9 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // 3) Find all level differences
         final int maxDiff = 35; // limit all diffs to this value
         Set<Integer> lDiffs = getLevelDifferences(board, levelClips, maxDiff);
-        
+
         // 4) Elevation Shadow images for all level differences present
-        int n = 10;
-        double deltaX = lightDirection[0] / n;
-        double deltaY = lightDirection[1] / n;
-        Map<Integer, BufferedImage> hS = new HashMap<Integer, BufferedImage>();
-        for (int lDiff : lDiffs) {
-            Dimension eSize = new Dimension(
-                    (int) (Math.abs(lightDirection[0]) * lDiff + HEX_W) * 2,
-                    (int) (Math.abs(lightDirection[1]) * lDiff + HEX_H) * 2);
-
-            BufferedImage elevShadow = config.createCompatibleImage(eSize.width, eSize.height,
-                    Transparency.TRANSLUCENT);
-            Graphics gS = elevShadow.getGraphics();
-            Point2D p1 = new Point2D.Double(eSize.width / 2, eSize.height / 2);
-            if (GUIPreferences.getInstance().getHexInclines()) {
-                // With inclines, the level 1 shadows are only very slight
-                int beg = 4;
-                p1.setLocation(p1.getX() + deltaX * beg, p1.getY() + deltaY * beg);
-                for (int i = beg; i < n * (lDiff - 0.4); i++) {
-                    gS.drawImage(hexShadow, (int) p1.getX(), (int) p1.getY(), null);
-                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
-                }
-            } else {
-                for (int i = 0; i < n * lDiff; i++) {
-                    gS.drawImage(hexShadow, (int) p1.getX(), (int) p1.getY(), null);
-                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
-                }
-
-            }
-            gS.dispose();
-            hS.put(lDiff, elevShadow);
-        }
+        Map<Integer, BufferedImage> hS = elevationShadow(hexShadow, config, lDiffs);
 
         // 5) Actually draw the elevation shadows
         for (int shadowed = board.getMinElevation();
@@ -1551,9 +1521,9 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             g.setClip(saveClip);
         }
 
-        n = 5;
-        deltaX = lightDirection[0] / n;
-        deltaY = lightDirection[1] / n;
+        int n = 5;
+        double deltaX = lightDirection[0] / n;
+        double deltaY = lightDirection[1] / n;
 
         // 4) woods and bulding shadows
         for (int shadowed = board.getMinElevation();
@@ -1635,6 +1605,41 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
 
         long tT5 = System.nanoTime() - stT;
         MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private Map<Integer, BufferedImage> elevationShadow(Image hexShadow, GraphicsConfiguration config, Set<Integer> lDiffs) {
+        int n = 10;
+        double deltaX = lightDirection[0] / n;
+        double deltaY = lightDirection[1] / n;
+        Map<Integer, BufferedImage> hS = new HashMap<Integer, BufferedImage>();
+        for (int lDiff : lDiffs) {
+            Dimension eSize = new Dimension(
+                    (int) (Math.abs(lightDirection[0]) * lDiff + HEX_W) * 2,
+                    (int) (Math.abs(lightDirection[1]) * lDiff + HEX_H) * 2);
+
+            BufferedImage elevShadow = config.createCompatibleImage(eSize.width, eSize.height,
+                    Transparency.TRANSLUCENT);
+            Graphics gS = elevShadow.getGraphics();
+            Point2D p1 = new Point2D.Double(eSize.width / 2, eSize.height / 2);
+            if (GUIPreferences.getInstance().getHexInclines()) {
+                // With inclines, the level 1 shadows are only very slight
+                int beg = 4;
+                p1.setLocation(p1.getX() + deltaX * beg, p1.getY() + deltaY * beg);
+                for (int i = beg; i < n * (lDiff - 0.4); i++) {
+                    gS.drawImage(hexShadow, (int) p1.getX(), (int) p1.getY(), null);
+                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
+                }
+            } else {
+                for (int i = 0; i < n * lDiff; i++) {
+                    gS.drawImage(hexShadow, (int) p1.getX(), (int) p1.getY(), null);
+                    p1.setLocation(p1.getX() + deltaX, p1.getY() + deltaY);
+                }
+
+            }
+            gS.dispose();
+            hS.put(lDiff, elevShadow);
+        }
+        return hS;
     }
 
     private Set<Integer> getLevelDifferences(IBoard board, HashMap<Integer, Shape> levelClips, int maxDiff) {
