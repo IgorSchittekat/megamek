@@ -625,90 +625,7 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
         });
 
-        MouseMotionListener mouseMotionListener = new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                Point point = e.getPoint();
-                if (null == point) {
-                    return;
-                }
-
-                for (IDisplayable disp : displayables) {
-                    if (disp.isBeingDragged()) {
-                        return;
-                    }
-                    double width = Math.min(boardSize.getWidth(), scrollpane
-                            .getViewport().getSize().getWidth());
-                    double height = Math.min(boardSize.getHeight(), scrollpane
-                            .getViewport().getSize().getHeight());
-                    Dimension drawDimension = new Dimension();
-                    drawDimension.setSize(width, height);
-                    disp.isMouseOver(point, drawDimension);
-                }
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                Point point = e.getPoint();
-                if (null == point) {
-                    return;
-                }
-                for (int i = 0; i < displayables.size(); i++) {
-                    IDisplayable disp = displayables.get(i);
-                    Point adjustPoint = new Point((int) Math.min(
-                            boardSize.getWidth(), -getBounds().getX()),
-                            (int) Math.min(boardSize.getHeight(), -getBounds()
-                                    .getY()));
-                    Point dispPoint = new Point();
-                    dispPoint.x = point.x - adjustPoint.x;
-                    dispPoint.y = point.y - adjustPoint.y;
-                    double width = Math.min(boardSize.getWidth(), scrollpane
-                            .getViewport().getSize().getWidth());
-                    double height = Math.min(boardSize.getHeight(), scrollpane
-                            .getViewport().getSize().getHeight());
-                    Dimension drawDimension = new Dimension();
-                    drawDimension.setSize(width, height);
-                    if (disp.isDragged(dispPoint, drawDimension)) {
-                        repaint();
-                        return;
-                    }
-                }
-                // only scroll when we should
-                if (!shouldScroll) {
-                    mouseAction(getCoordsAt(point), BOARD_HEX_DRAG,
-                            e.getModifiers());
-                    return;
-                }
-                // if we have not yet been dragging, set the var so popups don't
-                // appear when we stop scrolling
-                if (!dragging) {
-                    dragging = true;
-                    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                }
-                Point p = scrollpane.getViewport().getViewPosition();
-                int newX = p.x - (e.getX() - scrollXDifference);
-                int newY = p.y - (e.getY() - scrollYDifference);
-                int maxX = getWidth() - scrollpane.getViewport().getWidth();
-                int maxY = getHeight() - scrollpane.getViewport().getHeight();
-                if (newX < 0) {
-                    newX = 0;
-                }
-                if (newX > maxX) {
-                    newX = maxX;
-                }
-                if (newY < 0) {
-                    newY = 0;
-                }
-                if (newY > maxY) {
-                    newY = maxY;
-                }
-                // don't scroll horizontally if the board fits into the window
-                if (scrollpane.getViewport().getWidth() >= getWidth()) {
-                    newX = scrollpane.getViewport().getViewPosition().x;
-                }
-                scrollpane.getViewport().setViewPosition(new Point(newX, newY));
-            }
-        };
+        MouseMotionListener mouseMotionListener = new BoardViewMouseMotionAdapter();
         addMouseMotionListener(mouseMotionListener);
 
         if (controller != null) {
@@ -6745,6 +6662,85 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 centerOnHexSoftStep(currentTime - lastTime);
             }
             lastTime = currentTime;
+        }
+    }
+
+    private class BoardViewMouseMotionAdapter extends MouseMotionAdapter {
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            Point point = e.getPoint();
+
+            for (IDisplayable disp : displayables) {
+                if (disp.isBeingDragged()) {
+                    return;
+                }
+                double width = Math.min(boardSize.getWidth(), scrollpane
+                        .getViewport().getSize().getWidth());
+                double height = Math.min(boardSize.getHeight(), scrollpane
+                        .getViewport().getSize().getHeight());
+                Dimension drawDimension = new Dimension();
+                drawDimension.setSize(width, height);
+                disp.isMouseOver(point, drawDimension);
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            Point point = e.getPoint();
+
+            for (IDisplayable disp : displayables) {
+                Point adjustPoint = new Point((int) Math.min(
+                        boardSize.getWidth(), -getBounds().getX()),
+                        (int) Math.min(boardSize.getHeight(), -getBounds()
+                                .getY()));
+                Point dispPoint = new Point();
+                dispPoint.x = point.x - adjustPoint.x;
+                dispPoint.y = point.y - adjustPoint.y;
+                double width = Math.min(boardSize.getWidth(), scrollpane
+                        .getViewport().getSize().getWidth());
+                double height = Math.min(boardSize.getHeight(), scrollpane
+                        .getViewport().getSize().getHeight());
+                Dimension drawDimension = new Dimension();
+                drawDimension.setSize(width, height);
+                if (disp.isDragged(dispPoint, drawDimension)) {
+                    repaint();
+                    return;
+                }
+            }
+            // only scroll when we should
+            if (!shouldScroll) {
+                mouseAction(getCoordsAt(point), BOARD_HEX_DRAG,
+                        e.getModifiers());
+                return;
+            }
+            // if we have not yet been dragging, set the var so popups don't
+            // appear when we stop scrolling
+            if (!dragging) {
+                dragging = true;
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+            Point p = scrollpane.getViewport().getViewPosition();
+            int newX = p.x - (e.getX() - scrollXDifference);
+            int newY = p.y - (e.getY() - scrollYDifference);
+            int maxX = getWidth() - scrollpane.getViewport().getWidth();
+            int maxY = getHeight() - scrollpane.getViewport().getHeight();
+            if (newX < 0) {
+                newX = 0;
+            }
+            if (newX > maxX) {
+                newX = maxX;
+            }
+            if (newY < 0) {
+                newY = 0;
+            }
+            if (newY > maxY) {
+                newY = maxY;
+            }
+            // don't scroll horizontally if the board fits into the window
+            if (scrollpane.getViewport().getWidth() >= getWidth()) {
+                newX = scrollpane.getViewport().getViewPosition().x;
+            }
+            scrollpane.getViewport().setViewPosition(new Point(newX, newY));
         }
     }
 }
