@@ -1499,11 +1499,17 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         // 5) Actually draw the elevation shadows
         drawElevationShaddows(board, g, shadowCastingHexes, levelClips, maxDiff, hS);
 
+        // 6) woods and bulding shadows
+        woodsAndBuildingShadows(board, g, sortedHexes, levelClips);
+
+        long tT5 = System.nanoTime() - stT;
+        MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
+    }
+
+    private void woodsAndBuildingShadows(IBoard board, Graphics2D g, HashMap<Integer, Set<Coords>> sortedHexes, HashMap<Integer, Shape> levelClips) {
         int n = 5;
         double deltaX = lightDirection[0] / n;
         double deltaY = lightDirection[1] / n;
-
-        // 4) woods and bulding shadows
         for (int shadowed = board.getMinElevation();
              shadowed <= board.getMaxElevation();
              shadowed++) {
@@ -1580,9 +1586,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
             g.setClip(saveClip);
         }
-
-        long tT5 = System.nanoTime() - stT;
-        MegaMek.getLogger().info("Time to prepare the shadow map: " + tT5 / 1e6 + " ms");
     }
 
     private void drawElevationShaddows(IBoard board, Graphics2D g, HashMap<Integer, Set<Coords>> shadowCastingHexes, HashMap<Integer, Shape> levelClips, int maxDiff, Map<Integer, BufferedImage> hS) {
