@@ -4671,50 +4671,49 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
     }
 
     synchronized boolean doMoveUnits(long idleTime) {
+        if (movingUnits.size() <= 0) {
+            return false;
+        }
+        if (moveWait <= GUIPreferences.getInstance().getInt("AdvancedMoveStepDelay")) {
+            return false;
+        }
         boolean movingSomething = false;
+        moveWait += idleTime;
 
-        if (movingUnits.size() > 0) {
-            moveWait += idleTime;
+        ArrayList<MovingUnit> spent = new ArrayList<MovingUnit>();
 
-            if (moveWait > GUIPreferences.getInstance().getInt(
-                    "AdvancedMoveStepDelay")) {
+        for (MovingUnit move : movingUnits) {
+            movingSomething = true;
+            Entity ge = game.getEntity(move.entity.getId());
+            if (move.path.size() > 0) {
 
-                ArrayList<MovingUnit> spent = new ArrayList<MovingUnit>();
+                UnitLocation loc = move.path.get(0);
 
-                for (MovingUnit move : movingUnits) {
-                    movingSomething = true;
-                    Entity ge = game.getEntity(move.entity.getId());
-                    if (move.path.size() > 0) {
-
-                        UnitLocation loc = move.path.get(0);
-
-                        if (ge != null) {
-                            redrawMovingEntity(move.entity, loc.getCoords(),
-                                    loc.getFacing(), loc.getElevation());
-                        }
-                        move.path.remove(0);
-                    } else {
-                        if (ge != null) {
-                            redrawEntity(ge);
-                        }
-                        spent.add(move);
-                    }
-
+                if (ge != null) {
+                    redrawMovingEntity(move.entity, loc.getCoords(),
+                            loc.getFacing(), loc.getElevation());
                 }
-
-                for (MovingUnit move : spent) {
-                    movingUnits.remove(move);
+                move.path.remove(0);
+            } else {
+                if (ge != null) {
+                    redrawEntity(ge);
                 }
-                moveWait = 0;
-
-                if (movingUnits.size() == 0) {
-                    movingEntitySpriteIds.clear();
-                    movingEntitySprites.clear();
-                    ghostEntitySprites.clear();
-                    processBoardViewEvent(new BoardViewEvent(this,
-                            BoardViewEvent.FINISHED_MOVING_UNITS));
-                }
+                spent.add(move);
             }
+
+        }
+
+        for (MovingUnit move : spent) {
+            movingUnits.remove(move);
+        }
+        moveWait = 0;
+
+        if (movingUnits.size() == 0) {
+            movingEntitySpriteIds.clear();
+            movingEntitySprites.clear();
+            ghostEntitySprites.clear();
+            processBoardViewEvent(new BoardViewEvent(this,
+                    BoardViewEvent.FINISHED_MOVING_UNITS));
         }
         return movingSomething;
     }
