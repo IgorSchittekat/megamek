@@ -3416,7 +3416,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
      * to prevent annoying ConcurrentModificationExceptions
      */
     public void redrawEntity(Entity entity, Entity oldEntity) {
-        Integer entityId = entity.getId();
         if (oldEntity == null) {
             oldEntity = entity;
         }
@@ -3427,19 +3426,44 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             removeOldSprites(entity);
         }
 
+        updateSprites(entity, oldEntity);
+
+        // Remove C3 sprites
+        c3Sprites.removeIf(c3sprite -> (c3sprite.entityId == entity.getId())
+                || (c3sprite.masterId == entity.getId()));
+
+        // Update C3 link, if necessary
+        if (entity.hasC3() || entity.hasC3i() || entity.hasActiveNovaCEWS() || entity.hasNavalC3()) {
+            addC3Link(entity);
+        }
+
+        vtolAttackSprites.removeIf(s -> s.getEntity().getId() == entity.getId());
+
+        // Remove Flyover Sprites
+        flyOverSprites.removeIf(flyOverSprite -> flyOverSprite.getEntityId() == entity.getId());
+
+        // Add Flyover path, if necessary
+        if ((entity.isAirborne() || entity.isMakingVTOLGroundAttack())
+                && (entity.getPassedThrough().size() > 1)) {
+            addFlyOverPath(entity);
+        }
+
+        updateEcmList();
+        highlightSelectedEntity();
+        scheduleRedraw();
+    }
+
+    private void updateSprites(Entity entity, Entity oldEntity) {
+        Integer entityId = entity.getId();
         // Create a copy of the sprite list
         Queue<EntitySprite> newSprites = new PriorityQueue<>(entitySprites);
-        HashMap<List<Integer>, EntitySprite> newSpriteIds =
-                new HashMap<>(entitySpriteIds);
-        Queue<IsometricSprite> isoSprites = new PriorityQueue<>(
-                isometricSprites);
-        HashMap<List<Integer>, IsometricSprite> newIsoSpriteIds =
-                new HashMap<>(isometricSpriteIds);
+        HashMap<List<Integer>, EntitySprite> newSpriteIds = new HashMap<>(entitySpriteIds);
+        Queue<IsometricSprite> isoSprites = new PriorityQueue<>(isometricSprites);
+        HashMap<List<Integer>, IsometricSprite> newIsoSpriteIds = new HashMap<>(isometricSpriteIds);
 
         // Remove the sprites we are going to update
         EntitySprite sprite = entitySpriteIds.get(getIdAndLoc(entityId, -1));
-        IsometricSprite isoSprite = isometricSpriteIds.get(getIdAndLoc(
-                entityId, -1));
+        IsometricSprite isoSprite = isometricSpriteIds.get(getIdAndLoc(entityId, -1));
         if (sprite != null) {
             newSprites.remove(sprite);
         }
@@ -3504,30 +3528,6 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
         entitySpriteIds = newSpriteIds;
         isometricSprites = isoSprites;
         isometricSpriteIds = newIsoSpriteIds;
-
-        // Remove C3 sprites
-        c3Sprites.removeIf(c3sprite -> (c3sprite.entityId == entity.getId())
-                || (c3sprite.masterId == entity.getId()));
-
-        // Update C3 link, if necessary
-        if (entity.hasC3() || entity.hasC3i() || entity.hasActiveNovaCEWS() || entity.hasNavalC3()) {
-            addC3Link(entity);
-        }
-
-        vtolAttackSprites.removeIf(s -> s.getEntity().getId() == entity.getId());
-
-        // Remove Flyover Sprites
-        flyOverSprites.removeIf(flyOverSprite -> flyOverSprite.getEntityId() == entity.getId());
-
-        // Add Flyover path, if necessary
-        if ((entity.isAirborne() || entity.isMakingVTOLGroundAttack())
-                && (entity.getPassedThrough().size() > 1)) {
-            addFlyOverPath(entity);
-        }
-
-        updateEcmList();
-        highlightSelectedEntity();
-        scheduleRedraw();
     }
 
     private void removeOldSprites(Entity entity) {
