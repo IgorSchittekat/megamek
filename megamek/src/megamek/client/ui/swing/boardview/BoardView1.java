@@ -3312,37 +3312,36 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
             }
         }
 
-        if (useIsometric()) {
-            // When using isometric rendering, a lower hex can obscure the
-            // normal hex. Iterate over all hexes from highest to lowest,
-            // looking for a hex that contains the selected mouse click point.
-            final int minElev = Math.min(0, game.getBoard().getMinElevation());
-            final int maxElev = Math.max(0, game.getBoard().getMaxElevation());
-            final int delta = (int) Math
-                    .ceil(((double) maxElev - minElev) / 3.0f);
-            final int minHexSpan = Math.max(y - delta, 0);
-            final int maxHexSpan = Math.min(y + delta, game.getBoard()
-                    .getHeight());
-            for (int elev = maxElev; elev >= minElev; elev--) {
-                for (int i = minHexSpan; i <= maxHexSpan; i++) {
-                    for (int dx = -1; dx < 2; dx++) {
-                        Coords c1 = new Coords(x + dx, i);
-                        IHex hexAlt = game.getBoard().getHex(c1);
-                        if (HexDrawUtilities.getHexFull(getHexLocation(c1), scale).contains(p)
-                                && (hexAlt != null)
-                                && (hexAlt.getLevel() == elev)) {
-                            // Return immediately with highest hex found.
-                            return c1;
-                        }
-                    }
-                }
-            }
-            // nothing found
-            return new Coords(-1, -1);
-        } else {
+        if (!useIsometric()) {
             // not Isometric
             return cc;
         }
+        // When using isometric rendering, a lower hex can obscure the
+        // normal hex. Iterate over all hexes from highest to lowest,
+        // looking for a hex that contains the selected mouse click point.
+        final int minElev = Math.min(0, game.getBoard().getMinElevation());
+        final int maxElev = Math.max(0, game.getBoard().getMaxElevation());
+        final int delta = (int) Math
+                .ceil(((double) maxElev - minElev) / 3.0f);
+        final int minHexSpan = Math.max(y - delta, 0);
+        final int maxHexSpan = Math.min(y + delta, game.getBoard()
+                .getHeight());
+        for (int elev = maxElev; elev >= minElev; elev--) {
+            for (int i = minHexSpan; i <= maxHexSpan; i++) {
+                for (int dx = -1; dx < 2; dx++) {
+                    Coords c1 = new Coords(x + dx, i);
+                    IHex hexAlt = game.getBoard().getHex(c1);
+                    if (HexDrawUtilities.getHexFull(getHexLocation(c1), scale).contains(p)
+                            && (hexAlt != null)
+                            && (hexAlt.getLevel() == elev)) {
+                        // Return immediately with highest hex found.
+                        return c1;
+                    }
+                }
+            }
+        }
+        // nothing found
+        return new Coords(-1, -1);
     }
 
     public void redrawMovingEntity(Entity entity, Coords position, int facing,
