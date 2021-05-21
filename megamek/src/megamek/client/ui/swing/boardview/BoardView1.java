@@ -426,41 +426,43 @@ public class BoardView1 extends JPanel implements IBoardView, Scrollable,
                 b.removeBoardListener(BoardView1.this);
             }
             b = e.getNewBoard();
-            if (b != null) {
-                b.addBoardListener(BoardView1.this);
+            if (b == null || !b.hasBoardBackground()) {
+                clearHexImageCache();
+                updateBoard();
+                clearShadowMap();
+                return;
             }
+            b.addBoardListener(BoardView1.this);
             boardBackgrounds.clear();
-            if (b.hasBoardBackground()) {
-                ListIterator<Boolean> flipItHoriz = b.getFlipBGHoriz()
-                        .listIterator();
-                ListIterator<Boolean> flipItVert = b.getFlipBGVert()
-                        .listIterator();
-                for (String path : b.getBackgroundPaths()) {
-                    boolean flipHoriz = flipItHoriz.next();
-                    boolean flipVert = flipItVert.next();
-                    if (path == null) {
-                        boardBackgrounds.add(null);
-                    } else {
-                        Image bgImg = ImageUtil.loadImageFromFile(path);
-                        ImageProducer prod = bgImg.getSource();
-                        if (flipHoriz || flipVert) {
-                            AffineTransform at = new AffineTransform();
-
-                            if (flipHoriz) {
-                                at.concatenate(AffineTransform
-                                        .getScaleInstance(1, -1));
-                            }
-                            if (flipVert) {
-                                at.concatenate(AffineTransform
-                                        .getTranslateInstance(0,
-                                                -bgImg.getHeight(null)));
-                            }
-                            ((Graphics2D) bgImg.getGraphics()).setTransform(at);
-                        }
-                        boardBackgrounds.add(Toolkit.getDefaultToolkit()
-                                .createImage(prod));
-                    }
+            ListIterator<Boolean> flipItHoriz = b.getFlipBGHoriz()
+                    .listIterator();
+            ListIterator<Boolean> flipItVert = b.getFlipBGVert()
+                    .listIterator();
+            for (String path : b.getBackgroundPaths()) {
+                boolean flipHoriz = flipItHoriz.next();
+                boolean flipVert = flipItVert.next();
+                if (path == null) {
+                    boardBackgrounds.add(null);
+                    continue;
                 }
+                Image bgImg = ImageUtil.loadImageFromFile(path);
+                ImageProducer prod = bgImg.getSource();
+                if (flipHoriz || flipVert) {
+                    AffineTransform at = new AffineTransform();
+
+                    if (flipHoriz) {
+                        at.concatenate(AffineTransform
+                                .getScaleInstance(1, -1));
+                    }
+                    if (flipVert) {
+                        at.concatenate(AffineTransform
+                                .getTranslateInstance(0,
+                                        -bgImg.getHeight(null)));
+                    }
+                    ((Graphics2D) bgImg.getGraphics()).setTransform(at);
+                }
+                boardBackgrounds.add(Toolkit.getDefaultToolkit()
+                        .createImage(prod));
             }
             clearHexImageCache();
             updateBoard();
