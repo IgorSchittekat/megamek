@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BombArrowIV.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons.bombs</a> &gt; <span class="el_source">BombArrowIV.java</span></div><h1>BombArrowIV.java</h1><pre class="source lang-java linenums">/**
+ * MegaMek - Copyright (C) 2004,2005 Ben Mazur (bmazur@sev.org)
+ * 
+ *  This program is free software; you can redistribute it and/or modify it 
+ *  under the terms of the GNU General Public License as published by the Free 
+ *  Software Foundation; either version 2 of the License, or (at your option) 
+ *  any later version.
+ * 
+ *  This program is distributed in the hope that it will be useful, but 
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+ *  for more details.
+ */
+/*
+ * Created on Oct 20, 2004
+ *
+ */
+package megamek.common.weapons.bombs;
+
+import megamek.common.AmmoType;
+import megamek.common.BombType;
+import megamek.common.weapons.AmmoWeapon;
+import megamek.common.weapons.artillery.ArtilleryWeapon;
+
+/**
+ * @author Jay Lawson
+ */
+public class BombArrowIV extends ArtilleryWeapon {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1321502140176775035L;
+
+    public BombArrowIV() {
+<span class="fc" id="L36">        super();</span>
+<span class="fc" id="L37">        this.name = &quot;Arrow IV Non-Homing Missile (Air-Launched Version)&quot;;</span>
+<span class="fc" id="L38">        this.setInternalName(BombType.getBombWeaponName(BombType.B_ARROW));</span>
+<span class="fc" id="L39">        this.heat = 0;</span>
+<span class="fc" id="L40">        this.rackSize = 20;</span>
+<span class="fc" id="L41">        this.ammoType = AmmoType.T_ARROW_IV_BOMB;</span>
+<span class="fc" id="L42">        this.shortRange = 1; //</span>
+<span class="fc" id="L43">        this.mediumRange = 2;</span>
+<span class="fc" id="L44">        this.longRange = 9;</span>
+<span class="fc" id="L45">        this.extremeRange = 9; // No extreme range.</span>
+<span class="fc" id="L46">        this.tonnage = 0;</span>
+<span class="fc" id="L47">        this.criticals = 0;</span>
+<span class="fc" id="L48">        this.hittable = false;</span>
+<span class="fc" id="L49">        this.bv = 0;</span>
+<span class="fc" id="L50">        this.cost = 0;</span>
+<span class="fc" id="L51">        flags = flags.or(F_BOMB_WEAPON);</span>
+<span class="fc" id="L52">        rulesRefs = &quot;359,TO&quot;;</span>
+<span class="fc" id="L53">        techAdvancement.setTechBase(TECH_BASE_ALL)</span>
+<span class="fc" id="L54">        	.setIntroLevel(false)</span>
+<span class="fc" id="L55">        	.setUnofficial(false)</span>
+<span class="fc" id="L56">            .setTechRating(RATING_E)</span>
+<span class="fc" id="L57">            .setAvailability(RATING_E, RATING_F, RATING_E, RATING_E)</span>
+<span class="fc" id="L58">            .setISAdvancement(2622, 2623, DATE_NONE, 2850, 3047)</span>
+<span class="fc" id="L59">            .setISApproximate(true, false, false,true, false)</span>
+<span class="fc" id="L60">            .setClanAdvancement(2622, 2623, DATE_NONE, DATE_NONE, DATE_NONE)</span>
+<span class="fc" id="L61">            .setClanApproximate(true, false, false, false, false)</span>
+<span class="fc" id="L62">            .setPrototypeFactions(F_TH)	</span>
+<span class="fc" id="L63">            .setProductionFactions(F_TH)</span>
+<span class="fc" id="L64">            .setReintroductionFactions(F_CC);</span>
+<span class="fc" id="L65">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

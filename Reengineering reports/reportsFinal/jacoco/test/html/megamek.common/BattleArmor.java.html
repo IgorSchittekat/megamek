@@ -1,0 +1,2614 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BattleArmor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common</a> &gt; <span class="el_source">BattleArmor.java</span></div><h1>BattleArmor.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2002,2003,2004 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ */
+package megamek.common;
+
+import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Vector;
+
+import megamek.MegaMek;
+import megamek.common.options.OptionsConstants;
+import megamek.common.weapons.InfantryAttack;
+import megamek.common.weapons.infantry.InfantryWeapon;
+
+/**
+ * This class represents a squad or point of battle armor equiped infantry,
+ * sometimes referred to as &quot;Elementals&quot;. Much of the behaviour of a battle
+ * armor unit is identical to that of an infantry platoon, and is rather
+ * different than that of a Mek or Tank.
+ *
+ * @author Suvarov454@sourceforge.net (James A. Damour )
+ * @version $revision:$
+ */
+/*
+ * PLEASE NOTE!!! My programming style is to put constants first in tests so the
+ * compiler catches my &quot;= for ==&quot; errors.
+ */
+public class BattleArmor extends Infantry {
+    private static final long serialVersionUID = 4594311535026187825L;
+    /*
+     * Infantry have no critical slot limitations. IS squads usually have 4 men,
+     * Clan points usually have 5. Have a location that represents the entire
+     * squad.
+     */
+<span class="fc" id="L46">    private static final int[] IS_NUM_OF_SLOTS = { 20, 2, 2, 2, 2, 2, 2 };</span>
+<span class="fc" id="L47">    private static final String[] IS_LOCATION_ABBRS = { &quot;Squad&quot;, &quot;Trooper 1&quot;,</span>
+        &quot;Trooper 2&quot;, &quot;Trooper 3&quot;, &quot;Trooper 4&quot;, &quot;Trooper 5&quot;, &quot;Trooper 6&quot; };
+<span class="fc" id="L49">    private static final String[] IS_LOCATION_NAMES = { &quot;Squad&quot;, &quot;Trooper 1&quot;,</span>
+        &quot;Trooper 2&quot;, &quot;Trooper 3&quot;, &quot;Trooper 4&quot;, &quot;Trooper 5&quot;, &quot;Trooper 6&quot; };
+<span class="fc" id="L51">    private static final int[] CLAN_NUM_OF_SLOTS = { 20, 2, 2, 2, 2, 2, 2 };</span>
+<span class="fc" id="L52">    private static final String[] CLAN_LOCATION_ABBRS = { &quot;Point&quot;, &quot;Trooper 1&quot;,</span>
+        &quot;Trooper 2&quot;, &quot;Trooper 3&quot;, &quot;Trooper 4&quot;, &quot;Trooper 5&quot;, &quot;Trooper 6&quot; };
+<span class="fc" id="L54">    private static final String[] CLAN_LOCATION_NAMES = { &quot;Point&quot;, &quot;Trooper 1&quot;,</span>
+        &quot;Trooper 2&quot;, &quot;Trooper 3&quot;, &quot;Trooper 4&quot;, &quot;Trooper 5&quot;, &quot;Trooper 6&quot; };
+
+    public static final int MANIPULATOR_NONE = 0;
+    public static final int MANIPULATOR_ARMORED_GLOVE = 1;
+    public static final int MANIPULATOR_BASIC = 2;
+    public static final int MANIPULATOR_BASIC_MINE_CLEARANCE = 3;
+    public static final int MANIPULATOR_BATTLE = 4;
+    public static final int MANIPULATOR_BATTLE_MAGNET = 5;
+    public static final int MANIPULATOR_BATTLE_VIBRO = 6;
+    public static final int MANIPULATOR_HEAVY_BATTLE = 7;
+    public static final int MANIPULATOR_HEAVY_BATTLE_MAGNET = 8;
+    public static final int MANIPULATOR_HEAVY_BATTLE_VIBRO = 9;
+    public static final int MANIPULATOR_SALVAGE_ARM = 10;
+    public static final int MANIPULATOR_CARGO_LIFTER = 11;
+    public static final int MANIPULATOR_INDUSTRIAL_DRILL = 12;
+
+    /**
+     * A list of the internal names for the different manipulator types.
+     * The indices in this collection correspond to the MANIPULATOR defines
+     * in &lt;code&gt;BattleArmor&lt;/code&gt;.  These names should match the internal
+     * name for the manipulator's MiscType entry.
+     */
+<span class="fc" id="L77">    public static final String[] MANIPULATOR_TYPE_STRINGS = { &quot;None&quot;,</span>
+        &quot;BAArmoredGlove&quot;, &quot;BABasicManipulator&quot;,
+        &quot;BABasicManipulatorMineClearance&quot;, &quot;BABattleClaw&quot;,
+        &quot;BABattleClawMagnets&quot;, &quot;BABattleClawVibro&quot;,
+        &quot;BAHeavyBattleClaw&quot;, &quot;BAHeavyBattleClawMagnets&quot;,
+        &quot;BAHeavyBattleClawVibro&quot;,
+        &quot;BASalvageArm&quot;, &quot;BACargoLifter&quot;, &quot;BAIndustrialDrill&quot; };
+
+    /**
+     * A list of the display names for the different manipulator types.
+     * The indices in this collection correspond to the MANIPULATOR defines
+     * in &lt;code&gt;BattleArmor&lt;/code&gt;.  These names should match the
+     * name for the manipulator's MiscType entry.
+     */
+<span class="fc" id="L91">    public static final String[] MANIPULATOR_NAME_STRINGS = { &quot;None&quot;,</span>
+        &quot;BA Manipulators [Armored Gloves]&quot;, &quot;BA Manipulators [Manipulator (Basic)]&quot;,
+        &quot;BA Manipulator Adaptation [Mine Clearance Equipment]&quot;, &quot;BA Manipulators [Battle Claw]&quot;,
+        &quot;BA Manipulator Adaptation [Magnetic Battle Claw]&quot;, &quot;BA Manipulator Adaptation [Vibro-Claw]&quot;,
+        &quot;BA Manipulators [Heavy Battle Claw]&quot;, &quot;BA Manipulator Adaptation [Heavy Magnetic Battle Claw]&quot;,
+        &quot;BA Manipulator Adaptation [Heavy Vibro-Claw]&quot;, &quot;BA Manipulators [Salvage Arm]&quot;, &quot;BA Manipulators [Cargo Lifter]&quot;,
+        &quot;BA Manipulators [Industrial Drill]&quot; };
+
+    public static final int CHASSIS_TYPE_BIPED = 0;
+    public static final int CHASSIS_TYPE_QUAD = 1;
+
+    /**
+     * The number of men alive in this unit at the beginning of the phase,
+     * before it begins to take damage.
+     */
+<span class="fc" id="L106">    private int troopersShooting = 0;</span>
+
+    /**
+     * the number of troopers of this squad, dead or alive
+     */
+<span class="fc" id="L111">    private int troopers = -1;</span>
+
+    /**
+     * The cost of this unit. This value should be set when the unit's file is
+     * read.
+     */
+<span class="fc" id="L117">    protected int myCost = -1;</span>
+    /**
+     * This unit's weight class
+     */
+<span class="fc" id="L121">    private int weightClass = -1;</span>
+    /**
+     * this unit's chassis type, should be BattleArmor.CHASSIS_TYPE_BIPED or
+     * BattleArmor.CHASSIS_TYPE_QUAD
+     */
+<span class="fc" id="L126">    private int chassisType = -1;</span>
+
+    /**
+     * Flag that is &lt;code&gt;true&lt;/code&gt; when this object's constructor has
+     * completed.
+     */
+<span class="fc" id="L132">    private boolean isInitialized = false;</span>
+
+    /**
+     * Flag that is &lt;code&gt;true&lt;/code&gt; when this unit is equipped with stealth.
+     */
+<span class="fc" id="L137">    private boolean isStealthy = false;</span>
+
+    /**
+     * Flag that is &lt;code&gt;true&lt;/code&gt; when this unit is equipped with mimetic
+     * armor.
+     */
+<span class="fc" id="L143">    private boolean isMimetic = false;</span>
+
+    /**
+     * Flag that is &lt;code&gt;true&lt;/code&gt; when this unit is equipped with a camo
+     * system.
+     */
+<span class="fc" id="L149">    private boolean hasCamoSystem = false;</span>
+
+    /**
+     * Modifiers to &lt;code&gt;ToHitData&lt;/code&gt; for stealth.
+     */
+<span class="fc" id="L154">    private int shortStealthMod = 0;</span>
+<span class="fc" id="L155">    private int mediumStealthMod = 0;</span>
+<span class="fc" id="L156">    private int longStealthMod = 0;</span>
+<span class="fc" id="L157">    private String stealthName = null;</span>
+<span class="fc" id="L158">    private String camoName = null;</span>
+
+    // Public and Protected constants, constructors, and methods.
+
+    /**
+     * Internal name of the Inner disposable SRM2 ammo pack.
+     */
+    public static final String DISPOSABLE_SRM2_AMMO = &quot;BA-SRM2 (one shot) Ammo&quot;;
+
+    /**
+     * Internal name of the disposable NARC ammo pack.
+     */
+    public static final String DISPOSABLE_NARC_AMMO = &quot;BA-Compact Narc Ammo&quot;;
+
+    /**
+     * The internal name for the Mine Launcher weapon.
+     */
+    public static final String MINE_LAUNCHER = &quot;BAMineLauncher&quot;;
+
+    /**
+     * The internal name for advanced.
+     */
+<span class="fc" id="L180">    public static final String ADVANCED_ARMOR = EquipmentType</span>
+<span class="fc" id="L181">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STANDARD_ADVANCED);</span>
+
+    /**
+     * The internal name for standard Prototype.
+     */
+<span class="fc" id="L186">    public static final String STANDARD_PROTOTYPE = EquipmentType</span>
+<span class="fc" id="L187">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STANDARD_PROTOTYPE);</span>
+
+    /**
+     * The internal name for stealth Prototype.
+     */
+<span class="fc" id="L192">    public static final String STEALTH_PROTOTYPE = EquipmentType</span>
+<span class="fc" id="L193">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STEALTH_PROTOTYPE);</span>
+
+    /**
+     * The internal name for basic Stealth armor.
+     */
+<span class="fc" id="L198">    public static final String BASIC_STEALTH_ARMOR = EquipmentType</span>
+<span class="fc" id="L199">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STEALTH_BASIC);</span>
+
+    /**
+     * The internal name for standard Stealth armor.
+     */
+<span class="fc" id="L204">    public static final String STANDARD_STEALTH_ARMOR = EquipmentType</span>
+<span class="fc" id="L205">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STEALTH);</span>
+
+    /**
+     * The internal name for improved Stealth armor.
+     */
+<span class="fc" id="L210">    public static final String IMPROVED_STEALTH_ARMOR = EquipmentType</span>
+<span class="fc" id="L211">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_STEALTH_IMP);</span>
+
+    /**
+     * The internal name for Mimetic armor.
+     */
+<span class="fc" id="L216">    public static final String MIMETIC_ARMOR = EquipmentType</span>
+<span class="fc" id="L217">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_MIMETIC);</span>
+
+    /**
+     * The internal name for fire-resistant armor.
+     */
+<span class="fc" id="L222">    public static final String FIRE_RESISTANT = EquipmentType</span>
+<span class="fc" id="L223">            .getArmorTypeName(EquipmentType.T_ARMOR_BA_FIRE_RESIST);</span>
+
+    /**
+     * The internal name for Simple Camo equipment.
+     */
+    public static final String CAMO_SYSTEM = &quot;Camo System&quot;;
+
+    /**
+     * The internal name for Single-Hex ECM equipment.
+     */
+    public static final String SINGLE_HEX_ECM = &quot;Single-Hex ECM&quot;;
+
+    /**
+     * /** The maximum number of men in a battle armor squad.
+     */
+    public static final int BA_MAX_MEN = 6;
+
+    /**
+     * The location for infantry equipment.
+     */
+    public static final int LOC_SQUAD = 0;
+
+    public static final int LOC_TROOPER_1 = 1;
+    public static final int LOC_TROOPER_2 = 2;
+    public static final int LOC_TROOPER_3 = 3;
+    public static final int LOC_TROOPER_4 = 4;
+    public static final int LOC_TROOPER_5 = 5;
+    public static final int LOC_TROOPER_6 = 6;
+
+    /**
+     * The location for mounted equipment on BA
+     */
+    public static final int MOUNT_LOC_NONE   = -1;
+    public static final int MOUNT_LOC_BODY   = 0;
+    public static final int MOUNT_LOC_RARM   = 1;
+    public static final int MOUNT_LOC_LARM   = 2;
+    public static final int MOUNT_LOC_TURRET = 3;
+
+<span class="fc" id="L261">    public static final String[] MOUNT_LOC_NAMES = { &quot;Body&quot;, &quot;Right Arm&quot;,</span>
+            &quot;Left Arm&quot;, &quot;Turret&quot; };
+
+    /**
+     * How many mount locations are possible?
+     */
+    public static final int MOUNT_NUM_LOCS = 4;
+    
+    // Quad BA can add critical space by adding a turret mount.
+<span class="fc" id="L270">    private int turretSize = 0;</span>
+<span class="fc" id="L271">    private boolean modularTurret = false;</span>
+
+<span class="fc" id="L273">    private boolean exoskeleton = false;</span>
+
+    /**
+     * Clan industrial exoskeletons can opt to not use Harjel, to allow them to
+     * use IS chassis weight; this flag indicates whether or not this is the
+     * case.
+     */
+<span class="fc" id="L280">    private boolean clanExoWithoutHarjel = false;</span>
+
+    @Override
+    public String[] getLocationAbbrs() {
+<span class="nc bnc" id="L284" title="All 4 branches missed.">        if (!isInitialized || isClan()) {</span>
+<span class="nc" id="L285">            return CLAN_LOCATION_ABBRS;</span>
+        }
+<span class="nc" id="L287">        return IS_LOCATION_ABBRS;</span>
+    }
+
+    public String[] getBaMountLocAbbr() {
+<span class="nc" id="L291">        return MOUNT_LOC_NAMES;</span>
+    }
+
+    public static String getBaMountLocAbbr(int loc) {
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (loc == MOUNT_LOC_NONE) {</span>
+<span class="nc" id="L296">            return &quot;None&quot;;</span>
+        }
+<span class="nc" id="L298">        return MOUNT_LOC_NAMES[loc];</span>
+    }
+
+    @Override
+    public String[] getLocationNames() {
+<span class="nc bnc" id="L303" title="All 4 branches missed.">        if (!isInitialized || isClan()) {</span>
+<span class="nc" id="L304">            return CLAN_LOCATION_NAMES;</span>
+        }
+<span class="nc" id="L306">        return IS_LOCATION_NAMES;</span>
+    }
+
+    /**
+     * Returns the number of Troopers in the BattleArmor squad, since locations
+     * for BattleArmor correspond to the different suits instead of the actual
+     * mount locations for equipment.
+     */
+    @Override
+    public int locations() {
+<span class="fc" id="L316">        int retVal = getTroopers();</span>
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">        if (retVal == 0) {</span>
+            // Return one more than the maximum number of men in the unit.
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">            if (!isInitialized) {</span>
+<span class="fc" id="L320">                retVal = 6 + 1;</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">            } else if (isClan()) {</span>
+<span class="nc" id="L322">                retVal = 5 + 1;</span>
+            } else {
+<span class="nc" id="L324">                retVal = 4 + 1;</span>
+            }
+        } else {
+<span class="nc" id="L327">            retVal++;</span>
+        }
+<span class="fc" id="L329">        return retVal;</span>
+    }
+
+    /**
+     * Generate a new, blank, battle armor unit. Hopefully, we'll be loaded from
+     * somewhere.
+     */
+    public BattleArmor() {
+        // Instantiate the superclass.
+<span class="fc" id="L338">        super();</span>
+
+<span class="fc" id="L340">        setArmorType(EquipmentType.T_ARMOR_BA_STANDARD);</span>
+
+        // BA are always one squad
+<span class="fc" id="L343">        squadn = 1;</span>
+
+        // All Battle Armor squads are Clan until specified otherwise.
+<span class="fc" id="L346">        setTechLevel(TechConstants.T_CLAN_TW);</span>
+
+        // Construction complete.
+<span class="fc" id="L349">        isInitialized = true;</span>
+<span class="fc" id="L350">    }</span>
+
+    @Override
+    public int getUnitType() {
+<span class="nc" id="L354">        return UnitType.BATTLE_ARMOR;</span>
+    }
+
+<span class="fc" id="L357">    protected static final TechAdvancement[] TA_BATTLEARMOR = {</span>
+<span class="fc" id="L358">            new TechAdvancement(TECH_BASE_ALL).setISAdvancement(2710, DATE_NONE, 3058, 2766, 2905)</span>
+<span class="fc" id="L359">                .setClanAdvancement(2710, DATE_NONE, 3058).setPrototypeFactions(F_TH)</span>
+<span class="fc" id="L360">                .setReintroductionFactions(F_CS).setTechRating(RATING_D)</span>
+<span class="fc" id="L361">                .setAvailability(RATING_F, RATING_X, RATING_E, RATING_D)</span>
+<span class="fc" id="L362">                .setStaticTechLevel(SimpleTechLevel.STANDARD), //ultralight</span>
+<span class="fc" id="L363">            new TechAdvancement(TECH_BASE_ALL).setISAdvancement(DATE_NONE, 3050, 3050)</span>
+<span class="fc" id="L364">                .setClanAdvancement(2865, 2870, 2900).setPrototypeFactions(F_CWF)</span>
+<span class="fc" id="L365">                .setProductionFactions(F_CIH, F_FS, F_LC).setClanApproximate(true, false, false)</span>
+<span class="fc" id="L366">                .setTechRating(RATING_E)</span>
+<span class="fc" id="L367">                .setAvailability(RATING_X, RATING_F, RATING_E, RATING_D)</span>
+<span class="fc" id="L368">                .setStaticTechLevel(SimpleTechLevel.STANDARD), //light</span>
+<span class="fc" id="L369">            new TechAdvancement(TECH_BASE_ALL).setISAdvancement(2864, 3052, 3052)</span>
+<span class="fc" id="L370">                .setClanAdvancement(2840, 2868, 2875)</span>
+<span class="fc" id="L371">                .setClanApproximate(true, false, false).setPrototypeFactions(F_CGS)</span>
+<span class="fc" id="L372">                .setProductionFactions(F_CWF, F_FS, F_LC, F_CS).setTechRating(RATING_E)</span>
+<span class="fc" id="L373">                .setAvailability(RATING_X, RATING_D, RATING_D, RATING_D)</span>
+<span class="fc" id="L374">                .setStaticTechLevel(SimpleTechLevel.STANDARD), //medium</span>
+<span class="fc" id="L375">            new TechAdvancement(TECH_BASE_ALL).setISAdvancement(DATE_NONE, 3050, 3058)</span>
+<span class="fc" id="L376">                .setClanAdvancement(2867, 2875, 3058)</span>
+<span class="fc" id="L377">                .setClanApproximate(true, false, false).setPrototypeFactions(F_CWF)</span>
+<span class="fc" id="L378">                .setProductionFactions(F_CHH, F_FS, F_LC).setTechRating(RATING_E)</span>
+<span class="fc" id="L379">                .setAvailability(RATING_X, RATING_F, RATING_E, RATING_D)</span>
+<span class="fc" id="L380">                .setStaticTechLevel(SimpleTechLevel.STANDARD), // heavy</span>
+<span class="fc" id="L381">            new TechAdvancement(TECH_BASE_ALL).setISAdvancement(DATE_NONE, 3058, 3060)</span>
+<span class="fc" id="L382">                .setClanAdvancement(2870, 2877, 3060)</span>
+<span class="fc" id="L383">                .setClanApproximate(true, false, false).setPrototypeFactions(F_CNC)</span>
+<span class="fc" id="L384">                .setProductionFactions(F_CGB, F_DC).setTechRating(RATING_E)</span>
+<span class="fc" id="L385">                .setAvailability(RATING_X, RATING_F, RATING_E, RATING_D)</span>
+<span class="fc" id="L386">                .setStaticTechLevel(SimpleTechLevel.STANDARD) // assault</span>
+    };
+    
+    public static TechAdvancement getConstructionTechAdvancement(int weightClass) {
+<span class="nc" id="L390">        return new TechAdvancement(TA_BATTLEARMOR[weightClass]);</span>
+    }
+    
+    @Override
+    public TechAdvancement getConstructionTechAdvancement() {
+<span class="fc" id="L395">        int index = getWeightClass();</span>
+<span class="pc bpc" id="L396" title="1 of 4 branches missed.">        if (index &lt; 0 || index &gt;= TA_BATTLEARMOR.length) {</span>
+<span class="fc" id="L397">            index = EntityWeightClass.WEIGHT_MEDIUM;</span>
+        }
+<span class="fc" id="L399">        return TA_BATTLEARMOR[index];</span>
+    }
+
+    /**
+     * Returns this entity's original jumping mp.
+     */
+    @Override
+    public int getOriginalJumpMP() {
+<span class="nc" id="L407">        return jumpMP;</span>
+    }
+
+    /**
+     * Returns this entity's walking mp, factored for extreme temperatures and
+     * gravity.
+     */
+    @Override
+    public int getWalkMP(boolean gravity, boolean ignoreheat,
+            boolean ignoremodulararmor) {
+<span class="fc" id="L417">        return getWalkMP(gravity, ignoreheat, ignoremodulararmor, false, false);</span>
+    }
+
+    public int getWalkMP(boolean gravity, boolean ignoreheat,
+            boolean ignoremodulararmor, boolean ignoreDWP,
+            boolean ignoreMyomerBooster) {
+<span class="fc" id="L423">        int j = getOriginalWalkMP();</span>
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">        if (hasMyomerBooster()) {</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">            if (!ignoreMyomerBooster) {</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">                if (getWeightClass() &gt;= EntityWeightClass.WEIGHT_HEAVY) {</span>
+<span class="nc" id="L427">                    j++;</span>
+                } else {
+<span class="nc" id="L429">                    j += 2;</span>
+                }
+            }
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">        } else if (hasWorkingMisc(MiscType.F_MECHANICAL_JUMP_BOOSTER)) {</span>
+            // mechanical jump booster gives an extra MP
+<span class="nc" id="L434">            j++;</span>
+        }
+<span class="pc bpc" id="L436" title="3 of 4 branches missed.">        if (hasDWP() &amp;&amp; !ignoreDWP) {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">            if (getWeightClass() == EntityWeightClass.WEIGHT_MEDIUM) {</span>
+<span class="nc" id="L438">                j -= 3;</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">            } else if (getWeightClass() &gt;= EntityWeightClass.WEIGHT_HEAVY) {</span>
+<span class="nc" id="L440">                j -= 2;</span>
+            }
+<span class="nc bnc" id="L442" title="All 2 branches missed.">            if (j == 0) {</span>
+<span class="nc" id="L443">                j++;</span>
+            }
+        }
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">        if (null != game) {</span>
+<span class="fc" id="L447">            int weatherMod = game.getPlanetaryConditions()</span>
+<span class="fc" id="L448">                    .getMovementMods(this);</span>
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">            if (weatherMod != 0) {</span>
+<span class="nc" id="L450">                j = Math.max(j + weatherMod, 0);</span>
+            }
+        }
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">        if (gravity) {</span>
+<span class="fc" id="L454">            j = applyGravityEffectsOnMP(j);</span>
+        }
+<span class="fc" id="L456">        return j;</span>
+    }
+
+    @Override
+    public int getRunMP(boolean gravity, boolean ignoreheat,
+            boolean ignoremodulararmor) {
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">        boolean fastMove = (game != null) &amp;&amp;</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">                game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_FAST_INFANTRY_MOVE);</span>
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">        if(fastMove) {</span>
+<span class="nc" id="L465">            return getWalkMP(gravity, ignoreheat, ignoremodulararmor, false,</span>
+                    false) + 1;
+        }
+<span class="fc" id="L468">        return getWalkMP(gravity, ignoreheat, ignoremodulararmor, false, false);</span>
+    }
+
+    /**
+     * does this ba mount a myomer booster?
+     *
+     * @return
+     */
+    public boolean hasMyomerBooster() {
+<span class="pc bpc" id="L477" title="1 of 2 branches missed.">        for (Mounted mEquip : getMisc()) {</span>
+<span class="nc" id="L478">            MiscType mtype = (MiscType) mEquip.getType();</span>
+<span class="nc bnc" id="L479" title="All 4 branches missed.">            if (mtype.hasFlag(MiscType.F_MASC) &amp;&amp; !mEquip.isInoperable()) {</span>
+<span class="nc" id="L480">                return true;</span>
+            }
+<span class="nc" id="L482">        }</span>
+<span class="fc" id="L483">        return false;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.Infantry#getJumpMP(boolean)
+     */
+    @Override
+    public int getJumpMP(boolean gravity) {
+<span class="nc" id="L493">        return getJumpMP(gravity, false, false);</span>
+    }
+
+    /**
+     * get this BA's jump MP, possibly ignoring gravity and burden
+     *
+     * @param gravity
+     * @param ignoreBurden
+     * @return
+     */
+    public int getJumpMP(boolean gravity, boolean ignoreBurden,
+            boolean ignoreDWP) {
+<span class="nc bnc" id="L505" title="All 4 branches missed.">        if (isBurdened() &amp;&amp; !ignoreBurden) {</span>
+<span class="nc" id="L506">            return 0;</span>
+        }
+<span class="nc bnc" id="L508" title="All 4 branches missed.">        if (hasDWP() &amp;&amp; !ignoreDWP) {</span>
+<span class="nc" id="L509">            return 0;</span>
+        }
+<span class="nc bnc" id="L511" title="All 2 branches missed.">        if (null != game) {</span>
+<span class="nc" id="L512">            int windCond = game.getPlanetaryConditions().getWindStrength();</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">            if (windCond &gt;= PlanetaryConditions.WI_STORM) {</span>
+<span class="nc" id="L514">                return 0;</span>
+            }
+        }
+<span class="nc" id="L517">        int mp = 0;</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">        if (getMovementMode() != EntityMovementMode.INF_UMU) {</span>
+<span class="nc" id="L519">            mp = getOriginalJumpMP();</span>
+        }
+        // if we have no normal jump jets, we get 1 jump MP from mechanical jump
+        // boosters, if we have them.
+<span class="nc bnc" id="L523" title="All 4 branches missed.">        if ((mp == 0) &amp;&amp; hasWorkingMisc(MiscType.F_MECHANICAL_JUMP_BOOSTER)) {</span>
+<span class="nc" id="L524">            mp++;</span>
+        }
+        // partial wing gives extra MP in atmosphere
+<span class="nc bnc" id="L527" title="All 2 branches missed.">        if ((mp &gt; 0)</span>
+<span class="nc bnc" id="L528" title="All 4 branches missed.">                &amp;&amp; hasWorkingMisc(MiscType.F_PARTIAL_WING)</span>
+<span class="nc bnc" id="L529" title="All 2 branches missed.">                &amp;&amp; ((game == null) || !game.getPlanetaryConditions().isVacuum())) {</span>
+<span class="nc" id="L530">            mp++;</span>
+        }
+<span class="nc bnc" id="L532" title="All 4 branches missed.">        if ((mp &gt; 0) &amp;&amp; hasWorkingMisc(MiscType.F_JUMP_BOOSTER)) {</span>
+            // jump booster gives an extra MP
+<span class="nc" id="L534">            mp++;</span>
+        }
+<span class="nc bnc" id="L536" title="All 2 branches missed.">        if (gravity) {</span>
+<span class="nc" id="L537">            mp = applyGravityEffectsOnMP(mp);</span>
+        }
+<span class="nc" id="L539">        return mp;</span>
+    }
+
+    /**
+     * Returns the name of the type of movement used. This is Infantry-specific.
+     */
+    @Override
+    public String getMovementString(EntityMovementType mtype) {
+<span class="nc bnc" id="L547" title="All 5 branches missed.">        switch (mtype) {</span>
+        case MOVE_NONE:
+<span class="nc" id="L549">            return &quot;None&quot;;</span>
+        case MOVE_WALK:
+        case MOVE_RUN:
+<span class="nc" id="L552">            return &quot;Walked&quot;;</span>
+        case MOVE_VTOL_WALK:
+        case MOVE_VTOL_RUN:
+<span class="nc" id="L555">            return &quot;Flew&quot;;</span>
+        case MOVE_JUMP:
+<span class="nc" id="L557">            return &quot;Jumped&quot;;</span>
+        default:
+<span class="nc" id="L559">            return &quot;Unknown!&quot;;</span>
+        }
+    }
+
+    /**
+     * Returns the abbreviation of the type of movement used. This is
+     * Infantry-specific.
+     */
+    @Override
+    public String getMovementAbbr(EntityMovementType mtype) {
+<span class="nc bnc" id="L569" title="All 6 branches missed.">        switch (mtype) {</span>
+        case MOVE_NONE:
+<span class="nc" id="L571">            return &quot;N&quot;;</span>
+        case MOVE_WALK:
+<span class="nc" id="L573">            return &quot;W&quot;;</span>
+        case MOVE_RUN:
+<span class="nc" id="L575">            return &quot;R&quot;;</span>
+        case MOVE_JUMP:
+<span class="nc" id="L577">            return &quot;J&quot;;</span>
+        case MOVE_VTOL_WALK:
+        case MOVE_VTOL_RUN:
+<span class="nc" id="L580">            return &quot;F&quot;;</span>
+        default:
+<span class="nc" id="L582">            return &quot;?&quot;;</span>
+        }
+    }
+
+    /**
+     * Battle Armor units can only get hit in undestroyed troopers.
+     */
+    @Override
+    public HitData rollHitLocation(int table, int side, int aimedLocation,
+            int aimingMode, int cover) {
+
+        // If this squad was killed, target trooper 1 (just because).
+<span class="nc bnc" id="L594" title="All 2 branches missed.">        if (isDoomed()) {</span>
+<span class="nc" id="L595">            return new HitData(1);</span>
+        }
+
+<span class="nc bnc" id="L598" title="All 4 branches missed.">        if ((aimedLocation != LOC_NONE)</span>
+                &amp;&amp; (aimingMode != IAimingModes.AIM_MODE_NONE)) {
+
+<span class="nc" id="L601">            int roll = Compute.d6(2);</span>
+
+<span class="nc bnc" id="L603" title="All 4 branches missed.">            if ((5 &lt; roll) &amp;&amp; (roll &lt; 9)) {</span>
+<span class="nc bnc" id="L604" title="All 2 branches missed.">                return new HitData(aimedLocation, side == ToHitData.SIDE_REAR,</span>
+                        true);
+            }
+        }
+
+        // Pick a random number between 1 and 6.
+<span class="nc" id="L610">        int loc = Compute.d6();</span>
+
+        // Pick a new random number if that trooper is dead or never existed.
+        // Remember that there's one more location than the number of troopers.
+        // In http://forums.classicbattletech.com/index.php/topic,43203.0.html,
+        // &quot;previously destroyed includes the current phase&quot; for rolling hits on
+        // a squad,
+        // modifying previous ruling in the AskThePM FAQ.
+<span class="nc bnc" id="L618" title="All 2 branches missed.">        while ((loc &gt;= locations())</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">                || (IArmorState.ARMOR_NA == this.getInternal(loc))</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">                || (IArmorState.ARMOR_DESTROYED == this.getInternal(loc))</span>
+<span class="nc bnc" id="L621" title="All 4 branches missed.">                || ((IArmorState.ARMOR_DOOMED == this.getInternal(loc)) &amp;&amp; !isDoomed())) {</span>
+<span class="nc" id="L622">            loc = Compute.d6();</span>
+        }
+
+<span class="nc" id="L625">        int critLocation = Compute.d6();</span>
+        // TacOps p. 108 Trooper takes a crit if a second roll is the same
+        // location as the first.
+<span class="nc bnc" id="L628" title="All 4 branches missed.">        if (game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_BA_CRITICALS)</span>
+                &amp;&amp; (loc == critLocation)) {
+<span class="nc" id="L630">            return new HitData(loc, false, HitData.EFFECT_CRITICAL);</span>
+        }
+        // Hit that trooper.
+<span class="nc" id="L633">        return new HitData(loc);</span>
+
+    }
+
+    @Override
+    public HitData rollHitLocation(int table, int side) {
+<span class="nc" id="L639">        return rollHitLocation(table, side, LOC_NONE,</span>
+                IAimingModes.AIM_MODE_NONE, LosEffects.COVER_NONE);
+    }
+
+    /**
+     * For level 3 rules, each trooper occupies a specific location
+     * precondition: hit is a location covered by BA
+     */
+    @Override
+    public HitData getTrooperAtLocation(HitData hit, Entity transport) {
+<span class="nc bnc" id="L649" title="All 2 branches missed.">        if (transport instanceof Mech) {</span>
+<span class="nc" id="L650">            int loc = 99;</span>
+<span class="nc bnc" id="L651" title="All 4 branches missed.">            switch (hit.getLocation()) {</span>
+            case Mech.LOC_RT:
+<span class="nc bnc" id="L653" title="All 2 branches missed.">                if (hit.isRear()) {</span>
+<span class="nc" id="L654">                    loc = 3;</span>
+                } else {
+<span class="nc" id="L656">                    loc = 1;</span>
+                }
+<span class="nc" id="L658">                break;</span>
+            case Mech.LOC_LT:
+<span class="nc bnc" id="L660" title="All 2 branches missed.">                if (hit.isRear()) {</span>
+<span class="nc" id="L661">                    loc = 4;</span>
+                } else {
+<span class="nc" id="L663">                    loc = 2;</span>
+                }
+<span class="nc" id="L665">                break;</span>
+            case Mech.LOC_CT:
+<span class="nc bnc" id="L667" title="All 2 branches missed.">                if (hit.isRear()) {</span>
+<span class="nc" id="L668">                    loc = 5;</span>
+                } else {
+<span class="nc" id="L670">                    loc = 6;</span>
+                }
+                break;
+            }
+<span class="nc bnc" id="L674" title="All 2 branches missed.">            if (loc &lt; locations()) {</span>
+<span class="nc" id="L675">                return new HitData(loc);</span>
+            }
+<span class="nc bnc" id="L677" title="All 2 branches missed.">        } else if (transport instanceof Tank) {</span>
+<span class="nc" id="L678">            int loc = 99;</span>
+<span class="nc bnc" id="L679" title="All 4 branches missed.">            switch (hit.getLocation()) {</span>
+            case Tank.LOC_RIGHT:
+                // There are 2 troopers on each location, so pick
+                // one randomly if both are alive.
+<span class="nc bnc" id="L683" title="All 4 branches missed.">                if ((getInternal(1) &gt; 0) &amp;&amp; (getInternal(2) &gt; 0)) {</span>
+<span class="nc" id="L684">                    loc = Compute.randomInt(2) + 1;</span>
+<span class="nc bnc" id="L685" title="All 2 branches missed.">                } else if (getInternal(1) &gt; 0) {</span>
+<span class="nc" id="L686">                    loc = 1;</span>
+                } else {
+<span class="nc" id="L688">                    loc = 2;</span>
+                }
+<span class="nc" id="L690">                break;</span>
+            case Tank.LOC_LEFT:
+<span class="nc bnc" id="L692" title="All 4 branches missed.">                if ((getInternal(3) &gt; 0) &amp;&amp; (getInternal(4) &gt; 0)) {</span>
+<span class="nc" id="L693">                    loc = Compute.randomInt(2) + 3;</span>
+<span class="nc bnc" id="L694" title="All 2 branches missed.">                } else if (getInternal(3) &gt; 0) {</span>
+<span class="nc" id="L695">                    loc = 3;</span>
+                } else {
+<span class="nc" id="L697">                    loc = 4;</span>
+                }
+<span class="nc" id="L699">                break;</span>
+            case Tank.LOC_REAR:
+                //Troopers 5 and 6 only exist when you have Clan and CS/WoB units, so we need
+                //to ensure the array is large enough before checking their status.
+<span class="nc bnc" id="L703" title="All 6 branches missed.">                if (locations() &gt;= 7 &amp;&amp; ((getInternal(5) &gt; 0) &amp;&amp; (getInternal(6) &gt; 0))) {</span>
+                    //If we have a live trooper 5 and 6, randomize who gets hit
+<span class="nc" id="L705">                    loc = Compute.randomInt(2) + 5;</span>
+<span class="nc bnc" id="L706" title="All 4 branches missed.">                } else if ((locations() &gt;= 7) &amp;&amp; (getInternal(5) &lt;= 0)) {</span>
+                    //If trooper 5 is dead, hit trooper 6
+<span class="nc" id="L708">                    loc = 6;</span>
+                } else {
+<span class="nc" id="L710">                    loc = 5;</span>
+                }
+                break;
+            }
+            //If we get here with an invalid loc for this squad, this next test should fail
+<span class="nc bnc" id="L715" title="All 2 branches missed.">            if (loc &lt; locations()) {</span>
+<span class="nc" id="L716">                return new HitData(loc);</span>
+            }
+        }
+        // otherwise roll a random location
+<span class="nc" id="L720">        return rollHitLocation(ToHitData.HIT_NORMAL, ToHitData.SIDE_FRONT);</span>
+    }
+
+    /**
+     * Battle Armor units don't transfer damage.
+     */
+    @Override
+    public HitData getTransferLocation(HitData hit) {
+
+        // If any trooper lives, the unit isn't destroyed.
+<span class="nc bnc" id="L730" title="All 2 branches missed.">        for (int loop = 1; loop &lt; locations(); loop++) {</span>
+<span class="nc bnc" id="L731" title="All 2 branches missed.">            if (0 &lt; this.getInternal(loop)) {</span>
+<span class="nc" id="L732">                return new HitData(Entity.LOC_NONE);</span>
+            }
+        }
+
+        // No surviving troopers, so we're toast.
+<span class="nc" id="L737">        return new HitData(Entity.LOC_DESTROYED);</span>
+    }
+
+    /**
+     * Battle Armor units use default behavior for armor and internals.
+     *
+     * @see megamek.common.Infantry#isPlatoon()
+     */
+    @Override
+    protected boolean isPlatoon() {
+<span class="nc" id="L747">        return false;</span>
+    }
+
+    /**
+     * Battle Armor units have no armor on their squad location.
+     *
+     * @see megamek.common.Infantry#getArmor(int, boolean )
+     */
+    @Override
+    public int getArmor(int loc, boolean rear) {
+<span class="nc bnc" id="L757" title="All 2 branches missed.">        if (BattleArmor.LOC_SQUAD != loc) {</span>
+<span class="nc" id="L758">            return super.getArmor(loc, rear);</span>
+        }
+<span class="nc" id="L760">        return IArmorState.ARMOR_NA;</span>
+    }
+
+    /**
+     * Battle Armor units have no armor on their squad location.
+     *
+     * @see megamek.common.Infantry#getOArmor(int, boolean )
+     */
+    @Override
+    public int getOArmor(int loc, boolean rear) {
+<span class="nc bnc" id="L770" title="All 2 branches missed.">        if (BattleArmor.LOC_SQUAD != loc) {</span>
+<span class="nc" id="L771">            return super.getOArmor(loc, rear);</span>
+        }
+<span class="nc" id="L773">        return IArmorState.ARMOR_NA;</span>
+    }
+
+    /**
+     * Battle Armor units have no internals on their squad location.
+     *
+     * @see megamek.common.Infantry#getInternal(int )
+     */
+    @Override
+    public int getInternal(int loc) {
+<span class="nc bnc" id="L783" title="All 2 branches missed.">        if (BattleArmor.LOC_SQUAD != loc) {</span>
+<span class="nc" id="L784">            return super.getInternal(loc);</span>
+        }
+<span class="nc" id="L786">        return IArmorState.ARMOR_NA;</span>
+    }
+
+    /**
+     * Battle Armor units have no internals on their squad location.
+     *
+     * @see megamek.common.Infantry#getOInternal(int )
+     */
+    @Override
+    public int getOInternal(int loc) {
+<span class="nc bnc" id="L796" title="All 2 branches missed.">        if (BattleArmor.LOC_SQUAD != loc) {</span>
+<span class="nc" id="L797">            return super.getOInternal(loc);</span>
+        }
+<span class="nc" id="L799">        return IArmorState.ARMOR_NA;</span>
+    }
+
+    /**
+     * Set the troopers in the unit to the appropriate values.
+     */
+    @Override
+    public void autoSetInternal() {
+        // No troopers in the squad location.
+<span class="nc" id="L808">        initializeInternal(IArmorState.ARMOR_NA, LOC_SQUAD);</span>
+
+        // Initialize the troopers.
+<span class="nc bnc" id="L811" title="All 2 branches missed.">        for (int loop = 1; loop &lt; locations(); loop++) {</span>
+<span class="nc" id="L812">            initializeInternal(1, loop);</span>
+        }
+
+        // Set the initial number of troopers that can shoot
+        // to one less than the number of locations in the unit.
+<span class="nc" id="L817">        troopersShooting = locations() - 1;</span>
+<span class="nc" id="L818">    }</span>
+
+    /**
+     * Set the troopers in the unit to the given values.
+     */
+    public void setInternal(int value) {
+        // Initialize the troopers.
+<span class="nc bnc" id="L825" title="All 2 branches missed.">        for (int loop = 1; loop &lt; locations(); loop++) {</span>
+<span class="nc" id="L826">            initializeInternal(value, loop);</span>
+        }
+<span class="nc" id="L828">    }</span>
+
+    /**
+     * Mounts the specified equipment in the specified location.
+     */
+    @Override
+    public void addEquipment(Mounted mounted, int loc, boolean rearMounted)
+            throws LocationFullException {
+        // Implement parent's behavior.
+<span class="nc" id="L837">        super.addEquipment(mounted, loc, rearMounted);</span>
+
+        // Is the item a camo system equipment?
+<span class="nc" id="L840">        String name = mounted.getType().getInternalName();</span>
+<span class="nc bnc" id="L841" title="All 2 branches missed.">        if (BattleArmor.CAMO_SYSTEM.equals(name)) {</span>
+<span class="nc" id="L842">            hasCamoSystem = true;</span>
+<span class="nc" id="L843">            camoName = name;</span>
+        }
+<span class="nc" id="L845">    }</span>
+
+    /**
+     * Battle Armor units have as many critical slots as they need to hold their
+     * equipment.
+     */
+    @Override
+    protected int[] getNoOfSlots() {
+<span class="pc bpc" id="L853" title="1 of 2 branches missed.">        if(!isInitialized) {</span>
+<span class="fc" id="L854">            return CLAN_NUM_OF_SLOTS;</span>
+        }
+<span class="nc bnc" id="L856" title="All 2 branches missed.">        return Arrays.copyOf(isClan() ? CLAN_NUM_OF_SLOTS : IS_NUM_OF_SLOTS, troopers + 1);</span>
+    }
+
+    /**
+     * Trooper's equipment dies when they do.
+     */
+    @Override
+    public boolean hasHittableCriticals(int loc) {
+<span class="nc bnc" id="L864" title="All 2 branches missed.">        if (LOC_SQUAD == loc) {</span>
+<span class="nc" id="L865">            return false;</span>
+        }
+<span class="nc" id="L867">        return super.hasHittableCriticals(loc);</span>
+    }
+
+    /**
+     * Calculates the battle value of this platoon.
+     */
+    @Override
+    public int calculateBattleValue(boolean ignoreC3, boolean ignorePilot) {
+<span class="nc bnc" id="L875" title="All 2 branches missed.">        if (useManualBV) {</span>
+<span class="nc" id="L876">            return manualBV;</span>
+        }
+<span class="nc" id="L878">        return calculateBattleValue(ignoreC3, ignorePilot, false);</span>
+    }
+
+    /**
+     * Calculates the battle value of this platoon.
+     *
+     * @param ignoreC3
+     *            ignore C3 linkage
+     * @param ignorePilot
+     *            ignore the skill of the pilot
+     * @param singleTrooper
+     *            calculate just the BV of a single trooper
+     * @return the battlevalue
+     */
+    public int calculateBattleValue(boolean ignoreC3, boolean ignorePilot,
+            boolean singleTrooper) {
+<span class="nc bnc" id="L894" title="All 2 branches missed.">        if (useManualBV) {</span>
+<span class="nc" id="L895">            return manualBV;</span>
+        }
+        // we do this per trooper, then add up
+<span class="nc" id="L898">        double squadBV = 0;</span>
+<span class="nc bnc" id="L899" title="All 2 branches missed.">        for (int i = 1; i &lt; locations(); i++) {</span>
+<span class="nc bnc" id="L900" title="All 2 branches missed.">            if (this.getInternal(i) &lt;= 0) {</span>
+<span class="nc" id="L901">                continue;</span>
+            }
+<span class="nc" id="L903">            double dBV = 0;</span>
+<span class="nc" id="L904">            double armorBV = 2.5;</span>
+<span class="nc bnc" id="L905" title="All 6 branches missed.">            if (isFireResistant() || isReflective() || isReactive()) {</span>
+<span class="nc" id="L906">                armorBV = 3.5;</span>
+            }
+<span class="nc" id="L908">            dBV += (getArmor(i) * armorBV) + 1;</span>
+            // improved sensors add 1
+<span class="nc bnc" id="L910" title="All 2 branches missed.">            if (hasImprovedSensors()) {</span>
+<span class="nc" id="L911">                dBV += 1;</span>
+            }
+            // active probes add 1
+<span class="nc bnc" id="L914" title="All 2 branches missed.">            if (hasActiveProbe()) {</span>
+<span class="nc" id="L915">                dBV += 1;</span>
+            }
+            // ECM adds 1
+<span class="nc bnc" id="L918" title="All 2 branches missed.">            for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L919" title="All 2 branches missed.">                if (mounted.getType().hasFlag(MiscType.F_ECM)) {</span>
+<span class="nc bnc" id="L920" title="All 2 branches missed.">                    if (mounted.getType().hasFlag(MiscType.F_ANGEL_ECM)) {</span>
+<span class="nc" id="L921">                        dBV += 2;</span>
+                    } else {
+<span class="nc" id="L923">                        dBV += 1;</span>
+                    }
+<span class="nc" id="L925">                    break;</span>
+                }
+<span class="nc" id="L927">            }</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">            for (Mounted weapon : getWeaponList()) {</span>
+<span class="nc bnc" id="L929" title="All 2 branches missed.">                if (weapon.getType().hasFlag(WeaponType.F_AMS)) {</span>
+<span class="nc bnc" id="L930" title="All 2 branches missed.">                    if (weapon.getLocation() == LOC_SQUAD) {</span>
+<span class="nc" id="L931">                        dBV += weapon.getType().getBV(this);</span>
+                    }
+
+                    else {
+                        // squad support, count at 1/troopercount
+<span class="nc" id="L936">                        dBV += weapon.getType().getBV(this)</span>
+<span class="nc" id="L937">                                / getTotalOInternal();</span>
+                    }
+                }
+<span class="nc" id="L940">            }</span>
+<span class="nc" id="L941">            int runMP = getWalkMP(false, false, true, true, false);</span>
+<span class="nc" id="L942">            int umuMP = getActiveUMUCount();</span>
+<span class="nc" id="L943">            int tmmRan = Compute.getTargetMovementModifier(Math.max(runMP,umuMP), false, false,</span>
+<span class="nc" id="L944">                    game).getValue();</span>
+            // get jump MP, ignoring burden
+<span class="nc" id="L946">            int rawJump = getJumpMP(false, true, true);</span>
+<span class="nc bnc" id="L947" title="All 2 branches missed.">            int tmmJumped = (rawJump &gt; 0) ? Compute.</span>
+<span class="nc" id="L948">                    getTargetMovementModifier(rawJump, true, false, game).</span>
+<span class="nc" id="L949">                    getValue() : 0;</span>
+<span class="nc" id="L950">                    double targetMovementModifier = Math.max(tmmRan, tmmJumped);</span>
+<span class="nc" id="L951">                    double tmmFactor = 1 + (targetMovementModifier / 10) + 0.1;</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">                    if (hasCamoSystem) {</span>
+<span class="nc" id="L953">                        tmmFactor += 0.2;</span>
+                    }
+<span class="nc bnc" id="L955" title="All 2 branches missed.">                    if (isStealthy) {</span>
+<span class="nc" id="L956">                        tmmFactor += 0.2;</span>
+                    }
+                    // improved stealth get's an extra 0.1, for 0.3 total
+<span class="nc bnc" id="L959" title="All 2 branches missed.">                    if ((stealthName != null)</span>
+<span class="nc bnc" id="L960" title="All 2 branches missed.">                            &amp;&amp; stealthName.equals(BattleArmor.IMPROVED_STEALTH_ARMOR)) {</span>
+<span class="nc" id="L961">                        tmmFactor += 0.1;</span>
+                    }
+<span class="nc bnc" id="L963" title="All 2 branches missed.">                    if (isMimetic) {</span>
+<span class="nc" id="L964">                        tmmFactor += 0.3;</span>
+                    }
+
+<span class="nc" id="L967">                    dBV *= tmmFactor;</span>
+<span class="nc" id="L968">                    double oBV = 0;</span>
+<span class="nc bnc" id="L969" title="All 2 branches missed.">                    for (Mounted weapon : getWeaponList()) {</span>
+                        // infantry weapons don't count at all
+<span class="nc bnc" id="L971" title="All 4 branches missed.">                        if (weapon.getType().hasFlag(WeaponType.F_INFANTRY) || weapon.getType().hasFlag(WeaponType.F_AMS)) {</span>
+<span class="nc" id="L972">                            continue;</span>
+                        }
+
+<span class="nc bnc" id="L975" title="All 2 branches missed.">                        if (weapon.getLocation() == LOC_SQUAD) {</span>
+                            // Squad support, count at 1/troopercount
+<span class="nc bnc" id="L977" title="All 2 branches missed.">                            if (weapon.isSquadSupportWeapon()){</span>
+<span class="nc" id="L978">                                oBV += weapon.getType().getBV(this) / getTotalOInternal();</span>
+                            } else {
+<span class="nc" id="L980">                                oBV += weapon.getType().getBV(this);</span>
+                            }
+                        } else {
+<span class="nc" id="L983">                            oBV += weapon.getType().getBV(this) / getTotalOInternal();</span>
+                        }
+<span class="nc" id="L985">                    }</span>
+
+<span class="nc bnc" id="L987" title="All 2 branches missed.">                    for (Mounted misc : getMisc()) {</span>
+<span class="nc bnc" id="L988" title="All 2 branches missed.">                        if (misc.getType().hasFlag(MiscType.F_MINE)) {</span>
+<span class="nc bnc" id="L989" title="All 2 branches missed.">                            if (misc.getLocation() == LOC_SQUAD) {</span>
+<span class="nc" id="L990">                                oBV += misc.getType().getBV(this);</span>
+                            } else {
+<span class="nc" id="L992">                                oBV += misc.getType().getBV(this) / getTotalOInternal();</span>
+                            }
+                        }
+<span class="nc bnc" id="L995" title="All 2 branches missed.">                        if (misc.getType().hasFlag(MiscType.F_MAGNETIC_CLAMP)) {</span>
+<span class="nc bnc" id="L996" title="All 2 branches missed.">                            if (misc.getLocation() == LOC_SQUAD) {</span>
+<span class="nc" id="L997">                                oBV += misc.getType().getBV(this);</span>
+                            } else {
+<span class="nc" id="L999">                                oBV += misc.getType().getBV(this) / getTotalOInternal();</span>
+                            }
+                        }
+<span class="nc" id="L1002">                    }</span>
+<span class="nc bnc" id="L1003" title="All 2 branches missed.">                    for (Mounted ammo : getAmmo()) {</span>
+<span class="nc" id="L1004">                        int loc = ammo.getLocation();</span>
+                        // don't count oneshot ammo
+<span class="nc bnc" id="L1006" title="All 2 branches missed.">                        if (loc == LOC_NONE) {</span>
+<span class="nc" id="L1007">                            continue;</span>
+                        }
+<span class="nc bnc" id="L1009" title="All 4 branches missed.">                        if ((loc == LOC_SQUAD) || (loc == i)) {</span>
+<span class="nc" id="L1010">                            double ammoBV = ((AmmoType) ammo.getType()).getBABV();</span>
+<span class="nc" id="L1011">                            oBV += ammoBV;</span>
+                        }
+<span class="nc" id="L1013">                    }</span>
+<span class="nc bnc" id="L1014" title="All 2 branches missed.">                    if (canMakeAntiMekAttacks()) {</span>
+                        // all non-missile and non-body mounted direct fire weapons
+                        // counted again
+<span class="nc bnc" id="L1017" title="All 2 branches missed.">                        for (Mounted weapon : getWeaponList()) {</span>
+                            // infantry weapons don't count at all
+<span class="nc bnc" id="L1019" title="All 4 branches missed.">                            if (weapon.getType().hasFlag(WeaponType.F_INFANTRY) || weapon.getType().hasFlag(WeaponType.F_AMS)) {</span>
+<span class="nc" id="L1020">                                continue;</span>
+                            }
+<span class="nc bnc" id="L1022" title="All 2 branches missed.">                            if (weapon.getLocation() == LOC_SQUAD) {</span>
+<span class="nc bnc" id="L1023" title="All 2 branches missed.">                                if (!weapon.getType().hasFlag(WeaponType.F_MISSILE)</span>
+<span class="nc bnc" id="L1024" title="All 2 branches missed.">                                        &amp;&amp; !weapon.isBodyMounted()) {</span>
+<span class="nc" id="L1025">                                    oBV += weapon.getType().getBV(this);</span>
+                                }
+                            } else {
+                                // squad support, count at 1/troopercount
+<span class="nc" id="L1029">                                oBV += weapon.getType().getBV(this)</span>
+<span class="nc" id="L1030">                                        / getTotalOInternal();</span>
+                            }
+<span class="nc" id="L1032">                        }</span>
+                        // magnetic claws and vibro claws counted again
+<span class="nc bnc" id="L1034" title="All 2 branches missed.">                        for (Mounted misc : getMisc()) {</span>
+<span class="nc bnc" id="L1035" title="All 2 branches missed.">                            if ((misc.getLocation() == LOC_SQUAD)</span>
+<span class="nc bnc" id="L1036" title="All 2 branches missed.">                                    || (misc.getLocation() == i)) {</span>
+<span class="nc bnc" id="L1037" title="All 2 branches missed.">                                if (misc.getType().hasFlag(MiscType.F_MAGNET_CLAW)</span>
+<span class="nc bnc" id="L1038" title="All 2 branches missed.">                                        || misc.getType().hasFlag(MiscType.F_VIBROCLAW)) {</span>
+<span class="nc" id="L1039">                                    oBV += misc.getType().getBV(this);</span>
+                                }
+                            }
+<span class="nc" id="L1042">                        }</span>
+                    }
+                    // getJumpMP won't return UMU MP, so weed need to count that extra
+<span class="nc" id="L1045">                    int movement = Math.max(getWalkMP(false, false, true, true, false),</span>
+<span class="nc" id="L1046">                            Math.max(getJumpMP(false, true, true), getActiveUMUCount()));</span>
+<span class="nc" id="L1047">                    double speedFactor = Math.pow(1 + ((double) (movement - 5) / 10), 1.2);</span>
+<span class="nc" id="L1048">                    speedFactor = Math.round(speedFactor * 100) / 100.0;</span>
+<span class="nc" id="L1049">                    oBV *= speedFactor;</span>
+
+                    double soldierBV;
+<span class="nc bnc" id="L1052" title="All 2 branches missed.">                    if (useGeometricMeanBV()) {</span>
+<span class="nc" id="L1053">                        soldierBV = 2 * Math.sqrt(oBV * dBV);</span>
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">                        if (soldierBV == 0) {</span>
+<span class="nc" id="L1055">                            soldierBV = oBV + dBV;</span>
+                        }
+                    } else {
+<span class="nc" id="L1058">                        soldierBV = oBV + dBV;</span>
+                    }
+
+<span class="nc" id="L1061">                    squadBV += soldierBV;</span>
+
+                    /*
+                     * if (i == 1) { System.out.println(getChassis()+getModel());
+                     * System.out.println(dBV); System.out.println(oBV);
+                     * System.out.println((oBV+dBV)); }
+                     */
+        }
+        // we have now added all troopers, divide by current strength to then
+        // multiply by the unit size mod
+<span class="nc" id="L1071">        squadBV /= getShootingStrength();</span>
+        // we might want to get just the BV of a single trooper
+<span class="nc bnc" id="L1073" title="All 2 branches missed.">        if (singleTrooper) {</span>
+<span class="nc" id="L1074">            return (int) Math.round(squadBV);</span>
+        }
+<span class="nc bnc" id="L1076" title="All 7 branches missed.">        switch (getShootingStrength()) {</span>
+        case 1:
+<span class="nc" id="L1078">            break;</span>
+        case 2:
+<span class="nc" id="L1080">            squadBV *= 2.2;</span>
+<span class="nc" id="L1081">            break;</span>
+        case 3:
+<span class="nc" id="L1083">            squadBV *= 3.6;</span>
+<span class="nc" id="L1084">            break;</span>
+        case 4:
+<span class="nc" id="L1086">            squadBV *= 5.2;</span>
+<span class="nc" id="L1087">            break;</span>
+        case 5:
+<span class="nc" id="L1089">            squadBV *= 7;</span>
+<span class="nc" id="L1090">            break;</span>
+        case 6:
+<span class="nc" id="L1092">            squadBV *= 9;</span>
+            break;
+        }
+
+<span class="nc bnc" id="L1096" title="All 2 branches missed.">        if (!ignoreC3) {</span>
+<span class="nc" id="L1097">            squadBV += getExtraC3BV((int) Math.round(squadBV));</span>
+        }
+
+        // Adjust BV for crew skills.
+<span class="nc" id="L1101">        double pilotFactor = 1;</span>
+<span class="nc bnc" id="L1102" title="All 2 branches missed.">        if (!ignorePilot) {</span>
+<span class="nc" id="L1103">            pilotFactor = getCrew().getBVSkillMultiplier(isAntiMekTrained(), game);</span>
+        }
+
+<span class="nc" id="L1106">        int retVal = (int) Math.round(squadBV * pilotFactor);</span>
+<span class="nc" id="L1107">        return retVal;</span>
+    }
+
+    /**
+     * Prepare the entity for a new round of action.
+     */
+    @Override
+    public void newRound(int roundNumber) {
+        // Perform all base-class behavior.
+<span class="nc" id="L1116">        super.newRound(roundNumber);</span>
+
+        // If we're equipped with a Magnetic Mine
+        // launcher, turn it to single shot mode.
+<span class="nc bnc" id="L1120" title="All 2 branches missed.">        for (Mounted m : getMisc()) {</span>
+<span class="nc" id="L1121">            EquipmentType equip = m.getType();</span>
+<span class="nc bnc" id="L1122" title="All 2 branches missed.">            if (BattleArmor.MINE_LAUNCHER.equals(equip.getInternalName())) {</span>
+<span class="nc" id="L1123">                m.setMode(&quot;Single&quot;);</span>
+            }
+<span class="nc" id="L1125">        }</span>
+<span class="nc" id="L1126">    }</span>
+
+    /**
+     * Update the unit to reflect damages taken in this phase.
+     */
+    @Override
+    public void applyDamage() {
+<span class="nc" id="L1133">        super.applyDamage();</span>
+<span class="nc" id="L1134">        int troopersAlive = 0;</span>
+<span class="nc bnc" id="L1135" title="All 2 branches missed.">        for (int i = 0; i &lt; locations(); i++) {</span>
+<span class="nc bnc" id="L1136" title="All 2 branches missed.">            if (getInternal(i) &gt; 0) {</span>
+<span class="nc" id="L1137">                troopersAlive++;</span>
+            }
+        }
+<span class="nc" id="L1140">        troopersShooting = troopersAlive;</span>
+<span class="nc" id="L1141">    }</span>
+
+    /**
+     * Get the number of men in the unit (before damage is applied).
+     *
+     * @see megamek.common.Infantry#getShootingStrength
+     */
+    @Override
+    public int getShootingStrength() {
+<span class="nc" id="L1150">        return troopersShooting;</span>
+    }
+
+    public void setCost(int inC) {
+<span class="nc" id="L1154">        myCost = inC;</span>
+<span class="nc" id="L1155">    }</span>
+
+    /**
+     * Determines if the battle armor unit is burdened with un-jettisoned
+     * equipment. This can prevent the unit from jumping or using their special
+     * Anti-Mek attacks.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if the unit hasn't jettisoned its equipment
+     *         yet, &lt;code&gt;false&lt;/code&gt; if it has.
+     */
+    public boolean isBurdened() {
+
+        // Clan Elemental points are never burdened by equipment.
+<span class="nc bnc" id="L1168" title="All 2 branches missed.">        if (!isClan()) {</span>
+
+            // if we have ammo left for a body mounted missile launcher,
+            // we are burdened
+<span class="nc bnc" id="L1172" title="All 2 branches missed.">            for (Mounted mounted : getAmmo()) {</span>
+<span class="nc bnc" id="L1173" title="All 2 branches missed.">                if (mounted.getUsableShotsLeft() == 0) {</span>
+                    // no shots left, we don't count
+<span class="nc" id="L1175">                    continue;</span>
+                }
+                // first get the weapon we are linked by
+                // (so we basically only check the currently loaded
+                // ammo, but if the weapon has no currently loaded ammo, we're
+                // fine
+<span class="nc" id="L1181">                Mounted weapon = mounted.getLinkedBy();</span>
+<span class="nc bnc" id="L1182" title="All 4 branches missed.">                if ((weapon != null) &amp;&amp; weapon.isBodyMounted()</span>
+<span class="nc bnc" id="L1183" title="All 2 branches missed.">                        &amp;&amp; weapon.getType().hasFlag(WeaponType.F_MISSILE)) {</span>
+<span class="nc" id="L1184">                    return true;</span>
+                }
+<span class="nc" id="L1186">            } // Check the next piece of equipment</span>
+
+        } // End is-inner-sphere-squad
+
+        // Unit isn't burdened.
+<span class="nc" id="L1191">        return false;</span>
+    }
+
+    @Override
+    public boolean canMakeAntiMekAttacks() {
+<span class="nc bnc" id="L1196" title="All 4 branches missed.">        return !isBurdened() &amp;&amp; canDoMechanizedBA()</span>
+<span class="nc bnc" id="L1197" title="All 2 branches missed.">                &amp;&amp; (getWeightClass() &lt; EntityWeightClass.WEIGHT_HEAVY)</span>
+<span class="nc bnc" id="L1198" title="All 2 branches missed.">                &amp;&amp; (getMovementMode() != EntityMovementMode.INF_UMU);</span>
+    }
+
+    /**
+     * does this BA have an unjettisoned DWP?
+     *
+     * @return
+     */
+    public boolean hasDWP() {
+<span class="pc bpc" id="L1207" title="1 of 2 branches missed.">        for (Mounted mounted : getWeaponList()) {</span>
+<span class="nc bnc" id="L1208" title="All 2 branches missed.">            if (mounted.isDWPMounted()) {</span>
+<span class="nc bnc" id="L1209" title="All 2 branches missed.">                if (mounted.isMissing()) {</span>
+<span class="nc" id="L1210">                    continue;</span>
+<span class="nc bnc" id="L1211" title="All 2 branches missed.">                } else if ((mounted.getLinked() != null)</span>
+<span class="nc bnc" id="L1212" title="All 2 branches missed.">                        &amp;&amp; (mounted.getLinked().getUsableShotsLeft() &gt; 0)) {</span>
+<span class="nc" id="L1213">                    return true;</span>
+<span class="nc bnc" id="L1214" title="All 2 branches missed.">                } else if ((mounted.getLinked() == null)</span>
+<span class="nc bnc" id="L1215" title="All 2 branches missed.">                        &amp;&amp; !mounted.isMissing()) {</span>
+<span class="nc" id="L1216">                    return true;</span>
+                }
+            }
+<span class="nc" id="L1219">        }</span>
+<span class="fc" id="L1220">        return false;</span>
+    }
+
+    /**
+     * Returns true if this &lt;code&gt;BattleArmor&lt;/code&gt; can use a detachable weapon
+     * pack. A &lt;code&gt;BattleArmor&lt;/code&gt; must have 2 or more walking MP and be
+     * Medium or heavier to mount DWP.
+     *
+     * @return
+     */
+    public boolean canMountDWP() {
+<span class="nc bnc" id="L1231" title="All 2 branches missed.">        return (getOriginalWalkMP() &gt;= 2)</span>
+<span class="nc bnc" id="L1232" title="All 2 branches missed.">                &amp;&amp; (getWeightClass() &gt;= EntityWeightClass.WEIGHT_MEDIUM);</span>
+    }
+
+    /**
+     * Returns the name of the stealth Armor used by the BA. Mostly for
+     * MegaMekLab Usage.
+     *
+     * @return name of the stealth armor.
+     */
+    public String getStealthName() {
+<span class="nc" id="L1242">        return stealthName;</span>
+    }
+
+    public String getCamoName() {
+<span class="nc" id="L1246">        return camoName;</span>
+    }
+
+    /**
+     * Public interface to the BattleArmors short range stealth modifier
+     *
+     * @return shortStealthMod
+     */
+    public int getShortStealthMod() {
+<span class="nc" id="L1255">        return shortStealthMod;</span>
+    }
+
+    /**
+     * Public interface to the BattleArmors medium range stealth modifier
+     *
+     * @return mediumStealthMod
+     */
+    public int getMediumStealthMod() {
+<span class="nc" id="L1264">        return mediumStealthMod;</span>
+    }
+
+    /**
+     * Public interface to the BattleArmors long range stealth modifier
+     *
+     * @return longStealthMod
+     */
+    public int getLongStealthMod() {
+<span class="nc" id="L1273">        return longStealthMod;</span>
+    }
+
+    /**
+     * Determine if this unit has an active stealth system.
+     * &lt;p/&gt;
+     * Sub-classes are encouraged to override this method.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if this unit has a stealth system that is
+     *         currently active, &lt;code&gt;false&lt;/code&gt; if there is no stealth
+     *         system or if it is inactive.
+     */
+    @Override
+    public boolean isStealthActive() {
+<span class="nc bnc" id="L1287" title="All 6 branches missed.">        return (isStealthy || isMimetic || hasCamoSystem);</span>
+    }
+
+    public boolean isMimetic() {
+<span class="nc" id="L1291">        return isMimetic;</span>
+    }
+
+    public boolean hasCamoSystem() {
+<span class="nc" id="L1295">        return hasCamoSystem;</span>
+    }
+
+    public boolean isStealthy() {
+<span class="nc" id="L1299">        return isStealthy;</span>
+    }
+
+    /**
+     * Determine the stealth modifier for firing at this unit from the given
+     * range. If the value supplied for &lt;code&gt;range&lt;/code&gt; is not one of the
+     * &lt;code&gt;Entity&lt;/code&gt; class range constants, an
+     * &lt;code&gt;IllegalArgumentException&lt;/code&gt; will be thrown.
+     * &lt;p/&gt;
+     * Sub-classes are encouraged to override this method.
+     *
+     * @param range
+     *            - an &lt;code&gt;int&lt;/code&gt; value that must match one of the
+     *            &lt;code&gt;Compute&lt;/code&gt; class range constants.
+     * @param ae
+     *            - the entity making the attack.
+     * @return a &lt;code&gt;TargetRoll&lt;/code&gt; value that contains the stealth
+     *         modifier for the given range.
+     */
+    @Override
+    public TargetRoll getStealthModifier(int range, Entity ae) {
+<span class="nc" id="L1320">        TargetRoll result = null;</span>
+
+        // Note: infantry are immune to stealth, but not camoflage
+        // or mimetic armor
+
+        // Mimetic armor modifier is based upon the number of hexes moved,
+        // and adds to existing movement modifier (Total Warfare p228):
+        // 0 hexes moved +3 movement modifier
+        // 1 hex moved +2 movement modifier
+        // 2 hexes moved +1 movement modifier
+        // 3+ hexes moved +0 movement modifier
+<span class="nc bnc" id="L1331" title="All 4 branches missed.">        if (isMimetic &amp;&amp; !hasMyomerBooster()) {</span>
+<span class="nc" id="L1332">            int mmod = 3 - delta_distance;</span>
+<span class="nc" id="L1333">            mmod = Math.max(0, mmod);</span>
+<span class="nc" id="L1334">            result = new TargetRoll(mmod, &quot;mimetic armor&quot;);</span>
+        }
+
+        // Stealthy units alreay have their to-hit mods defined.
+<span class="nc bnc" id="L1338" title="All 6 branches missed.">        if (isStealthy &amp;&amp; !ae.isConventionalInfantry() &amp;&amp; !hasMyomerBooster()) {</span>
+<span class="nc bnc" id="L1339" title="All 5 branches missed.">            switch (range) {</span>
+                case RangeType.RANGE_MINIMUM:
+                case RangeType.RANGE_SHORT:
+<span class="nc" id="L1342">                    result = new TargetRoll(shortStealthMod, stealthName);</span>
+<span class="nc" id="L1343">                    break;</span>
+                case RangeType.RANGE_MEDIUM:
+<span class="nc" id="L1345">                    result = new TargetRoll(mediumStealthMod, stealthName);</span>
+<span class="nc" id="L1346">                    break;</span>
+                case RangeType.RANGE_LONG:
+                case RangeType.RANGE_EXTREME:
+                case RangeType.RANGE_LOS:
+<span class="nc" id="L1350">                    result = new TargetRoll(longStealthMod, stealthName);</span>
+<span class="nc" id="L1351">                    break;</span>
+                case RangeType.RANGE_OUT:
+<span class="nc" id="L1353">                    break;</span>
+                default:
+<span class="nc" id="L1355">                    throw new IllegalArgumentException(&quot;Unknown range constant: &quot; + range);</span>
+            }
+        }
+
+        // Simple camo modifier is on top of the movement modifier
+        // 0 hexes moved +2 movement modifier
+        // 1 hexes moved +1 movement modifier
+        // 2+ hexes moved no modifier
+        // This can also be in addition to any armor except Mimetic!
+<span class="nc bnc" id="L1364" title="All 4 branches missed.">        if (hasCamoSystem &amp;&amp; (delta_distance &lt; 2)) {</span>
+<span class="nc" id="L1365">            int mod = Math.max(2 - delta_distance, 0);</span>
+<span class="nc bnc" id="L1366" title="All 2 branches missed.">            if (result == null) {</span>
+<span class="nc" id="L1367">                result = new TargetRoll(mod, &quot;camoflage&quot;);</span>
+            } else {
+<span class="nc" id="L1369">                result.append(new TargetRoll(mod, &quot;camoflage&quot;));</span>
+            }
+        }
+
+<span class="nc bnc" id="L1373" title="All 2 branches missed.">        if (result == null) {</span>
+<span class="nc" id="L1374">            result = new TargetRoll(0, &quot;stealth not active&quot;);</span>
+        }
+
+        // Return the result.
+<span class="nc" id="L1378">        return result;</span>
+    } // End public TargetRoll getStealthModifier( char )
+
+    @Override
+    public double getCost(boolean ignoreAmmo) {
+<span class="nc" id="L1383">        return getCost(ignoreAmmo, true);</span>
+    }
+
+    @Override
+    public double getAlternateCost() {
+<span class="nc" id="L1388">        return getCost(false, false);</span>
+    }
+
+    public double getCost(boolean ignoreAmmo, boolean includeTrainingAndClan) {
+
+<span class="nc bnc" id="L1393" title="All 2 branches missed.">        if(getChassis().equals(&quot;Longinus Battle Armor&quot;)</span>
+<span class="nc bnc" id="L1394" title="All 4 branches missed.">                &amp;&amp; getModel().equals(&quot;[Flamer]&quot;)</span>
+                &amp;&amp; !includeTrainingAndClan) {
+        }
+
+<span class="nc" id="L1398">        double cost = 0;</span>
+<span class="nc bnc" id="L1399" title="All 4 branches missed.">        switch (weightClass) {</span>
+        case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L1401">            cost += 100000;</span>
+<span class="nc bnc" id="L1402" title="All 2 branches missed.">            if (getMovementMode() == EntityMovementMode.VTOL) {</span>
+<span class="nc" id="L1403">                cost += getOriginalJumpMP() * 100000;</span>
+            } else {
+<span class="nc" id="L1405">                cost += getOriginalJumpMP() * 75000;</span>
+            }
+<span class="nc" id="L1407">            break;</span>
+        case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L1409">            cost += 200000;</span>
+<span class="nc bnc" id="L1410" title="All 2 branches missed.">            if (getMovementMode() == EntityMovementMode.INF_UMU) {</span>
+<span class="nc" id="L1411">                cost += getOriginalJumpMP() * 100000;</span>
+            } else {
+<span class="nc" id="L1413">                cost += getOriginalJumpMP() * 150000;</span>
+            }
+<span class="nc" id="L1415">            break;</span>
+        case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L1417">            cost += 400000;</span>
+<span class="nc bnc" id="L1418" title="All 2 branches missed.">            if (getMovementMode() == EntityMovementMode.INF_UMU) {</span>
+<span class="nc" id="L1419">                cost += getOriginalJumpMP() * 150000;</span>
+            } else {
+<span class="nc" id="L1421">                cost += getOriginalJumpMP() * 300000;</span>
+            }
+<span class="nc" id="L1423">            break;</span>
+        default:
+<span class="nc" id="L1425">            cost += 50000;</span>
+<span class="nc" id="L1426">            cost += 50000 * getOriginalJumpMP();</span>
+        }
+<span class="nc" id="L1428">        cost += 25000 * (getOriginalWalkMP() - 1);</span>
+
+        // damn, manipulators are supposed to be treated as structural costs
+        // and get multiplied by 1.1 if clan
+<span class="nc" id="L1432">        long manipulatorCost = 0;</span>
+<span class="nc bnc" id="L1433" title="All 2 branches missed.">        for (Mounted mounted : getEquipment()) {</span>
+<span class="nc bnc" id="L1434" title="All 2 branches missed.">            if ((mounted.getType() instanceof MiscType)</span>
+<span class="nc bnc" id="L1435" title="All 2 branches missed.">                    &amp;&amp; ((MiscType) mounted.getType()).hasFlag(MiscType.F_BA_MANIPULATOR)) {</span>
+<span class="nc" id="L1436">                long itemCost = (long) mounted.getCost();</span>
+<span class="nc" id="L1437">                manipulatorCost += itemCost;</span>
+            }
+
+<span class="nc" id="L1440">        }</span>
+<span class="nc" id="L1441">        cost += manipulatorCost;</span>
+
+<span class="nc" id="L1443">        double baseArmorCost = 10000;</span>
+<span class="nc bnc" id="L1444" title="All 6 branches missed.">        switch(getArmorType(LOC_TROOPER_1)) {</span>
+        case EquipmentType.T_ARMOR_BA_STANDARD_ADVANCED:
+<span class="nc" id="L1446">            baseArmorCost = 12500;</span>
+<span class="nc" id="L1447">            break;</span>
+        case EquipmentType.T_ARMOR_BA_MIMETIC:
+        case EquipmentType.T_ARMOR_BA_STEALTH:
+<span class="nc" id="L1450">            baseArmorCost =  15000;</span>
+<span class="nc" id="L1451">            break;</span>
+        case EquipmentType.T_ARMOR_BA_STEALTH_BASIC:
+<span class="nc" id="L1453">            baseArmorCost =  12000;</span>
+<span class="nc" id="L1454">            break;</span>
+        case EquipmentType.T_ARMOR_BA_STEALTH_IMP:
+<span class="nc" id="L1456">            baseArmorCost =  20000;</span>
+<span class="nc" id="L1457">            break;</span>
+        case EquipmentType.T_ARMOR_BA_STEALTH_PROTOTYPE:
+<span class="nc" id="L1459">            baseArmorCost =  50000;</span>
+<span class="nc" id="L1460">            break;</span>
+        case EquipmentType.T_ARMOR_BA_FIRE_RESIST:
+        case EquipmentType.T_ARMOR_BA_STANDARD_PROTOTYPE:
+        case EquipmentType.T_ARMOR_BA_STANDARD:
+        default:
+<span class="nc" id="L1465">            baseArmorCost =  10000;</span>
+        }
+
+<span class="nc" id="L1468">        cost += (baseArmorCost * getOArmor(LOC_TROOPER_1));</span>
+
+        // training cost and clan mod
+<span class="nc bnc" id="L1471" title="All 2 branches missed.">        if (includeTrainingAndClan) {</span>
+<span class="nc bnc" id="L1472" title="All 2 branches missed.">            if (isClan()) {</span>
+<span class="nc" id="L1473">                cost *= 1.1;</span>
+<span class="nc" id="L1474">                cost += 200000;</span>
+            } else {
+<span class="nc" id="L1476">                cost += 150000;</span>
+            }
+        }
+
+        // TODO: we do not track the modular weapons mount for 1000 C-bills in
+        // the unit files
+<span class="nc" id="L1482">        cost += getWeaponsAndEquipmentCost(ignoreAmmo) - manipulatorCost;</span>
+
+<span class="nc" id="L1484">        return getSquadSize() * cost;</span>
+    }
+
+    @Override
+    public boolean hasEiCockpit() {
+<span class="nc" id="L1489">        return true;</span>
+    }
+
+    public void setWeightClass(int inWC) {
+<span class="nc bnc" id="L1493" title="All 6 branches missed.">        switch (inWC) {</span>
+        case 0:
+<span class="nc" id="L1495">            weightClass = EntityWeightClass.WEIGHT_ULTRA_LIGHT;</span>
+<span class="nc" id="L1496">            break;</span>
+        case 1:
+<span class="nc" id="L1498">            weightClass = EntityWeightClass.WEIGHT_LIGHT;</span>
+<span class="nc" id="L1499">            break;</span>
+        case 2:
+<span class="nc" id="L1501">            weightClass = EntityWeightClass.WEIGHT_MEDIUM;</span>
+<span class="nc" id="L1502">            break;</span>
+        case 3:
+<span class="nc" id="L1504">            weightClass = EntityWeightClass.WEIGHT_HEAVY;</span>
+<span class="nc" id="L1505">            break;</span>
+        case 4:
+<span class="nc" id="L1507">            weightClass = EntityWeightClass.WEIGHT_ASSAULT;</span>
+            break;
+        }
+<span class="nc" id="L1510">    }</span>
+
+    public double getTrooperWeight() {
+<span class="nc" id="L1513">        return EntityWeightClass.getClassLimit(getWeightClass(), this);</span>
+    }
+
+    @Override
+    public int getWeightClass() {
+<span class="fc" id="L1518">        return weightClass;</span>
+    }
+
+    public int getTroopers() {
+<span class="fc" id="L1522">        return troopers;</span>
+    }
+
+    public void setTroopers(int troopers) {
+<span class="nc" id="L1526">        this.troopers = troopers;</span>
+        // this is also squad size
+<span class="nc" id="L1528">        setSquadSize(troopers);</span>
+<span class="nc" id="L1529">    }</span>
+
+    public void setChassisType(int inCT) {
+<span class="nc" id="L1532">        chassisType = inCT;</span>
+<span class="nc" id="L1533">    }</span>
+
+    public int getChassisType() {
+<span class="nc" id="L1536">        return chassisType;</span>
+    }
+
+    @Override
+    public boolean canAssaultDrop() {
+<span class="nc" id="L1541">        return true;</span>
+    }
+
+    @Override
+    public boolean isNuclearHardened() {
+<span class="nc" id="L1546">        return true;</span>
+    }
+
+    public boolean isTrooperActive(int trooperNum) {
+<span class="nc bnc" id="L1550" title="All 2 branches missed.">        return (getInternal(trooperNum) &gt; 0);</span>
+    }
+
+    public int getNumberActiverTroopers() {
+<span class="nc" id="L1554">        int count = 0;</span>
+        // Initialize the troopers.
+<span class="nc bnc" id="L1556" title="All 2 branches missed.">        for (int loop = 1; loop &lt; locations(); loop++) {</span>
+<span class="nc bnc" id="L1557" title="All 2 branches missed.">            if (isTrooperActive(loop)) {</span>
+<span class="nc" id="L1558">                count++;</span>
+            }
+        }
+<span class="nc" id="L1561">        return count;</span>
+    }
+
+    public int getRandomTrooper() {
+<span class="nc" id="L1565">        Vector&lt;Integer&gt; activeTroops = new Vector&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L1566" title="All 2 branches missed.">        for (int loop = 1; loop &lt; locations(); loop++) {</span>
+<span class="nc bnc" id="L1567" title="All 2 branches missed.">            if (isTrooperActive(loop)) {</span>
+<span class="nc" id="L1568">                activeTroops.add(loop);</span>
+            }
+        }
+<span class="nc" id="L1571">        int locInt = Compute.randomInt(activeTroops.size());</span>
+<span class="nc" id="L1572">        return activeTroops.elementAt(locInt);</span>
+    }
+
+    @Override
+    public boolean loadWeapon(Mounted mounted, Mounted mountedAmmo) {
+        // BA must carry the ammo in same location as the weapon.
+        // except for mine launcher mines
+        // This allows for squad weapons and individual trooper weapons
+        // such as NARC and the support weapons in TW/TO
+<span class="nc" id="L1581">        AmmoType at = (AmmoType) mountedAmmo.getType();</span>
+<span class="nc bnc" id="L1582" title="All 2 branches missed.">        if (!(at.getAmmoType() == AmmoType.T_MINE)</span>
+<span class="nc bnc" id="L1583" title="All 2 branches missed.">                &amp;&amp; (mounted.getLocation() != mountedAmmo.getLocation())) {</span>
+<span class="nc" id="L1584">            return false;</span>
+        }
+<span class="nc" id="L1586">        return super.loadWeapon(mounted, mountedAmmo);</span>
+    }
+
+    @Override
+    public boolean loadWeaponWithSameAmmo(Mounted mounted, Mounted mountedAmmo) {
+        // BA must carry the ammo in same location as the weapon.
+        // except for mine launcher mines
+        // This allows for squad weapons and individual trooper weapons
+        // such as NARC and the support weapons in TW/TO
+<span class="nc" id="L1595">        AmmoType at = (AmmoType) mountedAmmo.getType();</span>
+<span class="nc bnc" id="L1596" title="All 2 branches missed.">        if (!(at.getAmmoType() == AmmoType.T_MINE)</span>
+<span class="nc bnc" id="L1597" title="All 2 branches missed.">                &amp;&amp; (mounted.getLocation() != mountedAmmo.getLocation())) {</span>
+<span class="nc" id="L1598">            return false;</span>
+        }
+<span class="nc" id="L1600">        return super.loadWeaponWithSameAmmo(mounted, mountedAmmo);</span>
+    }
+
+    public final String getBLK() {
+<span class="nc" id="L1604">        String newline = &quot;\r\n&quot;;</span>
+<span class="nc" id="L1605">        StringBuffer buff = new StringBuffer();</span>
+<span class="nc" id="L1606">        buff.append(&quot;&lt;BlockVersion&gt;&quot;);</span>
+<span class="nc" id="L1607">        buff.append(newline);</span>
+<span class="nc" id="L1608">        buff.append(&quot;1&quot;);</span>
+<span class="nc" id="L1609">        buff.append(newline);</span>
+<span class="nc" id="L1610">        buff.append(&quot;&lt;/BlockVersion&gt;&quot;);</span>
+<span class="nc" id="L1611">        buff.append(newline);</span>
+
+<span class="nc" id="L1613">        buff.append(&quot;&lt;UnitType&gt;&quot;);</span>
+<span class="nc" id="L1614">        buff.append(newline);</span>
+<span class="nc" id="L1615">        buff.append(&quot;BattleArmor&quot;);</span>
+<span class="nc" id="L1616">        buff.append(newline);</span>
+<span class="nc" id="L1617">        buff.append(&quot;&lt;/UnitType&gt;&quot;);</span>
+<span class="nc" id="L1618">        buff.append(newline);</span>
+
+<span class="nc" id="L1620">        buff.append(&quot;&lt;name&gt;&quot;);</span>
+<span class="nc" id="L1621">        buff.append(newline);</span>
+<span class="nc" id="L1622">        buff.append(getChassis());</span>
+<span class="nc" id="L1623">        buff.append(newline);</span>
+<span class="nc" id="L1624">        buff.append(&quot;&lt;/name&gt;&quot;);</span>
+<span class="nc" id="L1625">        buff.append(newline);</span>
+
+<span class="nc" id="L1627">        buff.append(&quot;&lt;model&gt;&quot;);</span>
+<span class="nc" id="L1628">        buff.append(newline);</span>
+<span class="nc" id="L1629">        buff.append(getModel());</span>
+<span class="nc" id="L1630">        buff.append(newline);</span>
+<span class="nc" id="L1631">        buff.append(&quot;&lt;/model&gt;&quot;);</span>
+<span class="nc" id="L1632">        buff.append(newline);</span>
+
+<span class="nc" id="L1634">        buff.append(&quot;&lt;year&gt;&quot;);</span>
+<span class="nc" id="L1635">        buff.append(newline);</span>
+<span class="nc" id="L1636">        buff.append(getYear());</span>
+<span class="nc" id="L1637">        buff.append(newline);</span>
+<span class="nc" id="L1638">        buff.append(&quot;&lt;/year&gt;&quot;);</span>
+<span class="nc" id="L1639">        buff.append(newline);</span>
+
+<span class="nc" id="L1641">        buff.append(&quot;&lt;type&gt;&quot;);</span>
+<span class="nc" id="L1642">        buff.append(newline);</span>
+<span class="nc bnc" id="L1643" title="All 10 branches missed.">        switch (getTechLevel()) {</span>
+        case TechConstants.T_INTRO_BOXSET:
+<span class="nc" id="L1645">            buff.append(&quot;IS Level 1&quot;);</span>
+<span class="nc" id="L1646">            break;</span>
+        case TechConstants.T_IS_TW_NON_BOX:
+<span class="nc" id="L1648">            buff.append(&quot;IS Level 2&quot;);</span>
+<span class="nc" id="L1649">            break;</span>
+        case TechConstants.T_IS_ADVANCED:
+<span class="nc" id="L1651">            buff.append(&quot;IS Level 3&quot;);</span>
+<span class="nc" id="L1652">            break;</span>
+        case TechConstants.T_IS_EXPERIMENTAL:
+<span class="nc" id="L1654">            buff.append(&quot;IS Level 4&quot;);</span>
+<span class="nc" id="L1655">            break;</span>
+        case TechConstants.T_IS_UNOFFICIAL:
+<span class="nc" id="L1657">            buff.append(&quot;IS Level 5&quot;);</span>
+<span class="nc" id="L1658">            break;</span>
+        case TechConstants.T_CLAN_TW:
+<span class="nc" id="L1660">            buff.append(&quot;Clan Level 2&quot;);</span>
+<span class="nc" id="L1661">            break;</span>
+        case TechConstants.T_CLAN_ADVANCED:
+<span class="nc" id="L1663">            buff.append(&quot;Clan Level 3&quot;);</span>
+<span class="nc" id="L1664">            break;</span>
+        case TechConstants.T_CLAN_EXPERIMENTAL:
+<span class="nc" id="L1666">            buff.append(&quot;Clan Level 4&quot;);</span>
+<span class="nc" id="L1667">            break;</span>
+        case TechConstants.T_CLAN_UNOFFICIAL:
+<span class="nc" id="L1669">            buff.append(&quot;Clan Level 5&quot;);</span>
+            break;
+        }
+<span class="nc" id="L1672">        buff.append(newline);</span>
+<span class="nc" id="L1673">        buff.append(&quot;&lt;/type&gt;&quot;);</span>
+<span class="nc" id="L1674">        buff.append(newline);</span>
+
+<span class="nc" id="L1676">        buff.append(&quot;&lt;trooper count&gt;&quot;);</span>
+<span class="nc" id="L1677">        buff.append(newline);</span>
+<span class="nc" id="L1678">        buff.append(getWeight());</span>
+<span class="nc" id="L1679">        buff.append(newline);</span>
+<span class="nc" id="L1680">        buff.append(&quot;&lt;/trooper count&gt;&quot;);</span>
+<span class="nc" id="L1681">        buff.append(newline);</span>
+
+<span class="nc" id="L1683">        buff.append(&quot;&lt;weightclass&gt;&quot;);</span>
+<span class="nc" id="L1684">        buff.append(newline);</span>
+<span class="nc bnc" id="L1685" title="All 6 branches missed.">        switch (getWeightClass()) {</span>
+        case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L1687">            buff.append(&quot;0&quot;);</span>
+<span class="nc" id="L1688">            break;</span>
+        case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L1690">            buff.append(&quot;1&quot;);</span>
+<span class="nc" id="L1691">            break;</span>
+        case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L1693">            buff.append(&quot;2&quot;);</span>
+<span class="nc" id="L1694">            break;</span>
+        case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L1696">            buff.append(&quot;3&quot;);</span>
+<span class="nc" id="L1697">            break;</span>
+        case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L1699">            buff.append(&quot;4&quot;);</span>
+            break;
+        }
+<span class="nc" id="L1702">        buff.append(newline);</span>
+<span class="nc" id="L1703">        buff.append(&quot;&lt;/weightclass&gt;&quot;);</span>
+<span class="nc" id="L1704">        buff.append(newline);</span>
+
+<span class="nc" id="L1706">        buff.append(&quot;&lt;motion_type&gt;&quot;);</span>
+<span class="nc" id="L1707">        buff.append(newline);</span>
+<span class="nc bnc" id="L1708" title="All 5 branches missed.">        switch (getMovementMode()) {</span>
+        case INF_JUMP:
+<span class="nc" id="L1710">            buff.append(&quot;jump&quot;);</span>
+<span class="nc" id="L1711">            break;</span>
+        case INF_LEG:
+<span class="nc" id="L1713">            buff.append(&quot;leg&quot;);</span>
+<span class="nc" id="L1714">            break;</span>
+        case VTOL:
+<span class="nc" id="L1716">            buff.append(&quot;vtol&quot;);</span>
+<span class="nc" id="L1717">            break;</span>
+        case INF_UMU:
+<span class="nc" id="L1719">            buff.append(&quot;submarine&quot;);</span>
+<span class="nc" id="L1720">            break;</span>
+        default:
+<span class="nc" id="L1722">            buff.append(&quot;none&quot;);</span>
+            break;
+        }
+<span class="nc" id="L1725">        buff.append(newline);</span>
+<span class="nc" id="L1726">        buff.append(&quot;&lt;/motion_type&gt;&quot;);</span>
+<span class="nc" id="L1727">        buff.append(newline);</span>
+
+<span class="nc" id="L1729">        buff.append(&quot;&lt;chassis&gt;&quot;);</span>
+<span class="nc" id="L1730">        buff.append(newline);</span>
+<span class="nc bnc" id="L1731" title="All 3 branches missed.">        switch (getChassisType()) {</span>
+        case BattleArmor.CHASSIS_TYPE_BIPED:
+<span class="nc" id="L1733">            buff.append(&quot;biped&quot;);</span>
+<span class="nc" id="L1734">            break;</span>
+        case BattleArmor.CHASSIS_TYPE_QUAD:
+<span class="nc" id="L1736">            buff.append(&quot;quad&quot;);</span>
+            break;
+        }
+<span class="nc" id="L1739">        buff.append(&quot;&lt;/chassis&gt;&quot;);</span>
+<span class="nc" id="L1740">        buff.append(newline);</span>
+
+<span class="nc" id="L1742">        buff.append(&quot;&lt;cruiseMP&gt;&quot;);</span>
+<span class="nc" id="L1743">        buff.append(newline);</span>
+<span class="nc" id="L1744">        buff.append(getOriginalRunMP());</span>
+<span class="nc" id="L1745">        buff.append(newline);</span>
+<span class="nc" id="L1746">        buff.append(&quot;&lt;/cruiseMP&gt;&quot;);</span>
+<span class="nc" id="L1747">        buff.append(newline);</span>
+
+<span class="nc" id="L1749">        buff.append(&quot;&lt;jumpMP&gt;&quot;);</span>
+<span class="nc" id="L1750">        buff.append(newline);</span>
+<span class="nc" id="L1751">        buff.append(getOriginalJumpMP());</span>
+<span class="nc" id="L1752">        buff.append(newline);</span>
+<span class="nc" id="L1753">        buff.append(&quot;&lt;/jumpMP&gt;&quot;);</span>
+<span class="nc" id="L1754">        buff.append(newline);</span>
+
+<span class="nc" id="L1756">        buff.append(&quot;&lt;armor&gt;&quot;);</span>
+<span class="nc" id="L1757">        buff.append(newline);</span>
+<span class="nc" id="L1758">        buff.append(getOArmor(LOC_TROOPER_1));</span>
+<span class="nc" id="L1759">        buff.append(newline);</span>
+<span class="nc" id="L1760">        buff.append(&quot;&lt;/armor&gt;&quot;);</span>
+<span class="nc" id="L1761">        buff.append(newline);</span>
+        
+<span class="nc bnc" id="L1763" title="All 2 branches missed.">        if (getTurretCapacity() &gt; 0) {</span>
+<span class="nc" id="L1764">            buff.append(&quot;&lt;turret&gt;&quot;);</span>
+<span class="nc" id="L1765">            buff.append(newline);</span>
+<span class="nc bnc" id="L1766" title="All 2 branches missed.">            if (hasModularTurretMount()) {</span>
+<span class="nc" id="L1767">                buff.append(&quot;Modular:&quot;);</span>
+            } else {
+<span class="nc" id="L1769">                buff.append(&quot;Standard:&quot;);</span>
+            }
+<span class="nc" id="L1771">            buff.append(String.valueOf(getTurretCapacity()));</span>
+<span class="nc" id="L1772">            buff.append(&quot;&lt;/turret&gt;&quot;);</span>
+<span class="nc" id="L1773">            buff.append(newline);</span>
+        }
+
+<span class="nc" id="L1776">        buff.append(&quot;&lt;armor_type&gt;&quot;);</span>
+<span class="nc" id="L1777">        buff.append(newline);</span>
+<span class="nc" id="L1778">        buff.append(getArmorType(LOC_SQUAD));</span>
+<span class="nc" id="L1779">        buff.append(newline);</span>
+<span class="nc" id="L1780">        buff.append(&quot;&lt;/armor_type&gt;&quot;);</span>
+<span class="nc" id="L1781">        buff.append(newline);</span>
+
+<span class="nc" id="L1783">        buff.append(&quot;&lt;armor_tech&gt;&quot;);</span>
+<span class="nc" id="L1784">        buff.append(newline);</span>
+<span class="nc" id="L1785">        buff.append(getArmorTechLevel(LOC_SQUAD));</span>
+<span class="nc" id="L1786">        buff.append(newline);</span>
+<span class="nc" id="L1787">        buff.append(&quot;&lt;/armor_tech&gt;&quot;);</span>
+<span class="nc" id="L1788">        buff.append(newline);</span>
+
+<span class="nc bnc" id="L1790" title="All 2 branches missed.">        for (int i = 0; i &lt; locations(); i++) {</span>
+<span class="nc" id="L1791">            boolean found = false;</span>
+<span class="nc bnc" id="L1792" title="All 2 branches missed.">            for (Mounted m : getEquipment()) {</span>
+                // don't write out swarm and leg attack, those get added
+                // dynamically
+<span class="nc bnc" id="L1795" title="All 2 branches missed.">                if ((m.getType() instanceof WeaponType)</span>
+<span class="nc bnc" id="L1796" title="All 2 branches missed.">                        &amp;&amp; m.getType().hasFlag(WeaponType.F_INFANTRY_ATTACK)) {</span>
+<span class="nc" id="L1797">                    continue;</span>
+                }
+<span class="nc bnc" id="L1799" title="All 2 branches missed.">                if (m.getLocation() == i) {</span>
+<span class="nc bnc" id="L1800" title="All 2 branches missed.">                    if (!found) {</span>
+<span class="nc" id="L1801">                        found = true;</span>
+<span class="nc" id="L1802">                        buff.append(&quot;&lt;&quot;);</span>
+<span class="nc" id="L1803">                        buff.append(getLocationName(i));</span>
+<span class="nc" id="L1804">                        buff.append(&quot; equipment&gt;&quot;);</span>
+<span class="nc" id="L1805">                        buff.append(newline);</span>
+                    }
+<span class="nc" id="L1807">                    buff.append(m.getType().getInternalName());</span>
+<span class="nc" id="L1808">                    buff.append(newline);</span>
+                }
+<span class="nc" id="L1810">            }</span>
+<span class="nc bnc" id="L1811" title="All 2 branches missed.">            if (found) {</span>
+<span class="nc" id="L1812">                buff.append(&quot;&lt;/&quot;);</span>
+<span class="nc" id="L1813">                buff.append(getLocationName(i));</span>
+<span class="nc" id="L1814">                buff.append(&quot; equipment&gt;&quot;);</span>
+<span class="nc" id="L1815">                buff.append(newline);</span>
+            }
+        }
+
+<span class="nc" id="L1819">        return buff.toString();</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.Entity#getVibroClaws()
+     */
+    @Override
+    public int getVibroClaws() {
+<span class="nc" id="L1829">        int claws = 0;</span>
+<span class="nc bnc" id="L1830" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L1831" title="All 2 branches missed.">            if (mounted.getType().hasFlag(MiscType.F_VIBROCLAW)) {</span>
+<span class="nc" id="L1832">                claws++;</span>
+            }
+<span class="nc" id="L1834">        }</span>
+<span class="nc" id="L1835">        return claws;</span>
+    }
+
+    /**
+     * return if this BA has fire resistant armor
+     *
+     * @return
+     */
+    public boolean isFireResistant() {
+<span class="nc bnc" id="L1844" title="All 2 branches missed.">        for (Mounted equip : getMisc()) {</span>
+<span class="nc bnc" id="L1845" title="All 2 branches missed.">            if (equip.getType().hasFlag(MiscType.F_FIRE_RESISTANT)) {</span>
+<span class="nc" id="L1846">                return true;</span>
+            }
+<span class="nc" id="L1848">        }</span>
+<span class="nc" id="L1849">        return false;</span>
+    }
+
+    /**
+     * return if this BA has laser reflective armor
+     *
+     * @return
+     */
+    public boolean isReflective() {
+<span class="nc bnc" id="L1858" title="All 2 branches missed.">        for (Mounted equip : getMisc()) {</span>
+<span class="nc bnc" id="L1859" title="All 2 branches missed.">            if (equip.getType().hasFlag(MiscType.F_REFLECTIVE)) {</span>
+<span class="nc" id="L1860">                return true;</span>
+            }
+<span class="nc" id="L1862">        }</span>
+<span class="nc" id="L1863">        return false;</span>
+    }
+
+    /**
+     * return if this BA has reactive armor
+     * @return
+     */
+    public boolean isReactive() {
+<span class="nc bnc" id="L1871" title="All 2 branches missed.">        for (Mounted equip : getMisc()) {</span>
+<span class="nc bnc" id="L1872" title="All 2 branches missed.">            if (equip.getType().hasFlag(MiscType.F_REACTIVE)) {</span>
+<span class="nc" id="L1873">                return true;</span>
+            }
+<span class="nc" id="L1875">        }</span>
+<span class="nc" id="L1876">        return false;</span>
+    }
+
+    /**
+     * return if this BA has improved sensors
+     *
+     * @return
+     */
+    public boolean hasImprovedSensors() {
+<span class="nc bnc" id="L1885" title="All 2 branches missed.">        for (Mounted equip : getMisc()) {</span>
+<span class="nc bnc" id="L1886" title="All 2 branches missed.">            if (equip.getType().hasFlag(MiscType.F_BAP)) {</span>
+<span class="nc bnc" id="L1887" title="All 2 branches missed.">                if (equip.getType().getInternalName().equals(Sensor.ISIMPROVED)</span>
+<span class="nc" id="L1888">                        || equip.getType().getInternalName()</span>
+<span class="nc bnc" id="L1889" title="All 2 branches missed.">                        .equals(Sensor.CLIMPROVED)) {</span>
+<span class="nc" id="L1890">                    return true;</span>
+                }
+            }
+<span class="nc" id="L1893">        }</span>
+<span class="nc" id="L1894">        return false;</span>
+    }
+
+    /**
+     * return if the BA has any kind of active probe
+     *
+     * @return
+     */
+    public boolean hasActiveProbe() {
+<span class="nc bnc" id="L1903" title="All 2 branches missed.">        for (Mounted equip : getMisc()) {</span>
+<span class="nc bnc" id="L1904" title="All 2 branches missed.">            if (equip.getType().hasFlag(MiscType.F_BAP)</span>
+<span class="nc" id="L1905">                    &amp;&amp; !(equip.getType().getInternalName()</span>
+<span class="nc bnc" id="L1906" title="All 2 branches missed.">                            .equals(Sensor.ISIMPROVED) || equip.getType()</span>
+<span class="nc bnc" id="L1907" title="All 2 branches missed.">                            .getInternalName().equals(Sensor.CLIMPROVED))) {</span>
+<span class="nc" id="L1908">                return true;</span>
+            }
+<span class="nc" id="L1910">        }</span>
+<span class="nc" id="L1911">        return false;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see megamek.common.Entity#canTransferCriticals(int)
+     */
+    @Override
+    public boolean canTransferCriticals(int loc) {
+        // BAs can never transfer crits
+<span class="nc" id="L1922">        return false;</span>
+    }
+
+    /**
+     * can this BattleArmor ride as Mechanized BA?
+     *
+     * @return
+     */
+    public boolean canDoMechanizedBA() {
+<span class="nc bnc" id="L1931" title="All 2 branches missed.">        if (getChassisType() != CHASSIS_TYPE_QUAD) {</span>
+<span class="nc bnc" id="L1932" title="All 2 branches missed.">            if (hasWorkingMisc(MiscType.F_MAGNETIC_CLAMP)) {</span>
+<span class="nc" id="L1933">                return true;</span>
+            }
+<span class="nc" id="L1935">            int tBasicManipulatorCount = countWorkingMisc(MiscType.F_BASIC_MANIPULATOR);</span>
+<span class="nc" id="L1936">            int tArmoredGloveCount = countWorkingMisc(MiscType.F_ARMORED_GLOVE);</span>
+<span class="nc" id="L1937">            int tBattleClawCount = countWorkingMisc(MiscType.F_BATTLE_CLAW);</span>
+<span class="nc bnc" id="L1938" title="All 4 branches missed.">            switch (getWeightClass()) {</span>
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+            case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc bnc" id="L1941" title="All 6 branches missed.">                if ((tArmoredGloveCount &gt; 1)</span>
+                        || (tBasicManipulatorCount &gt; 0)
+                        || (tBattleClawCount &gt; 0)) {
+<span class="nc" id="L1944">                    return true;</span>
+                }
+                break;
+            case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc bnc" id="L1948" title="All 4 branches missed.">                if ((tBasicManipulatorCount &gt; 0) || (tBattleClawCount &gt; 0)) {</span>
+<span class="nc" id="L1949">                    return true;</span>
+                }
+                break;
+            case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc bnc" id="L1953" title="All 4 branches missed.">                if ((tBasicManipulatorCount &gt; 0) || (tBattleClawCount &gt; 0)) {</span>
+<span class="nc" id="L1954">                    return true;</span>
+                }
+                break;
+            case EntityWeightClass.WEIGHT_ASSAULT:
+            default:
+<span class="nc" id="L1959">                return false;</span>
+            }
+        }
+<span class="nc" id="L1962">        return false;</span>
+    }
+
+    @Override
+    public double getWeight() {
+        // If following Total Warfare rules each BA trooper will weigh a ton
+        // for transport purposes. Following Tactical Operations gives us a
+        // more realistic weight per trooper
+<span class="nc bnc" id="L1970" title="All 2 branches missed.">        if ((game != null)</span>
+<span class="nc bnc" id="L1971" title="All 2 branches missed.">                &amp;&amp; game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_BA_WEIGHT)) {</span>
+<span class="nc" id="L1972">            double troopton = troopers;</span>
+<span class="nc bnc" id="L1973" title="All 6 branches missed.">            switch (getWeightClass()) {</span>
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L1975">                troopton = troopers * 0.25;</span>
+<span class="nc" id="L1976">                break;</span>
+            case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L1978">                troopton = troopers * 0.5;</span>
+<span class="nc" id="L1979">                break;</span>
+            case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L1981">                troopton = troopers * 1.0;</span>
+<span class="nc" id="L1982">                break;</span>
+            case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L1984">                troopton = troopers * 1.5;</span>
+<span class="nc" id="L1985">                break;</span>
+            case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L1987">                troopton = troopers * 2.0;</span>
+<span class="nc" id="L1988">                break;</span>
+            default:
+<span class="nc" id="L1990">                troopton = troopers;</span>
+            }
+<span class="nc" id="L1992">            return troopton;</span>
+        } else {
+<span class="nc" id="L1994">            return troopers;</span>
+        }
+    }
+
+    public double getAlternateWeight() {
+        double troopton;
+<span class="nc bnc" id="L2000" title="All 6 branches missed.">        switch (getWeightClass()) {</span>
+        case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L2002">            troopton = troopers * 0.25;</span>
+<span class="nc" id="L2003">            break;</span>
+        case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L2005">            troopton = troopers * 0.5;</span>
+<span class="nc" id="L2006">            break;</span>
+        case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L2008">            troopton = troopers * 1.0;</span>
+<span class="nc" id="L2009">            break;</span>
+        case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L2011">            troopton = troopers * 1.5;</span>
+<span class="nc" id="L2012">            break;</span>
+        case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L2014">            troopton = troopers * 2.0;</span>
+<span class="nc" id="L2015">            break;</span>
+        default:
+<span class="nc" id="L2017">            troopton = troopers;</span>
+        }
+<span class="nc" id="L2019">        return troopton;</span>
+    }
+
+    @Override
+    public int getWeaponArc(int wn) {
+<span class="nc" id="L2024">        return Compute.ARC_360;</span>
+    }
+
+    @Override
+    public boolean isHardenedArmorDamaged(HitData hit) {
+<span class="nc" id="L2029">        return false;</span>
+    }
+
+    @Override
+    public boolean hasPatchworkArmor() {
+<span class="fc" id="L2034">        return false;</span>
+    }
+
+    @Override
+    public void setBattleForceMovement(Map&lt;String,Integer&gt; movement) {
+<span class="nc bnc" id="L2039" title="All 2 branches missed.">        if (hasDWP()) {</span>
+<span class="nc" id="L2040">        	movement.put(&quot;&quot;, getWalkMP());</span>
+        }
+<span class="nc" id="L2042">        int move = Math.max(getWalkMP(true, false, false, true, false),</span>
+<span class="nc" id="L2043">                getJumpMP(true, true, true));</span>
+<span class="nc" id="L2044">        movement.put(getMovementModeAsBattleForceString(), move);</span>
+<span class="nc" id="L2045">    }    </span>
+
+    @Override
+    public void setAlphaStrikeMovement(Map&lt;String,Integer&gt; moves) {
+<span class="nc bnc" id="L2049" title="All 2 branches missed.">        if (getMovementMode().equals(EntityMovementMode.INF_JUMP)) {</span>
+<span class="nc" id="L2050">            moves.put(&quot;j&quot;, getJumpMP(true, true, true) * 2);</span>
+<span class="nc bnc" id="L2051" title="All 2 branches missed.">        } else if (getMovementMode().equals(EntityMovementMode.INF_UMU)) {</span>
+<span class="nc" id="L2052">            moves.put(&quot;s&quot;, getActiveUMUCount() * 2);</span>
+        } else {
+<span class="nc" id="L2054">            moves.put(getMovementModeAsBattleForceString(), getOriginalWalkMP() * 2);</span>
+        }
+<span class="nc" id="L2056">    }</span>
+    
+    @Override
+    public int getBattleForceArmorPoints() {
+<span class="nc" id="L2060">        double armor = 0;</span>
+<span class="nc bnc" id="L2061" title="All 2 branches missed.">        for (int i = 1; i &lt; locations(); i++) {</span>
+<span class="nc bnc" id="L2062" title="All 4 branches missed.">            if (armorType[i] == EquipmentType.T_ARMOR_BA_REACTIVE</span>
+                    || armorType[i] == EquipmentType.T_ARMOR_BA_REFLECTIVE) {
+<span class="nc" id="L2064">                armor += getArmor(i) * 0.75;</span>
+            } else {
+<span class="nc" id="L2066">                armor += getArmor(i);</span>
+            }
+        }
+<span class="nc" id="L2069">        return (int)Math.round(armor / 30.0);</span>
+    }
+
+    @Override
+    /**
+     * Each BA squad has 2 structure points
+     */
+    public int getBattleForceStructurePoints() {
+<span class="nc" id="L2077">        return 2;</span>
+    }
+
+    @Override
+    public void addBattleForceSpecialAbilities(Map&lt;BattleForceSPA,Integer&gt; specialAbilities) {
+<span class="nc" id="L2082">        super.addBattleForceSpecialAbilities(specialAbilities);</span>
+<span class="nc bnc" id="L2083" title="All 2 branches missed.">        for (Mounted m : getEquipment()) {</span>
+<span class="nc bnc" id="L2084" title="All 2 branches missed.">            if (!(m.getType() instanceof MiscType)) {</span>
+<span class="nc" id="L2085">                continue;</span>
+            }
+<span class="nc bnc" id="L2087" title="All 2 branches missed.">            if (m.getType().hasFlag(MiscType.F_VISUAL_CAMO)</span>
+<span class="nc bnc" id="L2088" title="All 2 branches missed.">                    &amp;&amp; !m.getType().getName().equals(MIMETIC_ARMOR)) {</span>
+<span class="nc" id="L2089">                specialAbilities.put(BattleForceSPA.LMAS, null);</span>
+<span class="nc bnc" id="L2090" title="All 2 branches missed.">            } else if (m.getType().hasFlag(MiscType.F_VEHICLE_MINE_DISPENSER)) {</span>
+<span class="nc" id="L2091">                specialAbilities.merge(BattleForceSPA.MDS, 1, Integer::sum);</span>
+<span class="nc bnc" id="L2092" title="All 2 branches missed.">            } else if (m.getType().hasFlag(MiscType.F_TOOLS)</span>
+<span class="nc bnc" id="L2093" title="All 2 branches missed.">                    &amp;&amp; (m.getType().getSubType() &amp; MiscType.S_MINESWEEPER) == MiscType.S_MINESWEEPER) {</span>
+<span class="nc" id="L2094">                specialAbilities.put(BattleForceSPA.MSW, null);</span>
+<span class="nc bnc" id="L2095" title="All 2 branches missed.">            } else if (m.getType().hasFlag(MiscType.F_SPACE_ADAPTATION)) {</span>
+<span class="nc" id="L2096">                specialAbilities.put(BattleForceSPA.SOA, null);</span>
+<span class="nc bnc" id="L2097" title="All 2 branches missed.">            } else if (m.getType().hasFlag(MiscType.F_PARAFOIL)) {</span>
+<span class="nc" id="L2098">                specialAbilities.put(BattleForceSPA.PARA, null);</span>
+<span class="nc bnc" id="L2099" title="All 2 branches missed.">            } else if (m.getType().hasFlag(MiscType.F_MAGNETIC_CLAMP)) {</span>
+<span class="nc" id="L2100">                specialAbilities.put(BattleForceSPA.XMEC, null);</span>
+            }
+<span class="nc" id="L2102">        }</span>
+<span class="nc bnc" id="L2103" title="All 2 branches missed.">        if (canDoMechanizedBA()) {</span>
+<span class="nc" id="L2104">            specialAbilities.put(BattleForceSPA.MEC, null);</span>
+        }
+<span class="nc bnc" id="L2106" title="All 3 branches missed.">        switch (getArmorType(0)) {</span>
+        case EquipmentType.T_ARMOR_BA_MIMETIC:
+<span class="nc" id="L2108">            specialAbilities.put(BattleForceSPA.MAS, null);</span>
+<span class="nc" id="L2109">            break;</span>
+        case EquipmentType.T_ARMOR_BA_FIRE_RESIST:
+<span class="nc" id="L2111">            specialAbilities.put(BattleForceSPA.FR, null);</span>
+            break;
+        }
+<span class="nc" id="L2114">    }</span>
+
+    public void setIsExoskeleton(boolean exoskeleton) {
+<span class="nc" id="L2117">        this.exoskeleton = exoskeleton;</span>
+<span class="nc" id="L2118">    }</span>
+
+    public boolean isExoskeleton() {
+<span class="nc" id="L2121">        return exoskeleton;</span>
+    }
+
+    @Override
+    public boolean isCrippled() {
+<span class="nc" id="L2126">        double activeTroopPercent = (double) getNumberActiverTroopers() / getSquadSize();</span>
+<span class="nc bnc" id="L2127" title="All 2 branches missed.">        if (activeTroopPercent &lt; 0.5) {</span>
+<span class="nc" id="L2128">            MegaMek.getLogger().debug(getDisplayName() + &quot; CRIPPLED: Only &quot;</span>
+<span class="nc" id="L2129">                    + NumberFormat.getPercentInstance().format(activeTroopPercent) + &quot; troops remaining.&quot;);</span>
+<span class="nc" id="L2130">            return true;</span>
+        } else {
+<span class="nc" id="L2132">            return false;</span>
+        }
+    }
+
+    @Override
+    public boolean isDmgHeavy() {
+<span class="nc bnc" id="L2138" title="All 2 branches missed.">        return (((double) getNumberActiverTroopers() / getSquadSize()) &lt; 0.67);</span>
+    }
+
+    @Override
+    public boolean isDmgModerate() {
+<span class="nc bnc" id="L2143" title="All 2 branches missed.">        return (((double) getNumberActiverTroopers() / getSquadSize()) &lt; 0.75);</span>
+    }
+
+    @Override
+    public boolean isDmgLight() {
+<span class="nc bnc" id="L2148" title="All 2 branches missed.">        return (((double) getNumberActiverTroopers() / getSquadSize()) &lt; 0.9);</span>
+    }
+
+    public int calculateSwarmDamage() {
+<span class="nc" id="L2152">        int damage = 0;</span>
+<span class="nc bnc" id="L2153" title="All 2 branches missed.">        for (Mounted m : getWeaponList()) {</span>
+            WeaponType wtype;
+<span class="nc bnc" id="L2155" title="All 2 branches missed.">            if (m.getType() instanceof WeaponType) {</span>
+<span class="nc" id="L2156">                wtype = (WeaponType) m.getType();</span>
+<span class="nc bnc" id="L2157" title="All 2 branches missed.">                if (wtype.hasFlag(WeaponType.F_MISSILE)) {</span>
+<span class="nc" id="L2158">                    continue;</span>
+                }
+<span class="nc bnc" id="L2160" title="All 2 branches missed.">                if (m.isBodyMounted()) {</span>
+<span class="nc" id="L2161">                    continue;</span>
+                }
+<span class="nc bnc" id="L2163" title="All 2 branches missed.">                if (wtype instanceof InfantryWeapon) {</span>
+<span class="nc" id="L2164">                    continue;</span>
+                }
+<span class="nc bnc" id="L2166" title="All 2 branches missed.">                if (wtype instanceof InfantryAttack) {</span>
+<span class="nc" id="L2167">                    continue;</span>
+                }
+<span class="nc" id="L2169">                int addToDamage = wtype.getDamage(0);</span>
+<span class="nc bnc" id="L2170" title="All 2 branches missed.">                if (addToDamage &lt; 0) {</span>
+<span class="nc" id="L2171">                    continue;</span>
+                }
+                // if it's a squad mounted weapon, each trooper hits
+<span class="nc bnc" id="L2174" title="All 2 branches missed.">                if (m.getLocation() == BattleArmor.LOC_SQUAD) {</span>
+<span class="nc" id="L2175">                    addToDamage *= getShootingStrength();</span>
+                }
+<span class="nc" id="L2177">                damage += addToDamage;</span>
+            }
+<span class="nc" id="L2179">        }</span>
+<span class="nc bnc" id="L2180" title="All 2 branches missed.">        if (hasMyomerBooster()) {</span>
+<span class="nc" id="L2181">            damage += getTroopers() * 2;</span>
+        }
+<span class="nc" id="L2183">        return damage;</span>
+    }
+
+    public boolean isConventionalInfantry() {
+<span class="fc" id="L2187">        return false;</span>
+    }
+
+    @Override
+    public long getEntityType(){
+<span class="fc" id="L2192">        return Entity.ETYPE_INFANTRY | Entity.ETYPE_BATTLEARMOR;</span>
+    }
+
+    public int getMaximumJumpMP() {
+<span class="nc" id="L2196">        return getMaximumJumpMP(false);</span>
+    }
+
+    /**
+     * Returns the maximum jump MP that this BA can have.
+     *
+     * @param ignoreEquipment
+     *            If true, bonuses from equipment like partial wing and jump
+     *            booster are ignored. This is important for construction
+     *            purposes, where we shouldn't allow the JSpinner to select
+     *            these values.
+     * @return
+     */
+    public int getMaximumJumpMP(boolean ignoreEquipment) {
+<span class="nc bnc" id="L2210" title="All 2 branches missed.">        if(chassisType == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2211">            return 0;</span>
+        }
+<span class="nc" id="L2213">        int max = 2;</span>
+<span class="nc bnc" id="L2214" title="All 2 branches missed.">        if(getMovementMode() == EntityMovementMode.INF_UMU) {</span>
+<span class="nc bnc" id="L2215" title="All 2 branches missed.">            if(getWeightClass() &lt;= EntityWeightClass.WEIGHT_LIGHT) {</span>
+<span class="nc" id="L2216">                max = 5;</span>
+            }
+<span class="nc bnc" id="L2218" title="All 2 branches missed.">            else if(getWeightClass() == EntityWeightClass.WEIGHT_MEDIUM) {</span>
+<span class="nc" id="L2219">                max = 4;</span>
+            }
+<span class="nc bnc" id="L2221" title="All 2 branches missed.">            else if(getWeightClass() == EntityWeightClass.WEIGHT_HEAVY) {</span>
+<span class="nc" id="L2222">                max = 3;</span>
+            }
+            else {
+<span class="nc" id="L2225">                max = 2;</span>
+            }
+        }
+<span class="nc bnc" id="L2228" title="All 2 branches missed.">        else if(getMovementMode() == EntityMovementMode.VTOL) {</span>
+<span class="nc bnc" id="L2229" title="All 2 branches missed.">            if(getWeightClass() == EntityWeightClass.WEIGHT_ULTRA_LIGHT) {</span>
+<span class="nc" id="L2230">                max = 7;</span>
+            }
+<span class="nc bnc" id="L2232" title="All 2 branches missed.">            else if(getWeightClass() == EntityWeightClass.WEIGHT_LIGHT) {</span>
+<span class="nc" id="L2233">                max = 6;</span>
+            }
+<span class="nc bnc" id="L2235" title="All 2 branches missed.">            else if(getWeightClass() == EntityWeightClass.WEIGHT_MEDIUM) {</span>
+<span class="nc" id="L2236">                max = 5;</span>
+            }
+            else {
+<span class="nc" id="L2239">                max = 0;</span>
+            }
+        }
+        else {
+<span class="nc bnc" id="L2243" title="All 2 branches missed.">            if(getWeightClass() &lt; EntityWeightClass.WEIGHT_HEAVY) {</span>
+<span class="nc" id="L2244">                max = 3;</span>
+            }
+        }
+
+        // Partial wings and jump boosters add 1 jump MP and can increase it
+        //  over the max and they cannot be used together
+<span class="nc bnc" id="L2250" title="All 2 branches missed.">        if (!ignoreEquipment</span>
+<span class="nc bnc" id="L2251" title="All 2 branches missed.">                &amp;&amp; (hasWorkingMisc(MiscType.F_JUMP_BOOSTER)</span>
+<span class="nc bnc" id="L2252" title="All 2 branches missed.">                        || hasWorkingMisc(MiscType.F_PARTIAL_WING))){</span>
+<span class="nc" id="L2253">            max++;</span>
+        }
+
+<span class="nc" id="L2256">        return max;</span>
+    }
+
+    public int getMinimumWalkMP() {
+<span class="nc bnc" id="L2260" title="All 2 branches missed.">        if(chassisType == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2261">            return 2;</span>
+        }
+<span class="nc" id="L2263">        return 1;</span>
+    }
+
+    public int getMaximumWalkMP() {
+<span class="nc" id="L2267">        int max = 2;</span>
+<span class="nc bnc" id="L2268" title="All 2 branches missed.">        if(getWeightClass() &lt; EntityWeightClass.WEIGHT_HEAVY) {</span>
+<span class="nc" id="L2269">            max = 3;</span>
+        }
+<span class="nc bnc" id="L2271" title="All 2 branches missed.">        if(chassisType == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2272">            max += 2;</span>
+        }
+
+        // Mechanical jump boosters add 1 MP and can increase it over the max
+<span class="nc bnc" id="L2276" title="All 2 branches missed.">        if (hasWorkingMisc(MiscType.F_MECHANICAL_JUMP_BOOSTER)){</span>
+<span class="nc" id="L2277">            max++;</span>
+        }
+
+<span class="nc bnc" id="L2280" title="All 2 branches missed.">        if (hasMyomerBooster()){</span>
+<span class="nc bnc" id="L2281" title="All 3 branches missed.">            switch (getWeightClass()){</span>
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+            case EntityWeightClass.WEIGHT_LIGHT:
+            case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L2285">                max += 2;</span>
+<span class="nc" id="L2286">                break;</span>
+            case EntityWeightClass.WEIGHT_HEAVY:
+            case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L2289">                max++;</span>
+                break;
+            }
+        }
+
+
+<span class="nc" id="L2295">        return max;</span>
+    }
+
+    public int getMaximumArmorPoints() {
+<span class="nc bnc" id="L2299" title="All 6 branches missed.">        switch(getWeightClass()) {</span>
+        case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L2301">            return 2;</span>
+        case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L2303">            return 6;</span>
+        case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L2305">            return 10;</span>
+        case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L2307">            return 14;</span>
+        case EntityWeightClass.WEIGHT_ASSAULT:
+<span class="nc" id="L2309">            return 18;</span>
+        default:
+<span class="nc" id="L2311">            return 0;</span>
+        }
+    }
+
+    @Override
+    public void setArmorType(int armType) {
+<span class="fc bfc" id="L2317" title="All 2 branches covered.">        for (int i = 0; i &lt; 7; i++) {</span>
+<span class="fc" id="L2318">            armorType[i] = armType;</span>
+        }
+
+        // Set some special state for certain armor types
+<span class="pc bpc" id="L2322" title="1 of 2 branches missed.">        if(armType == EquipmentType.T_ARMOR_BA_STEALTH_BASIC) {</span>
+<span class="nc" id="L2323">            isStealthy = true;</span>
+<span class="nc" id="L2324">            shortStealthMod = 0;</span>
+<span class="nc" id="L2325">            mediumStealthMod = 1;</span>
+<span class="nc" id="L2326">            longStealthMod = 2;</span>
+<span class="nc" id="L2327">            stealthName = BattleArmor.BASIC_STEALTH_ARMOR;</span>
+<span class="pc bpc" id="L2328" title="1 of 2 branches missed.">        } else if (armType ==  EquipmentType.T_ARMOR_BA_STEALTH_PROTOTYPE) {</span>
+<span class="nc" id="L2329">            isStealthy = true;</span>
+<span class="nc" id="L2330">            shortStealthMod = 0;</span>
+<span class="nc" id="L2331">            mediumStealthMod = 1;</span>
+<span class="nc" id="L2332">            longStealthMod = 2;</span>
+<span class="nc" id="L2333">            stealthName = BattleArmor.STEALTH_PROTOTYPE;</span>
+<span class="pc bpc" id="L2334" title="1 of 2 branches missed.">        } else if (armType ==  EquipmentType.T_ARMOR_BA_STEALTH) {</span>
+<span class="nc" id="L2335">            isStealthy = true;</span>
+<span class="nc" id="L2336">            shortStealthMod = 1;</span>
+<span class="nc" id="L2337">            mediumStealthMod = 1;</span>
+<span class="nc" id="L2338">            longStealthMod = 2;</span>
+<span class="nc" id="L2339">            stealthName = BattleArmor.STANDARD_STEALTH_ARMOR;</span>
+<span class="pc bpc" id="L2340" title="1 of 2 branches missed.">        } else if (armType ==  EquipmentType.T_ARMOR_BA_STEALTH_IMP) {</span>
+<span class="nc" id="L2341">            isStealthy = true;</span>
+<span class="nc" id="L2342">            shortStealthMod = 1;</span>
+<span class="nc" id="L2343">            mediumStealthMod = 2;</span>
+<span class="nc" id="L2344">            longStealthMod = 3;</span>
+<span class="nc" id="L2345">            stealthName = BattleArmor.IMPROVED_STEALTH_ARMOR;</span>
+<span class="pc bpc" id="L2346" title="1 of 2 branches missed.">        } else if (armType ==  EquipmentType.T_ARMOR_BA_MIMETIC) {</span>
+<span class="nc" id="L2347">            isMimetic = true;</span>
+<span class="nc" id="L2348">            stealthName = BattleArmor.MIMETIC_ARMOR;</span>
+        }
+<span class="fc" id="L2350">    }</span>
+
+    public int getArmCrits() {
+<span class="nc bnc" id="L2353" title="All 2 branches missed.">        if(getChassisType() == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2354">            return 0;</span>
+        }
+<span class="nc bnc" id="L2356" title="All 3 branches missed.">        switch(getWeightClass()) {</span>
+        case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+        case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L2359">            return 2;</span>
+        case EntityWeightClass.WEIGHT_MEDIUM:
+        case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L2362">            return 3;</span>
+        default:
+<span class="nc" id="L2364">            return 4;</span>
+        }
+
+    }
+    
+    public int getBodyCrits() {
+<span class="nc bnc" id="L2370" title="All 2 branches missed.">        if(getChassisType() == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2371">            int turret = 0;</span>
+<span class="nc bnc" id="L2372" title="All 2 branches missed.">            if (getTurretCapacity() &gt; 0) {</span>
+<span class="nc" id="L2373">                turret = 1;</span>
+<span class="nc bnc" id="L2374" title="All 2 branches missed.">                if (hasModularTurretMount()) {</span>
+<span class="nc" id="L2375">                    turret++;</span>
+                }
+            }
+<span class="nc bnc" id="L2378" title="All 5 branches missed.">            switch(getWeightClass()) {</span>
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L2380">                return 0;</span>
+            case EntityWeightClass.WEIGHT_LIGHT:
+<span class="nc" id="L2382">                return 5 - turret;</span>
+            case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L2384">                return 7 - turret;</span>
+            case EntityWeightClass.WEIGHT_HEAVY:
+<span class="nc" id="L2386">                return 9 - turret;</span>
+            default:
+<span class="nc" id="L2388">                return 11 - turret;</span>
+            }
+        } else {
+<span class="nc bnc" id="L2391" title="All 3 branches missed.">            switch(getWeightClass()) {</span>
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+<span class="nc" id="L2393">                return 2;</span>
+            case EntityWeightClass.WEIGHT_LIGHT:
+            case EntityWeightClass.WEIGHT_MEDIUM:
+<span class="nc" id="L2396">                return 4;</span>
+            default:
+<span class="nc" id="L2398">                return 6;</span>
+            }
+        }
+    }
+    
+    public int getTurretCapacity() {
+<span class="nc" id="L2404">        return turretSize;</span>
+    }
+    
+    public void setTurretSize(int capacity) {
+<span class="nc" id="L2408">        turretSize = capacity;</span>
+<span class="nc" id="L2409">    }</span>
+    
+    public boolean hasModularTurretMount() {
+<span class="nc" id="L2412">        return modularTurret;</span>
+    }
+    
+    public void setModularTurret(boolean modular) {
+<span class="nc" id="L2416">        modularTurret = modular;</span>
+<span class="nc" id="L2417">    }</span>
+
+    public int getTotalCrits() {
+<span class="nc" id="L2420">        return (getArmCrits() * 2) + getBodyCrits() + getTurretCapacity();</span>
+    }
+
+    public int getNumCrits(int loc){
+<span class="nc bnc" id="L2424" title="All 2 branches missed.">        if (loc == MOUNT_LOC_BODY){</span>
+<span class="nc" id="L2425">            return getBodyCrits();</span>
+<span class="nc bnc" id="L2426" title="All 4 branches missed.">        } else if ((loc == MOUNT_LOC_LARM) || (loc == MOUNT_LOC_RARM)){</span>
+<span class="nc" id="L2427">            return getArmCrits();</span>
+<span class="nc bnc" id="L2428" title="All 2 branches missed.">        } else if (loc == MOUNT_LOC_TURRET) {</span>
+<span class="nc" id="L2429">            return getTurretCapacity();</span>
+        } else {
+<span class="nc" id="L2431">            return 0;</span>
+        }
+    }
+
+    /**
+     * Returns the number of allowed anti-mech weapons the supplied location
+     * can mount.  The body can mount a set number of anti-mech weapons and a
+     * set number of anti-personnel, however for the arms can mount 2 AP or
+     * 1 AP and 1 AM.
+     *
+     * @param loc
+     * @return
+     */
+    public int getNumAllowedAntiMechWeapons(int loc){
+<span class="nc bnc" id="L2445" title="All 4 branches missed.">        if ((loc == MOUNT_LOC_LARM) || (loc == MOUNT_LOC_RARM)){</span>
+<span class="nc" id="L2446">            return 1;</span>
+<span class="nc bnc" id="L2447" title="All 4 branches missed.">        } else if ((loc == MOUNT_LOC_BODY) || (loc == MOUNT_LOC_TURRET)) {</span>
+<span class="nc bnc" id="L2448" title="All 2 branches missed.">            if (getChassisType() == CHASSIS_TYPE_QUAD){</span>
+<span class="nc" id="L2449">                return 4;</span>
+            } else {
+<span class="nc" id="L2451">                return 2;</span>
+            }
+        } else {
+<span class="nc" id="L2454">            return 0;</span>
+        }
+    }
+
+    /**
+     * Returns the number of allowed anti-personnel weapons the location can
+     * mount. The body can mount a set number of anti-mech weapons and a set
+     * number of anti-personnel, however the arms can mount 2 AP or 1 AP and 1
+     * AM.
+     *
+     * @param loc
+     * @return
+     */
+    public int getNumAllowedAntiPersonnelWeapons(int loc, int trooper) {
+<span class="nc bnc" id="L2468" title="All 4 branches missed.">        if ((loc == MOUNT_LOC_LARM) || (loc == MOUNT_LOC_RARM)) {</span>
+<span class="nc" id="L2469">            boolean hasAntiMech = false;</span>
+<span class="nc bnc" id="L2470" title="All 2 branches missed.">            for (Mounted m : getWeaponList()) {</span>
+<span class="nc bnc" id="L2471" title="All 2 branches missed.">                if (!m.getType().hasFlag(WeaponType.F_INFANTRY)</span>
+<span class="nc bnc" id="L2472" title="All 2 branches missed.">                        &amp;&amp; (m.getBaMountLoc() == loc)</span>
+<span class="nc bnc" id="L2473" title="All 4 branches missed.">                        &amp;&amp; ((m.getLocation() == LOC_SQUAD) || (m.getLocation() == trooper))) {</span>
+<span class="nc" id="L2474">                    hasAntiMech = true;</span>
+                }
+<span class="nc" id="L2476">            }</span>
+<span class="nc bnc" id="L2477" title="All 2 branches missed.">            if (hasAntiMech) {</span>
+<span class="nc" id="L2478">                return 1;</span>
+            } else {
+<span class="nc" id="L2480">                return 2;</span>
+            }
+<span class="nc bnc" id="L2482" title="All 2 branches missed.">        } else if (loc == MOUNT_LOC_BODY) {</span>
+<span class="nc bnc" id="L2483" title="All 2 branches missed.">            if (getChassisType() == CHASSIS_TYPE_QUAD) {</span>
+<span class="nc" id="L2484">                return 4;</span>
+            } else {
+<span class="nc" id="L2486">                return 2;</span>
+            }
+        } else {
+<span class="nc" id="L2489">            return 0;</span>
+        }
+    }
+
+    @Override
+    public boolean doomedInExtremeTemp() {
+<span class="nc" id="L2495">        return false;</span>
+    }
+
+    @Override
+    public boolean doomedInVacuum() {
+<span class="nc" id="L2500">        return false;</span>
+    }
+
+    /**
+     * Convenience method for determining if the BA has magnetic clamps.
+     *
+     * @return true if the unit has at least one magnetic clamp, else false
+     */
+    public boolean hasMagneticClamps() {
+<span class="nc bnc" id="L2509" title="All 2 branches missed.">        return countWorkingMisc(MiscType.F_MAGNETIC_CLAMP) &gt; 0;</span>
+    }
+
+    /**
+     * Returns the &lt;code&gt;EquipmentType&lt;/code&gt; internal name for the manipulator
+     * mounted in the left arm of this &lt;code&gt;BattleArmor&lt;/code&gt; squad.
+     *
+     * @return
+     */
+    public String getLeftManipulatorName(){
+<span class="nc" id="L2519">        Mounted m = getLeftManipulator();</span>
+<span class="nc bnc" id="L2520" title="All 2 branches missed.">        if (m == null){</span>
+<span class="nc" id="L2521">            return MANIPULATOR_TYPE_STRINGS[MANIPULATOR_NONE];</span>
+        } else {
+<span class="nc" id="L2523">            return m.getType().getInternalName();</span>
+        }
+    }
+
+    /**
+     * Returns the &lt;code&gt;EquipmentType&lt;/code&gt; internal name for the manipulator
+     * mounted in the right arm of this &lt;code&gt;BattleArmor&lt;/code&gt; squad.
+     *
+     * @return
+     */
+    public String getRightManipulatorName(){
+<span class="nc" id="L2534">        Mounted m = getRightManipulator();</span>
+<span class="nc bnc" id="L2535" title="All 2 branches missed.">        if (m == null){</span>
+<span class="nc" id="L2536">            return MANIPULATOR_TYPE_STRINGS[MANIPULATOR_NONE];</span>
+        } else {
+<span class="nc" id="L2538">            return m.getType().getInternalName();</span>
+        }
+    }
+
+    /**
+     * Returns the &lt;code&gt;Mounted&lt;/code&gt; for the manipulator
+     * mounted in the left arm of this &lt;code&gt;BattleArmor&lt;/code&gt; squad.
+     *
+     * @return
+     */
+    public Mounted getLeftManipulator(){
+<span class="nc bnc" id="L2549" title="All 2 branches missed.">        for (Mounted m : getMisc()){</span>
+<span class="nc bnc" id="L2550" title="All 2 branches missed.">            if (m.getType().hasFlag(MiscType.F_BA_MANIPULATOR)</span>
+<span class="nc bnc" id="L2551" title="All 2 branches missed.">                    &amp;&amp; (m.getBaMountLoc() == MOUNT_LOC_LARM)){</span>
+<span class="nc" id="L2552">                return m;</span>
+            }
+<span class="nc" id="L2554">        }</span>
+<span class="nc" id="L2555">        return null;</span>
+    }
+
+    /**
+     * Returns the &lt;code&gt;Mounted&lt;/code&gt; for the manipulator
+     * mounted in the right arm of this &lt;code&gt;BattleArmor&lt;/code&gt; squad.
+     *
+     * @return
+     */
+    public Mounted getRightManipulator(){
+<span class="nc bnc" id="L2565" title="All 2 branches missed.">        for (Mounted m : getMisc()){</span>
+<span class="nc bnc" id="L2566" title="All 2 branches missed.">            if (m.getType().hasFlag(MiscType.F_BA_MANIPULATOR)</span>
+<span class="nc bnc" id="L2567" title="All 2 branches missed.">                    &amp;&amp; (m.getBaMountLoc() == MOUNT_LOC_RARM)){</span>
+<span class="nc" id="L2568">                return m;</span>
+            }
+<span class="nc" id="L2570">        }</span>
+<span class="nc" id="L2571">        return null;</span>
+    }
+
+    public boolean isClanExoWithoutHarjel() {
+<span class="nc" id="L2575">        return clanExoWithoutHarjel;</span>
+    }
+
+    public void setClanExoWithoutHarjel(boolean clanExoWithoutHarjel) {
+<span class="nc" id="L2579">        this.clanExoWithoutHarjel = clanExoWithoutHarjel;</span>
+<span class="nc" id="L2580">    }</span>
+
+    @Override
+    public String getLocationDamage(int loc) {
+<span class="nc" id="L2584">        String toReturn = &quot;&quot;;</span>
+<span class="nc bnc" id="L2585" title="All 2 branches missed.">        if(getInternal(loc)&lt;0) {</span>
+<span class="nc" id="L2586">            return toReturn;</span>
+        }
+<span class="nc" id="L2588">        boolean first = true;</span>
+<span class="nc bnc" id="L2589" title="All 2 branches missed.">        for(Mounted m : getEquipment()) {</span>
+<span class="nc bnc" id="L2590" title="All 2 branches missed.">            if(m.isMissingForTrooper(loc)) {</span>
+<span class="nc bnc" id="L2591" title="All 2 branches missed.">                if (!first) {</span>
+<span class="nc" id="L2592">                    toReturn += &quot;, &quot;;</span>
+                }
+<span class="nc" id="L2594">                toReturn += m.getName();</span>
+<span class="nc" id="L2595">                first = false;</span>
+            }
+<span class="nc" id="L2597">        }</span>
+<span class="nc" id="L2598">        return toReturn;</span>
+    }
+
+    /**
+     * Used to determine the draw priority of different Entity subclasses.
+     * This allows different unit types to always be draw above/below other
+     * types.
+     *
+     * @return
+     */
+    public int getSpriteDrawPriority() {
+<span class="nc" id="L2609">        return 2;</span>
+    }
+
+
+} // End public class BattleArmor extends Infantry implements Serializable
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

@@ -1,0 +1,840 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PhysicalCalculator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.bot</a> &gt; <span class="el_source">PhysicalCalculator.java</span></div><h1>PhysicalCalculator.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2003,2004,2005 Ben Mazur (bmazur@sev.org)
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.client.bot;
+
+import java.util.Iterator;
+
+import megamek.common.BattleArmor;
+import megamek.common.BuildingTarget;
+import megamek.common.Compute;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.GunEmplacement;
+import megamek.common.IGame;
+import megamek.common.IHex;
+import megamek.common.INarcPod;
+import megamek.common.Infantry;
+import megamek.common.Mech;
+import megamek.common.MechWarrior;
+import megamek.common.Mounted;
+import megamek.common.Protomech;
+import megamek.common.Tank;
+import megamek.common.TargetRoll;
+import megamek.common.Targetable;
+import megamek.common.Terrains;
+import megamek.common.ToHitData;
+import megamek.common.actions.BrushOffAttackAction;
+import megamek.common.actions.ClubAttackAction;
+import megamek.common.actions.KickAttackAction;
+import megamek.common.actions.PunchAttackAction;
+import megamek.common.actions.PushAttackAction;
+import megamek.common.options.OptionsConstants;
+
+public final class PhysicalCalculator {
+    private PhysicalCalculator() {
+        super();
+        // should never call this
+    }
+
+    static PhysicalOption calculatePhysicalTurn(TestBot bot) {
+<span class="nc" id="L52">        int entNum = bot.getGame().getFirstEntityNum(bot.getMyTurn());</span>
+<span class="nc" id="L53">        int first = entNum;</span>
+        do {
+            // take the first entity that can do an attack
+<span class="nc" id="L56">            Entity en = bot.getGame().getEntity(entNum);</span>
+<span class="nc" id="L57">            PhysicalOption bestAttack = getBestPhysical(en, bot.getGame());</span>
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            if (bestAttack != null) {</span>
+
+<span class="nc" id="L61">                return bestAttack;</span>
+
+            } // End no-attack
+<span class="nc" id="L64">            entNum = bot.getGame().getNextEntityNum(bot.getMyTurn(), entNum);</span>
+
+<span class="nc bnc" id="L66" title="All 4 branches missed.">        } while ((entNum != -1) &amp;&amp; (entNum != first));</span>
+
+        // Didn't find any physical attack.
+<span class="nc" id="L69">        return null;</span>
+    }
+
+    public static PhysicalOption getBestPhysical(Entity entity, IGame game) {
+        // Infantry can't conduct physical attacks.
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (entity instanceof Infantry) {</span>
+<span class="nc" id="L75">            return null;</span>
+        }
+
+        // if you're charging, it's already declared
+<span class="nc bnc" id="L79" title="All 4 branches missed.">        if (entity.isCharging() || entity.isMakingDfa()) {</span>
+<span class="nc" id="L80">            return null;</span>
+        }
+
+<span class="nc" id="L83">        PhysicalOption best = null;</span>
+        ToHitData odds;
+        double breach;
+        double breach_a;
+        double l_dmg;
+        double r_dmg;
+        double final_dmg;
+<span class="nc" id="L90">        int best_brush = PhysicalOption.NONE;</span>
+<span class="nc" id="L91">        boolean aptPiloting = entity.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+
+        // If the attacker is a Mech
+
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (entity instanceof Mech) {</span>
+
+<span class="nc" id="L97">            l_dmg = 0.0;</span>
+<span class="nc" id="L98">            r_dmg = 0.0;</span>
+<span class="nc" id="L99">            final_dmg = 0.0;</span>
+<span class="nc" id="L100">            breach_a = 0.0;</span>
+
+            // If the attacker is being swarmed
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            if (entity.getSwarmAttackerId() != Entity.NONE) {</span>
+
+                // Check for left arm punch damage to self
+
+<span class="nc" id="L108">                odds = BrushOffAttackAction.toHit(game, entity.getId(), game</span>
+<span class="nc" id="L109">                        .getEntity(entity.getSwarmAttackerId()),</span>
+                                                  BrushOffAttackAction.LEFT);
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+
+<span class="nc" id="L113">                    l_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                              BrushOffAttackAction.LEFT);
+<span class="nc" id="L115">                    l_dmg *= 1.0 - (Compute.oddsAbove(odds.getValue(), aptPiloting) / 100.0);</span>
+<span class="nc" id="L116">                    breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                             ToHitData.SIDE_FRONT, l_dmg, l_dmg);
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                    if (breach &lt; 1.5) {</span>
+<span class="nc" id="L119">                        best_brush = PhysicalOption.BRUSH_LEFT;</span>
+<span class="nc" id="L120">                        breach_a = breach;</span>
+<span class="nc" id="L121">                        final_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                      BrushOffAttackAction.LEFT);
+                    }
+                }
+
+                // Check for right arm punch damage to self
+<span class="nc" id="L127">                odds = BrushOffAttackAction.toHit(game, entity.getId(), game</span>
+<span class="nc" id="L128">                        .getEntity(entity.getSwarmAttackerId()),</span>
+                                                  BrushOffAttackAction.RIGHT);
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+
+                    // If chance of breaching armor is minimal set brush left
+
+<span class="nc" id="L134">                    r_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                              BrushOffAttackAction.RIGHT);
+<span class="nc" id="L136">                    r_dmg *= 1.0 - (Compute.oddsAbove(odds.getValue(), aptPiloting) / 100.0);</span>
+<span class="nc" id="L137">                    breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                             ToHitData.SIDE_FRONT, r_dmg, r_dmg);
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                    if (breach &lt; Math.min(breach_a, 1.5)) {</span>
+<span class="nc" id="L140">                        best_brush = PhysicalOption.BRUSH_RIGHT;</span>
+<span class="nc" id="L141">                        breach_a = breach;</span>
+<span class="nc" id="L142">                        final_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                      BrushOffAttackAction.RIGHT);
+                    }
+                }
+
+                // If both arms are capable of punching, check double punch
+                // damage
+
+<span class="nc bnc" id="L150" title="All 4 branches missed.">                if ((l_dmg &gt; 0) &amp;&amp; (r_dmg &gt; 0)) {</span>
+
+                    // If chance of breaching armor is minimal set double brush
+
+<span class="nc" id="L154">                    breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                             ToHitData.SIDE_FRONT, l_dmg + r_dmg,
+                                             (l_dmg + r_dmg) / 2.0);
+<span class="nc bnc" id="L157" title="All 2 branches missed.">                    if (breach &lt; Math.min(breach_a, 1.5)) {</span>
+<span class="nc" id="L158">                        best_brush = PhysicalOption.BRUSH_BOTH;</span>
+<span class="nc" id="L159">                        breach_a = breach;</span>
+<span class="nc" id="L160">                        final_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                      BrushOffAttackAction.LEFT);
+<span class="nc" id="L162">                        final_dmg += BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                       BrushOffAttackAction.RIGHT);
+                    }
+                }
+
+                // Construct and return Physical option
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                if (best_brush != PhysicalOption.NONE) {</span>
+<span class="nc" id="L169">                    return new PhysicalOption(entity, game.getEntity(entity</span>
+<span class="nc" id="L170">                                                                             .getSwarmAttackerId()), final_dmg,</span>
+                                              best_brush, null);
+                }
+            }
+
+            // If the attacker has attached iNarc pods, assign
+            // a competing damage value for comparison with other
+            // attacks
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">            if (entity.hasINarcPodsAttached()) {</span>
+                double test_ranking;
+                double pod_ranking;
+                INarcPod test_pod;
+                INarcPod best_pod;
+<span class="nc" id="L184">                pod_ranking = 0.0;</span>
+<span class="nc" id="L185">                Iterator&lt;INarcPod&gt; pod_list = entity.getINarcPodsAttached();</span>
+<span class="nc" id="L186">                best_pod = pod_list.next();</span>
+<span class="nc" id="L187">                for (pod_list = entity.getINarcPodsAttached(); pod_list</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                        .hasNext(); ) {</span>
+<span class="nc" id="L189">                    test_ranking = 1.0;</span>
+<span class="nc" id="L190">                    test_pod = pod_list.next();</span>
+                    // If pod is homing and attacker has no ECM
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                    if ((test_pod.getType() == INarcPod.HOMING)</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                            &amp;&amp; !entity.hasActiveECM()) {</span>
+                        // Pod is +1
+<span class="nc" id="L195">                        test_ranking += 1.0;</span>
+                    }
+                    // If pod is ECM and attacker has C3 link
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                    if ((test_pod.getType() == INarcPod.ECM)</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">                            &amp;&amp; (entity.hasC3() || entity.hasC3i())) {</span>
+                        // Pod is +2
+<span class="nc" id="L201">                        test_ranking += 2.0;</span>
+                    }
+                    // If pod is Nemesis
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                    if (test_pod.getType() == INarcPod.NEMESIS) {</span>
+                        // Pod is +variable, based on movement
+<span class="nc" id="L206">                        test_ranking += (entity.getWalkMP() + entity</span>
+<span class="nc" id="L207">                                .getJumpMP()) / 2.0;</span>
+                    }
+                    // If this pod is best, retain it and its ranking
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                    if (test_ranking &gt; pod_ranking) {</span>
+<span class="nc" id="L211">                        pod_ranking = test_ranking;</span>
+<span class="nc" id="L212">                        best_pod = test_pod;</span>
+                    }
+                }
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                if (best_pod != null) {</span>
+                    // Check for left arm punch damage to self
+<span class="nc" id="L217">                    odds = BrushOffAttackAction.toHit(game, entity.getId(),</span>
+                                                      best_pod, BrushOffAttackAction.LEFT);
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                    if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+
+<span class="nc" id="L221">                        l_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                  BrushOffAttackAction.LEFT);
+<span class="nc" id="L223">                        l_dmg *= 1.0 - (Compute.oddsAbove(odds.getValue(), aptPiloting) / 100.0);</span>
+<span class="nc" id="L224">                        breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                                 ToHitData.SIDE_FRONT, l_dmg, l_dmg);
+<span class="nc bnc" id="L226" title="All 2 branches missed.">                        if (breach &lt; 1.5) {</span>
+<span class="nc" id="L227">                            best_brush = PhysicalOption.BRUSH_LEFT;</span>
+<span class="nc" id="L228">                            breach_a = breach;</span>
+<span class="nc" id="L229">                            final_dmg = BrushOffAttackAction.getDamageFor(</span>
+                                    entity, BrushOffAttackAction.LEFT);
+                        }
+                    }
+
+                    // Check for right arm punch damage to self
+<span class="nc" id="L235">                    odds = BrushOffAttackAction.toHit(game, entity.getId(),</span>
+                                                      best_pod, BrushOffAttackAction.RIGHT);
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                    if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+
+                        // If chance of breaching armor is minimal set brush
+                        // left
+
+<span class="nc" id="L242">                        r_dmg = BrushOffAttackAction.getDamageFor(entity,</span>
+                                                                  BrushOffAttackAction.RIGHT);
+<span class="nc" id="L244">                        r_dmg *= 1.0 - (Compute.oddsAbove(odds.getValue(), aptPiloting) / 100.0);</span>
+<span class="nc" id="L245">                        breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                                 ToHitData.SIDE_FRONT, r_dmg, r_dmg);
+<span class="nc bnc" id="L247" title="All 2 branches missed.">                        if (breach &lt; Math.min(breach_a, 1.5)) {</span>
+<span class="nc" id="L248">                            best_brush = PhysicalOption.BRUSH_RIGHT;</span>
+<span class="nc" id="L249">                            breach_a = breach;</span>
+<span class="nc" id="L250">                            final_dmg = BrushOffAttackAction.getDamageFor(</span>
+                                    entity, BrushOffAttackAction.RIGHT);
+                        }
+                    }
+
+                    // If both arms are capable of punching, check double punch
+                    // damage
+
+<span class="nc bnc" id="L258" title="All 4 branches missed.">                    if ((l_dmg &gt; 0) &amp;&amp; (r_dmg &gt; 0)) {</span>
+
+                        // If chance of breaching armor is minimal set double
+                        // brush
+
+<span class="nc" id="L263">                        breach = punchThroughMod(entity, ToHitData.HIT_PUNCH,</span>
+                                                 ToHitData.SIDE_FRONT, l_dmg + r_dmg,
+                                                 (l_dmg + r_dmg) / 2.0);
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                        if (breach &lt; Math.min(breach_a, 1.5)) {</span>
+<span class="nc" id="L267">                            best_brush = PhysicalOption.BRUSH_BOTH;</span>
+<span class="nc" id="L268">                            final_dmg = BrushOffAttackAction.getDamageFor(</span>
+                                    entity, BrushOffAttackAction.LEFT);
+<span class="nc" id="L270">                            final_dmg += BrushOffAttackAction.getDamageFor(</span>
+                                    entity, BrushOffAttackAction.RIGHT);
+                        }
+                    }
+
+                    // Construct and return Physical option
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                    if (best_brush != PhysicalOption.NONE) {</span>
+<span class="nc" id="L277">                        return new PhysicalOption(entity, best_pod, final_dmg,</span>
+                                                  best_brush, null);
+                    }
+                }
+            }
+        }
+
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        for (Entity target : game.getEntitiesVector()) {</span>
+            // don't consider myself
+<span class="nc bnc" id="L286" title="All 2 branches missed.">            if (target.equals(entity)) {</span>
+<span class="nc" id="L287">                continue;</span>
+            }
+            
+            // don't consider friendly targets
+<span class="nc bnc" id="L291" title="All 2 branches missed.">            if (!target.isEnemyOf(entity)) {</span>
+<span class="nc" id="L292">                continue;</span>
+            }
+            
+            // don't consider targets not on the board
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            if (target.getPosition() == null) {</span>
+<span class="nc" id="L297">                continue;</span>
+            }
+            
+            // don't consider targets beyond melee range
+<span class="nc bnc" id="L301" title="All 2 branches missed.">            if (Compute.effectiveDistance(game, entity, target) &gt; 1) {</span>
+<span class="nc" id="L302">                continue;</span>
+            }
+            
+            // don't bother stomping mechwarriors
+<span class="nc bnc" id="L306" title="All 2 branches missed.">            if (target instanceof MechWarrior) {</span>
+<span class="nc" id="L307">                continue;</span>
+            }
+
+<span class="nc" id="L310">            PhysicalOption one = getBestPhysicalAttack(entity, target, game);</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">            if (one != null) {</span>
+<span class="nc bnc" id="L312" title="All 4 branches missed.">                if ((best == null) || (one.expectedDmg &gt; best.expectedDmg)) {</span>
+<span class="nc" id="L313">                    best = one;</span>
+                }
+            }
+<span class="nc" id="L316">        }</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">        if (best == null) {</span>
+<span class="nc" id="L318">            best = new PhysicalOption(entity);</span>
+        }
+<span class="nc" id="L320">        return best;</span>
+    }
+
+    static PhysicalOption getBestPhysicalAttack(Entity from, Entity to,
+                                                IGame game) {        
+<span class="nc" id="L325">        Targetable target = to;</span>
+        
+        // if the object of our affections is in a building, we have to target the building instead
+<span class="nc bnc" id="L328" title="All 4 branches missed.">        if(Compute.isInBuilding(game, to) || (to instanceof GunEmplacement)) {</span>
+<span class="nc" id="L329">            target = new BuildingTarget(to.getPosition(), game.getBoard(), false);</span>
+        }
+        
+<span class="nc" id="L332">        double bestDmg = 0.0;</span>
+        double dmg;
+        int damage;
+        int target_arc;
+        int location_table;
+<span class="nc" id="L337">        int bestType = PhysicalOption.NONE;</span>
+<span class="nc" id="L338">        Mounted bestClub = null;</span>
+<span class="nc" id="L339">        boolean targetConvInfantry = false;</span>
+<span class="nc" id="L340">        boolean fromAptPiloting = from.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+<span class="nc" id="L341">        boolean toAptPiloting = to.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+
+        // Infantry and tanks can't conduct any of these attacks
+<span class="nc bnc" id="L344" title="All 4 branches missed.">        if ((from instanceof Infantry) || (from instanceof Tank)) {</span>
+<span class="nc" id="L345">            return null;</span>
+        }
+
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        if (to.isConventionalInfantry()) {</span>
+<span class="nc" id="L349">            targetConvInfantry = true;</span>
+        }
+
+        // Find arc the attack comes in
+<span class="nc" id="L353">        target_arc = CEntity.getThreatHitArc(to.getPosition(), to.getFacing(),</span>
+<span class="nc" id="L354">                                             from.getPosition());</span>
+
+        // Check for punches
+        // If the target is a Mech, must determine if punch lands on the punch,
+        // kick, or full table
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        if (to instanceof Mech) {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">            if (!to.isProne()) {</span>
+<span class="nc" id="L361">                location_table = ToHitData.HIT_PUNCH;</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">                if (to.getElevation() == (from.getElevation() + 1)) {</span>
+<span class="nc" id="L363">                    location_table = ToHitData.HIT_KICK;</span>
+                }
+            } else {
+<span class="nc" id="L366">                location_table = ToHitData.HIT_NORMAL;</span>
+            }
+        } else {
+<span class="nc" id="L369">            location_table = ToHitData.HIT_NORMAL;</span>
+        }
+
+<span class="nc" id="L372">        ToHitData odds = PunchAttackAction.toHit(game, from.getId(), target,</span>
+                                                 PunchAttackAction.LEFT, false);
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L375">            damage = PunchAttackAction.getDamageFor(from,</span>
+                                                    PunchAttackAction.LEFT, targetConvInfantry, false);
+<span class="nc" id="L377">            bestDmg = (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0) * damage;</span>
+            // Adjust damage for targets armor
+<span class="nc" id="L379">            bestType = PhysicalOption.PUNCH_LEFT;</span>
+<span class="nc" id="L380">            bestDmg *= punchThroughMod(to, location_table, target_arc, bestDmg,</span>
+                                       bestDmg);
+        }
+
+<span class="nc" id="L384">        odds = PunchAttackAction.toHit(game, from.getId(), target,</span>
+                                       PunchAttackAction.RIGHT, false);
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L387">            damage = PunchAttackAction.getDamageFor(from,</span>
+                                                    PunchAttackAction.RIGHT, targetConvInfantry, false);
+<span class="nc" id="L389">            dmg = (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0) * damage;</span>
+            // Adjust damage for targets armor
+<span class="nc" id="L391">            dmg *= punchThroughMod(to, location_table, target_arc, dmg, dmg);</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">            if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L393">                bestType = PhysicalOption.PUNCH_RIGHT;</span>
+<span class="nc" id="L394">                bestDmg = dmg;</span>
+            }
+        }
+
+        // Check for a double punch
+<span class="nc" id="L399">        odds = PunchAttackAction.toHit(game, from.getId(), target,</span>
+                                       PunchAttackAction.LEFT, false);
+<span class="nc" id="L401">        ToHitData odds_a = PunchAttackAction.toHit(game, from.getId(), to,</span>
+                                                   PunchAttackAction.RIGHT, false);
+<span class="nc bnc" id="L403" title="All 2 branches missed.">        if ((odds.getValue() != TargetRoll.IMPOSSIBLE)</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">                &amp;&amp; (odds_a.getValue() != TargetRoll.IMPOSSIBLE)) {</span>
+<span class="nc" id="L405">            damage = PunchAttackAction.getDamageFor(from,</span>
+                                                    PunchAttackAction.LEFT, targetConvInfantry, false);
+<span class="nc" id="L407">            dmg = (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0) * damage;</span>
+<span class="nc" id="L408">            double dmg_a = (Compute.oddsAbove(odds_a.getValue(), fromAptPiloting) / 100.0)</span>
+                           * damage;
+<span class="nc" id="L410">            dmg += dmg_a;</span>
+<span class="nc" id="L411">            dmg *= punchThroughMod(to, location_table, target_arc, dmg,</span>
+                                   dmg / 2.0);
+<span class="nc bnc" id="L413" title="All 2 branches missed.">            if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L414">                bestType = PhysicalOption.PUNCH_BOTH;</span>
+<span class="nc" id="L415">                bestDmg = dmg;</span>
+            }
+        }
+
+        // Check for a kick
+        // If the target is a Mech, must determine if it lands on the kick or
+        // punch table
+<span class="nc bnc" id="L422" title="All 2 branches missed.">        if (to instanceof Mech) {</span>
+<span class="nc" id="L423">            location_table = ToHitData.HIT_KICK;</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">            if (!to.isProne()) {</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">                if (to.getElevation() == (from.getElevation() - 1)) {</span>
+<span class="nc" id="L426">                    location_table = ToHitData.HIT_PUNCH;</span>
+                }
+            } else {
+<span class="nc" id="L429">                location_table = ToHitData.HIT_NORMAL;</span>
+            }
+        } else {
+<span class="nc" id="L432">            location_table = ToHitData.HIT_NORMAL;</span>
+        }
+
+<span class="nc" id="L435">        dmg = getExpectedKickDamage(from, to, game, location_table, target_arc,</span>
+                                    KickAttackAction.LEFT);
+<span class="nc bnc" id="L437" title="All 2 branches missed.">        if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L438">            bestType = PhysicalOption.KICK_LEFT;</span>
+<span class="nc" id="L439">            bestDmg = dmg;</span>
+        }
+
+<span class="nc" id="L442">        dmg = getExpectedKickDamage(from, to, game, location_table, target_arc,</span>
+                                    KickAttackAction.RIGHT);
+<span class="nc bnc" id="L444" title="All 2 branches missed.">        if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L445">            bestType = PhysicalOption.KICK_RIGHT;</span>
+<span class="nc" id="L446">            bestDmg = dmg;</span>
+        }
+
+        // Check for mounted club-type weapon or carried improvised club
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        for (Mounted club : from.getClubs()) {</span>
+            // If the target is a Mech, must determine if it hits full body,
+            // punch, or kick table
+<span class="nc bnc" id="L453" title="All 2 branches missed.">            if (to instanceof Mech) {</span>
+<span class="nc" id="L454">                location_table = ToHitData.HIT_NORMAL;</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">                if ((to.getElevation() == (from.getElevation() - 1))</span>
+<span class="nc bnc" id="L456" title="All 2 branches missed.">                        &amp;&amp; !to.isProne()) {</span>
+<span class="nc" id="L457">                    location_table = ToHitData.HIT_PUNCH;</span>
+                }
+<span class="nc bnc" id="L459" title="All 2 branches missed.">                if ((to.getElevation() == (from.getElevation() + 1))</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">                        &amp;&amp; !to.isProne()) {</span>
+<span class="nc" id="L461">                    location_table = ToHitData.HIT_KICK;</span>
+                }
+            } else {
+<span class="nc" id="L464">                location_table = ToHitData.HIT_NORMAL;</span>
+            }
+<span class="nc" id="L466">            odds = ClubAttackAction.toHit(game, from.getId(), target, club,</span>
+                                          ToHitData.HIT_NORMAL, false);
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L469">                damage = ClubAttackAction.getDamageFor(from, club, targetConvInfantry, false);</span>
+<span class="nc" id="L470">                dmg = (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0) * damage;</span>
+                // Adjust damage for targets armor
+<span class="nc" id="L472">                dmg *= punchThroughMod(to, location_table, target_arc, dmg, dmg);</span>
+                // Some types of clubs, such as the mace, require a piloting
+                // check on a missed attack
+                // Calculate self damage in the same manner as a missed kick
+<span class="nc bnc" id="L476" title="All 2 branches missed.">                if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L477">                    bestType = PhysicalOption.USE_CLUB;</span>
+<span class="nc" id="L478">                    bestDmg = dmg;</span>
+<span class="nc" id="L479">                    bestClub = club;</span>
+                }
+            }
+<span class="nc" id="L482">        }</span>
+        // Check for a push attack
+<span class="nc" id="L484">        odds = PushAttackAction.toHit(game, from.getId(), target);</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">        if (odds.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+            int elev_diff;
+            double breach;
+<span class="nc" id="L488">            boolean water_landing = false;</span>
+<span class="nc" id="L489">            dmg = 0.0;</span>
+<span class="nc" id="L490">            int disp_dir = from.getPosition().direction(to.getPosition());</span>
+<span class="nc" id="L491">            Coords disp_c = to.getPosition().translated(disp_dir);</span>
+            // If the displacement hex is a valid one
+<span class="nc bnc" id="L493" title="All 2 branches missed.">            if (Compute.isValidDisplacement(game, to.getId(), to.getPosition(),</span>
+                                            disp_c)) {
+                // If the displacement hex is not on the map, credit damage
+                // against full target armor
+<span class="nc bnc" id="L497" title="All 2 branches missed.">                if (!game.getBoard().contains(disp_c)) {</span>
+<span class="nc" id="L498">                    dmg = (to.getTotalArmor()</span>
+<span class="nc" id="L499">                           * Compute.oddsAbove(odds.getValue(), toAptPiloting)) / 100.0;</span>
+                }
+<span class="nc bnc" id="L501" title="All 2 branches missed.">                if (game.getBoard().contains(disp_c)) {</span>
+                    // Find the elevation difference
+<span class="nc" id="L503">                    elev_diff = game.getBoard().getHex(to.getPosition())</span>
+<span class="nc" id="L504">                                    .getLevel();</span>
+<span class="nc" id="L505">                    elev_diff -= game.getBoard().getHex(disp_c).getLevel();</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">                    if (elev_diff &lt; 0) {</span>
+<span class="nc" id="L507">                        elev_diff = 0;</span>
+                    }
+                    // Set a flag if the displacement hex has water
+<span class="nc bnc" id="L510" title="All 2 branches missed.">                    if (game.getBoard().getHex(disp_c).containsTerrain(</span>
+                            Terrains.WATER)) {
+<span class="nc" id="L512">                        water_landing = true;</span>
+                    }
+                    // Get the base damage from target falling, multiplied by
+                    // the elevation difference
+<span class="nc" id="L516">                    dmg = calculateFallingDamage(Compute.oddsAbove(odds.getValue(), toAptPiloting) / 100.0, to)</span>
+                          * (1.0 + elev_diff);
+                    // Calculate breach factor of falling damage
+<span class="nc" id="L519">                    breach = punchThroughMod(to, ToHitData.HIT_NORMAL,</span>
+<span class="nc" id="L520">                                             ToHitData.SIDE_FRONT, dmg, Math.min(dmg, 5.0));</span>
+                    // If breach factor is &gt; 1 and displacement hex has water
+<span class="nc bnc" id="L522" title="All 4 branches missed.">                    if ((breach &gt; 1) &amp;&amp; water_landing) {</span>
+<span class="nc" id="L523">                        breach *= 2.0;</span>
+                    }
+                    // Modify damage to reflect how bad it is for target to be
+                    // prone
+<span class="nc bnc" id="L527" title="All 2 branches missed.">                    if (to.getWalkMP() &gt; 0) {</span>
+<span class="nc" id="L528">                        dmg = dmg</span>
+<span class="nc" id="L529">                                * Math.sqrt((1.0 / to.getWalkMP())</span>
+<span class="nc" id="L530">                                                    + to.getJumpMP());</span>
+                    } else {
+<span class="nc" id="L532">                        dmg *= Math.max(1.0, Math.sqrt(to.getJumpMP()));</span>
+                    }
+                    // Modify damage by breach factor
+<span class="nc" id="L535">                    dmg *= breach;</span>
+                }
+            }
+            // If the displacement hex is not valid
+<span class="nc bnc" id="L539" title="All 2 branches missed.">            if (!Compute.isValidDisplacement(game, to.getId(),</span>
+<span class="nc" id="L540">                                             to.getPosition(), disp_c)) {</span>
+                // Set a flag if the displacement hex has water
+<span class="nc bnc" id="L542" title="All 2 branches missed.">                if (game.getBoard().getHex(to.getPosition()).containsTerrain(</span>
+                        Terrains.WATER)) {
+<span class="nc" id="L544">                    water_landing = true;</span>
+                }
+                // Get falling in place
+<span class="nc" id="L547">                dmg = calculateFallingDamage(</span>
+<span class="nc" id="L548">                        Compute.oddsAbove(odds.getValue(), toAptPiloting) / 100.0, to);</span>
+                // Calculate breach factor of falling damage
+<span class="nc" id="L550">                breach = punchThroughMod(to, ToHitData.HIT_NORMAL,</span>
+<span class="nc" id="L551">                                         ToHitData.SIDE_FRONT, dmg, Math.min(dmg, 5.0));</span>
+                // If breach factor is &gt; 1 and target hex is in water
+<span class="nc bnc" id="L553" title="All 4 branches missed.">                if ((breach &gt; 1) &amp;&amp; water_landing) {</span>
+<span class="nc" id="L554">                    breach *= 2.0;</span>
+                }
+                // Modify damage to reflect how bad it is for target to be prone
+<span class="nc bnc" id="L557" title="All 2 branches missed.">                if (to.getWalkMP() &gt; 0) {</span>
+<span class="nc" id="L558">                    dmg = dmg</span>
+<span class="nc" id="L559">                            * Math.sqrt((1.0 / to.getWalkMP()) + to.getJumpMP());</span>
+                } else {
+<span class="nc" id="L561">                    dmg = dmg * Math.max(1.0, Math.sqrt(to.getJumpMP()));</span>
+                }
+                // Modify damage by breach factor
+<span class="nc" id="L564">                dmg *= breach;</span>
+            }
+            // If damage is better than best damage
+<span class="nc bnc" id="L567" title="All 2 branches missed.">            if (dmg &gt; bestDmg) {</span>
+<span class="nc" id="L568">                bestType = PhysicalOption.PUSH_ATTACK;</span>
+<span class="nc" id="L569">                bestDmg = dmg;</span>
+            }
+        }
+
+        // Conventional infantry in the open suffer double damage.
+<span class="nc bnc" id="L574" title="All 2 branches missed.">        if (to.isConventionalInfantry()) {</span>
+<span class="nc" id="L575">            IHex e_hex = game.getBoard().getHex(to.getPosition());</span>
+<span class="nc bnc" id="L576" title="All 2 branches missed.">            if (!e_hex.containsTerrain(Terrains.WOODS)</span>
+<span class="nc bnc" id="L577" title="All 2 branches missed.">                    &amp;&amp; !e_hex.containsTerrain(Terrains.BUILDING)) {</span>
+<span class="nc" id="L578">                bestDmg *= 2.0;</span>
+            }
+        }
+
+<span class="nc bnc" id="L582" title="All 2 branches missed.">        if (bestDmg &gt; 0) {</span>
+<span class="nc" id="L583">            return new PhysicalOption(from, target, bestDmg, bestType, bestClub);</span>
+        }
+<span class="nc" id="L585">        return null;</span>
+    }
+
+    /**
+     * Calculates the Falling damage after a successful To-Hit.
+     *
+     * @param odds
+     * @param ent  The entity that is falling
+     * @return
+     */
+    private static double calculateFallingDamage(double odds, Entity ent) {
+<span class="nc" id="L596">        double dmg = odds;</span>
+<span class="nc" id="L597">        dmg *= 1.0 - (Compute.oddsAbove(ent.getBasePilotingRoll().getValue(),</span>
+<span class="nc" id="L598">                                        ent.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING)) /</span>
+                      100.0);
+<span class="nc" id="L600">        dmg *= ent.getWeight() * 0.1;</span>
+<span class="nc" id="L601">        return dmg;</span>
+    }
+
+    private static double getExpectedKickDamage(Entity from, Entity to,
+                                                IGame game, int locTable, int arc, int action) {
+        double self_damage;
+        double dmg;
+<span class="nc" id="L608">        double coll_damage = 0.0;</span>
+        int damage;
+<span class="nc" id="L610">        boolean targetConvInfantry = false;</span>
+        
+<span class="nc" id="L612">        Targetable target = to;</span>
+        
+        // if the object of our affections is in a building, we have to target the building instead
+<span class="nc bnc" id="L615" title="All 4 branches missed.">        if(Compute.isInBuilding(game, to) || (to instanceof GunEmplacement)) {</span>
+<span class="nc" id="L616">            target = new BuildingTarget(to.getPosition(), game.getBoard(), false);</span>
+        }
+        
+<span class="nc" id="L619">        ToHitData odds = KickAttackAction.toHit(game, from.getId(), target, action);</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">        if (odds.getValue() &gt; 12) {</span>
+<span class="nc" id="L621">            return 0.0;</span>
+        }
+
+<span class="nc bnc" id="L624" title="All 2 branches missed.">        if (to.isConventionalInfantry()) {</span>
+<span class="nc" id="L625">            targetConvInfantry = true;</span>
+        }
+
+        // Calculate collateral damage, due to possible target fall
+<span class="nc bnc" id="L629" title="All 2 branches missed.">        if (to instanceof Mech) {</span>
+<span class="nc" id="L630">            boolean toAptPiloting = to.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+<span class="nc" id="L631">            coll_damage = calculateFallingDamage(Compute.oddsAbove(odds.getValue(), toAptPiloting) / 100.0, to);</span>
+        }
+
+<span class="nc" id="L634">        boolean fromAptPiloting = from.hasAbility(OptionsConstants.PILOT_APTITUDE_PILOTING);</span>
+<span class="nc" id="L635">        damage = KickAttackAction.getDamageFor(from, action, targetConvInfantry);</span>
+<span class="nc" id="L636">        dmg = (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0) * damage;</span>
+        // Adjust damage for targets armor
+<span class="nc" id="L638">        dmg *= punchThroughMod(to, locTable, arc, dmg, dmg);</span>
+        // Calculate self damage, due to possible fall from missing a kick
+<span class="nc" id="L640">        self_damage = calculateFallingDamage(1.0 - (Compute.oddsAbove(odds.getValue(), fromAptPiloting) / 100.0), from);</span>
+<span class="nc bnc" id="L641" title="All 2 branches missed.">        if (from.getWalkMP() &gt; 0) {</span>
+<span class="nc" id="L642">            self_damage = self_damage</span>
+<span class="nc" id="L643">                    * Math.sqrt((1.0 / from.getWalkMP()) + from.getJumpMP());</span>
+        } else {
+<span class="nc" id="L645">            self_damage = self_damage * Math.sqrt(from.getJumpMP());</span>
+        }
+        // Add together damage values for comparison
+<span class="nc" id="L648">        dmg = (dmg + coll_damage) - self_damage;</span>
+<span class="nc" id="L649">        return dmg;</span>
+    }
+
+    /**
+     * This checks to see if the damage will punch through armor anywhere in the
+     * attacked arc. damage argument is divided into hits, using the group
+     * argument (ie, group = 5.0 for LRM). Each hit of group damage is checked
+     * against each location; if it penetrates increase the multiplier to
+     * reflect potential for additional damage Multiple passes are made with
+     * each hit being multiples of group damage to reflect shot grouping; as
+     * each pass is made the increase to the multiplier is lowered due to the
+     * lower chance of hitting the same location
+     */
+    private static double punchThroughMod(Entity target, int hitTable,
+                                          int hitSide, double damage, double group) {
+
+<span class="nc" id="L665">        int[] armor_values = new int[8];</span>
+<span class="nc" id="L666">        int max_index = 1;</span>
+<span class="nc" id="L667">        armor_values[0] = 0;</span>
+
+        // Set the final multiplier as 1.0 (no chance of penetrating armor)
+<span class="nc" id="L670">        double final_multiplier = 1.0;</span>
+
+        // Set the base multiplier as 0.5 (good bonus for penetrating with a
+        // single hit)
+<span class="nc" id="L674">        double base_multiplier = 0.5;</span>
+
+<span class="nc bnc" id="L676" title="All 4 branches missed.">        if ((damage &lt;= 0.0) || (group &lt;= 0.0)) {</span>
+<span class="nc" id="L677">            return final_multiplier;</span>
+        }
+
+        // If the target is a Mech
+<span class="nc bnc" id="L681" title="All 2 branches missed.">        if (target instanceof Mech) {</span>
+            // Create vector of body locations with targets current armor values
+            // Use hit table and direction to determine locations that are hit
+<span class="nc bnc" id="L684" title="All 2 branches missed.">            if (hitTable == ToHitData.HIT_NORMAL) {</span>
+<span class="nc" id="L685">                max_index = 7;</span>
+<span class="nc" id="L686">                armor_values[0] = target.getArmor(Mech.LOC_HEAD, false);</span>
+<span class="nc bnc" id="L687" title="All 2 branches missed.">                if (hitSide != ToHitData.SIDE_FRONT) {</span>
+<span class="nc" id="L688">                    armor_values[1] = target.getArmor(Mech.LOC_CT, true);</span>
+                } else {
+<span class="nc" id="L690">                    armor_values[1] = target.getArmor(Mech.LOC_CT, false);</span>
+                }
+<span class="nc bnc" id="L692" title="All 2 branches missed.">                if (hitSide != ToHitData.SIDE_FRONT) {</span>
+<span class="nc" id="L693">                    armor_values[2] = target.getArmor(Mech.LOC_RT, true);</span>
+                } else {
+<span class="nc" id="L695">                    armor_values[2] = target.getArmor(Mech.LOC_RT, false);</span>
+                }
+<span class="nc bnc" id="L697" title="All 2 branches missed.">                if (hitSide != ToHitData.SIDE_FRONT) {</span>
+<span class="nc" id="L698">                    armor_values[3] = target.getArmor(Mech.LOC_LT, true);</span>
+                } else {
+<span class="nc" id="L700">                    armor_values[3] = target.getArmor(Mech.LOC_LT, false);</span>
+                }
+<span class="nc" id="L702">                armor_values[4] = target.getArmor(Mech.LOC_RARM, false);</span>
+<span class="nc" id="L703">                armor_values[5] = target.getArmor(Mech.LOC_LARM, false);</span>
+<span class="nc" id="L704">                armor_values[6] = target.getArmor(Mech.LOC_RLEG, false);</span>
+<span class="nc" id="L705">                armor_values[7] = target.getArmor(Mech.LOC_RLEG, false);</span>
+            }
+<span class="nc bnc" id="L707" title="All 2 branches missed.">            if (hitTable == ToHitData.HIT_PUNCH) {</span>
+<span class="nc" id="L708">                armor_values[0] = target.getArmor(Mech.LOC_HEAD, false);</span>
+<span class="nc bnc" id="L709" title="All 2 branches missed.">                if (hitSide == ToHitData.SIDE_RIGHT) {</span>
+<span class="nc" id="L710">                    max_index = 3;</span>
+<span class="nc" id="L711">                    armor_values[1] = target.getArmor(Mech.LOC_CT, false);</span>
+<span class="nc" id="L712">                    armor_values[2] = target.getArmor(Mech.LOC_RT, false);</span>
+<span class="nc" id="L713">                    armor_values[3] = target.getArmor(Mech.LOC_RARM, false);</span>
+                }
+<span class="nc bnc" id="L715" title="All 2 branches missed.">                if (hitSide == ToHitData.SIDE_LEFT) {</span>
+<span class="nc" id="L716">                    max_index = 3;</span>
+<span class="nc" id="L717">                    armor_values[1] = target.getArmor(Mech.LOC_CT, false);</span>
+<span class="nc" id="L718">                    armor_values[2] = target.getArmor(Mech.LOC_LT, false);</span>
+<span class="nc" id="L719">                    armor_values[3] = target.getArmor(Mech.LOC_LARM, false);</span>
+                }
+<span class="nc bnc" id="L721" title="All 2 branches missed.">                if (hitSide == ToHitData.SIDE_FRONT) {</span>
+<span class="nc" id="L722">                    max_index = 5;</span>
+<span class="nc" id="L723">                    armor_values[1] = target.getArmor(Mech.LOC_CT, false);</span>
+<span class="nc" id="L724">                    armor_values[2] = target.getArmor(Mech.LOC_RT, false);</span>
+<span class="nc" id="L725">                    armor_values[3] = target.getArmor(Mech.LOC_LT, false);</span>
+<span class="nc" id="L726">                    armor_values[4] = target.getArmor(Mech.LOC_RARM, false);</span>
+<span class="nc" id="L727">                    armor_values[5] = target.getArmor(Mech.LOC_LARM, false);</span>
+                }
+<span class="nc bnc" id="L729" title="All 2 branches missed.">                if (hitSide == ToHitData.SIDE_REAR) {</span>
+<span class="nc" id="L730">                    max_index = 5;</span>
+<span class="nc" id="L731">                    armor_values[1] = target.getArmor(Mech.LOC_CT, true);</span>
+<span class="nc" id="L732">                    armor_values[2] = target.getArmor(Mech.LOC_RT, true);</span>
+<span class="nc" id="L733">                    armor_values[3] = target.getArmor(Mech.LOC_LT, true);</span>
+<span class="nc" id="L734">                    armor_values[4] = target.getArmor(Mech.LOC_RARM, false);</span>
+<span class="nc" id="L735">                    armor_values[5] = target.getArmor(Mech.LOC_LARM, false);</span>
+                }
+            }
+<span class="nc bnc" id="L738" title="All 2 branches missed.">            if (hitTable == ToHitData.HIT_KICK) {</span>
+<span class="nc" id="L739">                max_index = -1;</span>
+<span class="nc bnc" id="L740" title="All 6 branches missed.">                if ((hitSide == ToHitData.SIDE_FRONT)</span>
+                        || (hitSide == ToHitData.SIDE_REAR)
+                        || (hitSide == ToHitData.SIDE_RIGHT)) {
+<span class="nc" id="L743">                    max_index++;</span>
+<span class="nc" id="L744">                    armor_values[max_index] = target.getArmor(Mech.LOC_RLEG,</span>
+                                                              false);
+                }
+<span class="nc bnc" id="L747" title="All 6 branches missed.">                if ((hitSide == ToHitData.SIDE_FRONT)</span>
+                        || (hitSide == ToHitData.SIDE_REAR)
+                        || (hitSide == ToHitData.SIDE_LEFT)) {
+<span class="nc" id="L750">                    max_index++;</span>
+<span class="nc" id="L751">                    armor_values[max_index] = target.getArmor(Mech.LOC_LLEG,</span>
+                                                              false);
+                }
+            }
+        }
+        // If the target is a ProtoMech
+<span class="nc bnc" id="L757" title="All 2 branches missed.">        if (target instanceof Protomech) {</span>
+<span class="nc" id="L758">            max_index = 6;</span>
+            // Create vector of body locations with targets current armor values
+            // Create two high-armor dummy locations to represent the 'near
+            // miss' hit locations
+<span class="nc" id="L762">            armor_values[0] = target.getArmor(Protomech.LOC_TORSO, false);</span>
+<span class="nc" id="L763">            armor_values[1] = target.getArmor(Protomech.LOC_LEG, false);</span>
+<span class="nc" id="L764">            armor_values[2] = target.getArmor(Protomech.LOC_RARM, false);</span>
+<span class="nc" id="L765">            armor_values[3] = target.getArmor(Protomech.LOC_LARM, false);</span>
+<span class="nc" id="L766">            armor_values[4] = target.getArmor(Protomech.LOC_HEAD, false);</span>
+<span class="nc" id="L767">            armor_values[5] = 100;</span>
+<span class="nc" id="L768">            armor_values[6] = 100;</span>
+<span class="nc bnc" id="L769" title="All 2 branches missed.">            if (((Protomech) target).hasMainGun()) {</span>
+<span class="nc" id="L770">                max_index++;</span>
+<span class="nc" id="L771">                armor_values[max_index] = target.getArmor(</span>
+                        Protomech.LOC_MAINGUN, false);
+            }
+        }
+        // If the target is a vehicle
+<span class="nc bnc" id="L776" title="All 2 branches missed.">        if (target instanceof Tank) {</span>
+            // Create vector of armor locations
+<span class="nc" id="L778">            max_index = 0;</span>
+<span class="nc bnc" id="L779" title="All 5 branches missed.">            switch (hitSide) {</span>
+                case ToHitData.SIDE_FRONT:
+<span class="nc" id="L781">                    armor_values[0] = target.getArmor(Tank.LOC_FRONT);</span>
+<span class="nc" id="L782">                    break;</span>
+                case ToHitData.SIDE_RIGHT:
+<span class="nc" id="L784">                    armor_values[0] = target.getArmor(Tank.LOC_RIGHT);</span>
+<span class="nc" id="L785">                    break;</span>
+                case ToHitData.SIDE_LEFT:
+<span class="nc" id="L787">                    armor_values[0] = target.getArmor(Tank.LOC_LEFT);</span>
+<span class="nc" id="L788">                    break;</span>
+                case ToHitData.SIDE_REAR:
+<span class="nc" id="L790">                    armor_values[0] = target.getArmor(Tank.LOC_REAR);</span>
+                    break;
+            }
+<span class="nc bnc" id="L793" title="All 2 branches missed.">            if (!((Tank) target).hasNoTurret()) {</span>
+<span class="nc" id="L794">                max_index++;</span>
+<span class="nc" id="L795">                armor_values[max_index] = target.getArmor(((Tank) target).getLocTurret());</span>
+            }
+<span class="nc bnc" id="L797" title="All 2 branches missed.">            if (!((Tank) target).hasNoDualTurret()) {</span>
+<span class="nc" id="L798">                max_index++;</span>
+<span class="nc" id="L799">                armor_values[max_index] = target.getArmor(((Tank) target).getLocTurret2());</span>
+            }
+        }
+        // If the target is Battle Armor
+<span class="nc bnc" id="L803" title="All 2 branches missed.">        if (target instanceof BattleArmor) {</span>
+            // Create vector of armor of surviving troopers
+<span class="nc" id="L805">            max_index = -1;</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">            for (int i = 1; i &lt; ((BattleArmor) target).getShootingStrength(); i++) {</span>
+<span class="nc bnc" id="L807" title="All 2 branches missed.">                if (target.getArmor(i) &gt;= 0) {</span>
+<span class="nc" id="L808">                    max_index++;</span>
+<span class="nc" id="L809">                    armor_values[max_index] = target.getArmor(i);</span>
+                }
+            }
+        }
+        // If the target is conventional infantry
+<span class="nc bnc" id="L814" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+            // Create a single element vector with total number of troopers
+<span class="nc" id="L816">            max_index = 0;</span>
+<span class="nc" id="L817">            armor_values[0] = ((Infantry) target).getShootingStrength();</span>
+        }
+
+<span class="nc" id="L820">        double hit_total = 0;</span>
+        // While hit damage is less than total damage applied, increment by
+        // group value
+<span class="nc bnc" id="L823" title="All 2 branches missed.">        while (hit_total &lt;= damage) {</span>
+<span class="nc" id="L824">            hit_total += group;</span>
+<span class="nc bnc" id="L825" title="All 2 branches missed.">            for (int i = 0; i &lt;= max_index; i++) {</span>
+                // If hit damage can penetrate location
+<span class="nc bnc" id="L827" title="All 2 branches missed.">                if (hit_total &gt; armor_values[i]) {</span>
+<span class="nc" id="L828">                    final_multiplier += base_multiplier;</span>
+                }
+            }
+<span class="nc" id="L831">            base_multiplier /= 2.0;</span>
+        }
+
+        // Return final multiplier
+
+<span class="nc" id="L836">        return final_multiplier;</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

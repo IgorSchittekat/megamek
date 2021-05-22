@@ -1,0 +1,1276 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RATGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ratgenerator</a> &gt; <span class="el_source">RATGenerator.java</span></div><h1>RATGenerator.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2016 The MegaMek Team
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+package megamek.client.ratgenerator;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.xml.parsers.DocumentBuilder;
+
+import megamek.common.annotations.Nullable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import megamek.MegaMek;
+import megamek.common.Configuration;
+import megamek.common.EntityMovementMode;
+import megamek.common.MechSummary;
+import megamek.common.MechSummaryCache;
+import megamek.common.UnitType;
+import megamek.common.util.fileUtils.MegaMekFile;
+import megamek.utils.MegaMekXmlUtil;
+
+/**
+ * Generates a random assignment table (RAT) dynamically based on a variety of criteria,
+ * including faction, era, unit type, weight class, equipment rating, faction subcommand, vehicle
+ * movement mode, and mission role.
+ * 
+ * @author Neoancient
+ *
+ */
+public class RATGenerator {
+    
+    private final HashMap&lt;String, ModelRecord&gt; models;
+    private final HashMap&lt;String, ChassisRecord&gt; chassis;
+    private final HashMap&lt;String, FactionRecord&gt; factions;
+    private final HashMap&lt;Integer, HashMap&lt;String, HashMap&lt;String, AvailabilityRating&gt;&gt;&gt; modelIndex;
+    private final HashMap&lt;Integer, HashMap&lt;String, HashMap&lt;String, AvailabilityRating&gt;&gt;&gt; chassisIndex;
+
+    private final TreeSet&lt;Integer&gt; eraSet;
+
+<span class="nc" id="L61">    private static RATGenerator rg = null;</span>
+<span class="nc" id="L62">    private static boolean interrupted = false;</span>
+<span class="nc" id="L63">    private static boolean dispose = false;</span>
+    private Thread loader;
+    private boolean initialized;
+    private boolean initializing;
+
+    private ArrayList&lt;ActionListener&gt; listeners;
+    
+<span class="nc" id="L70">    protected RATGenerator() {</span>
+<span class="nc" id="L71">        models = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L72">        chassis = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L73">        factions = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L74">        modelIndex = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L75">        chassisIndex = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L76">        eraSet = new TreeSet&lt;&gt;();</span>
+        
+<span class="nc" id="L78">        listeners = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L79">    }</span>
+
+    public static RATGenerator getInstance() {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (rg == null) {</span>
+<span class="nc" id="L83">            rg = new RATGenerator();</span>
+        }
+<span class="nc bnc" id="L85" title="All 4 branches missed.">        if (!rg.initialized &amp;&amp; !rg.initializing) {</span>
+<span class="nc" id="L86">            rg.initializing = true;</span>
+<span class="nc" id="L87">            interrupted = false;</span>
+<span class="nc" id="L88">            dispose = false;</span>
+<span class="nc" id="L89">            rg.loader = new Thread(() -&gt; rg.initialize(Configuration.forceGeneratorDir()),</span>
+                    &quot;RAT Generator unit populator&quot;);
+<span class="nc" id="L91">            rg.loader.setPriority(Thread.NORM_PRIORITY - 1);</span>
+<span class="nc" id="L92">            rg.loader.start();</span>
+        }
+<span class="nc" id="L94">        return rg;</span>
+    }
+
+    public boolean isInitialized() {
+<span class="nc" id="L98">        return initialized;</span>
+    }
+
+    /**
+     * Clears all data and loads from the given directory
+     * @param dir The directory to load from
+     */
+    public void reloadFromDir(File dir) {
+<span class="nc" id="L106">        models.clear();</span>
+<span class="nc" id="L107">        chassis.clear();</span>
+<span class="nc" id="L108">        factions.clear();</span>
+<span class="nc" id="L109">        chassisIndex.clear();</span>
+<span class="nc" id="L110">        modelIndex.clear();</span>
+<span class="nc" id="L111">        eraSet.clear();</span>
+<span class="nc" id="L112">        initialized = false;</span>
+<span class="nc" id="L113">        initializing = false;</span>
+<span class="nc" id="L114">        initialize(dir);</span>
+<span class="nc" id="L115">        rg.getEraSet().forEach(e -&gt; rg.loadEra(e, dir));</span>
+<span class="nc" id="L116">    }</span>
+
+    public AvailabilityRating findChassisAvailabilityRecord(int era, String unit, String faction,
+            int year) {
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (factions.containsKey(faction)) {</span>
+<span class="nc" id="L121">            return findChassisAvailabilityRecord(era, unit, factions.get(faction), year);</span>
+        }
+<span class="nc bnc" id="L123" title="All 4 branches missed.">        if (chassisIndex.containsKey(era) &amp;&amp; chassisIndex.get(era).containsKey(unit)) {</span>
+<span class="nc" id="L124">            AvailabilityRating av = chassisIndex.get(era).get(unit).get(&quot;General&quot;);</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">            if (av != null &amp;&amp; year &gt;= av.getStartYear()) {</span>
+<span class="nc" id="L126">                return av;</span>
+            }
+        }
+<span class="nc" id="L129">        return null;</span>
+    }
+
+    public AvailabilityRating findChassisAvailabilityRecord(int era, String unit, FactionRecord fRec,
+            int year) {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (fRec == null) {</span>
+<span class="nc" id="L135">            return null;</span>
+        }
+<span class="nc" id="L137">        AvailabilityRating retVal = null;</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">        if (chassisIndex.containsKey(era) &amp;&amp; chassisIndex.get(era).containsKey(unit)) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (chassisIndex.get(era).get(unit).containsKey(fRec.getKey())) {</span>
+<span class="nc" id="L140">                retVal = chassisIndex.get(era).get(unit).get(fRec.getKey());</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            } else if (fRec.getParentFactions().size() == 1) {</span>
+<span class="nc" id="L142">                retVal = findChassisAvailabilityRecord(era, unit, fRec.getParentFactions().get(0), year);</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            } else if (fRec.getParentFactions().size() &gt; 0) {</span>
+<span class="nc" id="L144">                ArrayList&lt;AvailabilityRating&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                for (String alt : fRec.getParentFactions()) {</span>
+<span class="nc" id="L146">                    AvailabilityRating ar = findChassisAvailabilityRecord(era, unit, alt, year);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                    if (ar != null) {</span>
+<span class="nc" id="L148">                        list.add(ar);</span>
+                    }
+<span class="nc" id="L150">                }</span>
+<span class="nc" id="L151">                retVal = mergeFactionAvailability(fRec.getKey(), list);</span>
+<span class="nc" id="L152">            } else {</span>
+<span class="nc" id="L153">                retVal = chassisIndex.get(era).get(unit).get(&quot;General&quot;);</span>
+            }
+        }
+<span class="nc bnc" id="L156" title="All 4 branches missed.">        if (retVal != null &amp;&amp; year &gt;= retVal.getStartYear()) {</span>
+<span class="nc" id="L157">            return retVal;</span>
+        }
+<span class="nc" id="L159">        return null;</span>
+    }
+
+    public AvailabilityRating findModelAvailabilityRecord(int era, String unit, String faction) {
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (factions.containsKey(faction)) {</span>
+<span class="nc" id="L164">            return findModelAvailabilityRecord(era, unit, factions.get(faction));</span>
+        }
+<span class="nc bnc" id="L166" title="All 4 branches missed.">        if (modelIndex.containsKey(era) &amp;&amp; modelIndex.get(era).containsKey(unit)) {</span>
+<span class="nc" id="L167">            return modelIndex.get(era).get(unit).get(&quot;General&quot;);</span>
+        }
+<span class="nc" id="L169">        return null;</span>
+    }
+
+    public AvailabilityRating findModelAvailabilityRecord(int era, String unit, FactionRecord fRec) {
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (null == models.get(unit)) {</span>
+<span class="nc" id="L174">            MegaMek.getLogger().error(&quot;Trying to find record for unknown model &quot; + unit);</span>
+<span class="nc" id="L175">            return null;</span>
+        }
+<span class="nc bnc" id="L177" title="All 4 branches missed.">        if (fRec == null || models.get(unit).factionIsExcluded(fRec)) {</span>
+<span class="nc" id="L178">            return null;</span>
+        }
+<span class="nc bnc" id="L180" title="All 4 branches missed.">        if (modelIndex.containsKey(era) &amp;&amp; modelIndex.get(era).containsKey(unit)) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (modelIndex.get(era).get(unit).containsKey(fRec.getKey())) {</span>
+<span class="nc" id="L182">                return modelIndex.get(era).get(unit).get(fRec.getKey());</span>
+            }
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            if (fRec.getParentFactions().size() == 1) {</span>
+<span class="nc" id="L185">                return findModelAvailabilityRecord(era, unit, fRec.getParentFactions().get(0));</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            } else if (fRec.getParentFactions().size() &gt; 0) {</span>
+<span class="nc" id="L187">                ArrayList&lt;AvailabilityRating&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                for (String alt : fRec.getParentFactions()) {</span>
+<span class="nc" id="L189">                    AvailabilityRating ar = findModelAvailabilityRecord(era, unit, alt);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                    if (ar != null) {</span>
+<span class="nc" id="L191">                        list.add(ar);</span>
+                    }
+<span class="nc" id="L193">                }</span>
+<span class="nc" id="L194">                return mergeFactionAvailability(fRec.getKey(), list);</span>
+            }
+<span class="nc" id="L196">            return modelIndex.get(era).get(unit).get(&quot;General&quot;);</span>
+        }
+<span class="nc" id="L198">        return null;</span>
+    }
+
+    /**
+     * Provides a list of availability ratings for a unit in a given era. Used in editing and reporting.
+     * 
+     * @param era  The year of the record. This must be one of the years in the &lt;code&gt;eraSet&lt;/code&gt;.
+     * @param unit The lookup name of the unit to find records for.
+     * @return     A &lt;code&gt;Collection&lt;/code&gt; of all the availability ratings for the unit in the era,
+     *             or null if there are no records for that era.
+     */
+    public Collection&lt;AvailabilityRating&gt; getModelFactionRatings(int era, String unit) {
+<span class="nc bnc" id="L210" title="All 4 branches missed.">        if (modelIndex.containsKey(era) &amp;&amp; modelIndex.get(era).containsKey(unit)) {</span>
+<span class="nc" id="L211">            return modelIndex.get(era).get(unit).values();</span>
+        }
+<span class="nc" id="L213">        return null;</span>
+    }
+
+    /**
+     * Adds or changes an availability rating entry for a model.
+     * 
+     * @param era  The year of the record to change
+     * @param unitKey The model key for the unit which is having its model record updated
+     * @param ar   The new &lt;code&gt;AvailabilityRating&lt;/code&gt; for the unit in the era. This provides the
+     *             faction.
+     */
+    public void setModelFactionRating(int era, String unitKey, AvailabilityRating ar) {
+<span class="nc" id="L225">        modelIndex.get(era).computeIfAbsent(unitKey, k -&gt; new HashMap&lt;&gt;());</span>
+<span class="nc" id="L226">        modelIndex.get(era).get(unitKey).put(ar.getFactionCode(), ar);</span>
+<span class="nc" id="L227">        models.get(unitKey).getIncludedFactions().add(ar.getFactionCode());</span>
+<span class="nc" id="L228">    }</span>
+
+    /**
+     * Removes the availability rating entry.
+     * 
+     * @param era      The year of the record to remove.
+     * @param unit     The model to remove the record for.
+     * @param faction  The faction to remove the record for.
+     */
+    public void removeModelFactionRating(int era, String unit, String faction) {
+<span class="nc bnc" id="L238" title="All 4 branches missed.">        if (modelIndex.containsKey(era) &amp;&amp; modelIndex.get(era).containsKey(unit)) {</span>
+<span class="nc" id="L239">            modelIndex.get(era).get(unit).remove(faction);</span>
+        }
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        for (int e : eraSet) {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (modelIndex.get(e).containsKey(unit) &amp;&amp;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">                    modelIndex.get(e).get(unit).containsKey(faction)) {</span>
+<span class="nc" id="L244">                return;</span>
+            }
+<span class="nc" id="L246">        }</span>
+<span class="nc" id="L247">        models.get(unit).getIncludedFactions().remove(faction);</span>
+<span class="nc" id="L248">    }</span>
+
+    /**
+     * Provides a list of availability ratings for a chassis in a given era. Used in editing and reporting.
+     * 
+     * @param era  The year of the record. This must be one of the years in the &lt;code&gt;eraSet&lt;/code&gt;.
+     * @param chassisKey The chassis name to find records for.
+     * @return     A &lt;code&gt;Collection&lt;/code&gt; of all the availability ratings for the chassis in the era,
+     *             or null if there are no records for that era.
+     */
+    public Collection&lt;AvailabilityRating&gt; getChassisFactionRatings(int era, String chassisKey) {
+<span class="nc bnc" id="L259" title="All 4 branches missed.">        if (chassisIndex.containsKey(era) &amp;&amp; chassisIndex.get(era).containsKey(chassisKey)) {</span>
+<span class="nc" id="L260">            return chassisIndex.get(era).get(chassisKey).values();</span>
+        }
+<span class="nc" id="L262">        return null;</span>
+    }
+
+    /**
+     * Adds or changes an availability rating entry for a chassis.
+     * 
+     * @param era  The year of the record to change
+     * @param unit The name of the chassis for which to change the record
+     * @param ar   The new &lt;code&gt;AvailabilityRating&lt;/code&gt; for the unit in the era. This provides the
+     *             faction.
+     */
+    public void setChassisFactionRating(int era, String unit, AvailabilityRating ar) {
+<span class="nc" id="L274">        chassisIndex.get(era).computeIfAbsent(unit, k -&gt; new HashMap&lt;&gt;());</span>
+<span class="nc" id="L275">        chassisIndex.get(era).get(unit).put(ar.getFactionCode(), ar);</span>
+<span class="nc" id="L276">        chassis.get(unit).getIncludedFactions().add(ar.getFactionCode());</span>
+<span class="nc" id="L277">    }</span>
+
+    /**
+     * Removes the availability rating entry.
+     * 
+     * @param era      The year of the record to remove.
+     * @param unit     The chassis to remove the record for.
+     * @param faction  The faction to remove the record for.
+     */
+    public void removeChassisFactionRating(int era, String unit, String faction) {
+<span class="nc bnc" id="L287" title="All 4 branches missed.">        if (chassisIndex.containsKey(era) &amp;&amp; chassisIndex.get(era).containsKey(unit)) {</span>
+<span class="nc" id="L288">            chassisIndex.get(era).get(unit).remove(faction);</span>
+        }
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        for (int e : eraSet) {</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">            if (chassisIndex.get(e).containsKey(unit) &amp;&amp;</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                    chassisIndex.get(e).get(unit).containsKey(faction)) {</span>
+<span class="nc" id="L293">                return;</span>
+            }
+<span class="nc" id="L295">        }</span>
+<span class="nc" id="L296">        chassis.get(unit).getIncludedFactions().remove(faction);</span>
+<span class="nc" id="L297">    }</span>
+
+    public TreeSet&lt;Integer&gt; getEraSet() {
+<span class="nc" id="L300">        return eraSet;</span>
+    }
+    
+    public Collection&lt;ModelRecord&gt; getModelList() {
+<span class="nc" id="L304">        return models.values();</span>
+    }
+
+    public ModelRecord getModelRecord(String key) {
+<span class="nc" id="L308">        return models.get(key);</span>
+    }
+
+    public Collection&lt;ChassisRecord&gt; getChassisList() {
+<span class="nc" id="L312">        return chassis.values();</span>
+    }
+
+    public ChassisRecord getChassisRecord(String key) {
+<span class="nc" id="L316">        return chassis.get(key);</span>
+    }
+
+    public Collection&lt;FactionRecord&gt; getFactionList() {
+<span class="nc" id="L320">        return factions.values();</span>
+    }
+    
+    public FactionRecord getFaction(String key) {
+<span class="nc" id="L324">        return factions.get(key);</span>
+    }
+
+    public void addFaction(FactionRecord rec) {
+<span class="nc" id="L328">        factions.put(rec.getKey(), rec);</span>
+<span class="nc" id="L329">    }</span>
+
+    public void removeFaction(FactionRecord rec) {
+<span class="nc" id="L332">        factions.remove(rec.getKey());</span>
+<span class="nc" id="L333">    }</span>
+
+    public void removeFaction(String key) {
+<span class="nc" id="L336">        factions.remove(key);</span>
+<span class="nc" id="L337">    }</span>
+
+    public Collection&lt;String&gt; getFactionKeySet() {
+<span class="nc" id="L340">        return factions.keySet();</span>
+    }
+    
+    public int eraForYear(final int year) {
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        if (year &lt; getEraSet().first()) {</span>
+<span class="nc" id="L345">            return getEraSet().first();</span>
+        } else {
+<span class="nc" id="L347">            final Integer floor = getEraSet().floor(year);</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">            return (floor == null) ? year : floor;</span>
+        }
+    }
+    
+    public boolean eraIsLoaded(int era) {
+<span class="nc" id="L353">        return chassisIndex.containsKey(era);</span>
+    }
+
+    /**
+     * Used for a faction with multiple parent factions (e.g. FC == FS + LA) to find the average
+     * availability among the parents. Based on average weight rather than av rating.
+     * 
+     * @param faction The faction code to use for the new AvailabilityRecord
+     * @param list A list of ARs for the various parent factions
+     * @return A new AR with the average availability code from the various factions.
+     */
+    private AvailabilityRating mergeFactionAvailability(String faction, List&lt;AvailabilityRating&gt; list) {
+<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (list.size() == 0) {</span>
+<span class="nc" id="L366">            return null;</span>
+        }
+<span class="nc" id="L368">        double totalWt = 0;</span>
+<span class="nc" id="L369">        int totalAdj = 0;</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">        for (AvailabilityRating ar : list) {</span>
+<span class="nc" id="L371">            totalWt += AvailabilityRating.calcWeight(ar.availability);</span>
+<span class="nc" id="L372">            totalAdj += ar.ratingAdjustment;</span>
+<span class="nc" id="L373">        }</span>
+<span class="nc" id="L374">        AvailabilityRating retVal = list.get(0).makeCopy(faction);</span>
+        
+<span class="nc" id="L376">        retVal.availability = (int)(AvailabilityRating.calcAvRating(totalWt / list.size()));</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">        if (totalAdj &lt; 0) {</span>
+<span class="nc" id="L378">            retVal.ratingAdjustment = (totalAdj - 1)/ list.size();</span>
+        } else {
+<span class="nc" id="L380">            retVal.ratingAdjustment = (totalAdj + 1)/ list.size();</span>
+        }
+<span class="nc" id="L382">        return retVal;</span>
+    }
+    
+    /**
+     * Given values for two years, interpolates or extrapolates value for another given year.
+     * If one of the two values is null, it is treated as 0.
+     * 
+     * @param av1 The first value.
+     * @param av2 The second value.
+     * @param year1 The year for the first value.
+     * @param year2 The year for the second value.
+     * @param now The year for which to calculate a value.
+     * @return The value for the year in question. Returns null if av1 and av2 are both null.
+     */
+    
+    private Double interpolate(Number av1, Number av2, int year1, int year2, int now) {
+<span class="nc bnc" id="L398" title="All 4 branches missed.">        if (av1 == null &amp;&amp; av2 == null) {</span>
+<span class="nc" id="L399">            return null;</span>
+        }
+<span class="nc bnc" id="L401" title="All 2 branches missed.">        if (av1 == null) {</span>
+<span class="nc" id="L402">            av1 = 0.0;</span>
+        }
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (av2 == null) {</span>
+<span class="nc" id="L405">            av2 = 0.0;</span>
+        }
+<span class="nc bnc" id="L407" title="All 2 branches missed.">        if (year1 == year2) {</span>
+<span class="nc" id="L408">            return av1.doubleValue();</span>
+        }
+<span class="nc" id="L410">        return av1.doubleValue()</span>
+<span class="nc" id="L411">                + (av2.doubleValue() - av1.doubleValue()) * (now - year1) / (year2 - year1);</span>
+    }
+    
+    public List&lt;UnitTable.TableEntry&gt; generateTable(FactionRecord fRec, int unitType, int year,
+            String rating, Collection&lt;Integer&gt; weightClasses, int networkMask,
+            Collection&lt;EntityMovementMode&gt; movementModes,
+            Collection&lt;MissionRole&gt; roles, int roleStrictness,
+            FactionRecord user) {
+<span class="nc" id="L419">        HashMap&lt;ModelRecord, Double&gt; unitWeights = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L420">        HashMap&lt;FactionRecord, Double&gt; salvageWeights = new HashMap&lt;&gt;();</span>
+        
+<span class="nc" id="L422">        loadYear(year);</span>
+        
+<span class="nc bnc" id="L424" title="All 2 branches missed.">        if (fRec == null) {</span>
+<span class="nc" id="L425">            fRec = new FactionRecord();</span>
+        }
+        
+<span class="nc" id="L428">        Integer early = eraSet.floor(year);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        if (early == null) {</span>
+<span class="nc" id="L430">            early = eraSet.first();</span>
+        }
+<span class="nc" id="L432">        Integer late = null;</span>
+<span class="nc bnc" id="L433" title="All 2 branches missed.">        if (!eraSet.contains(year)) {</span>
+<span class="nc" id="L434">            late = eraSet.ceiling(year);</span>
+        }
+<span class="nc bnc" id="L436" title="All 2 branches missed.">        if (late == null) {</span>
+<span class="nc" id="L437">            late = early;</span>
+        }
+        
+        /* Adjustments for unit rating require knowing both how many ratings are available
+         * to the faction and where the rating falls within the whole. If a faction does
+         * not have designated rating levels, it inherits those of the parent faction;
+         * if there are multiple parent factions the first match is used. Some very minor
+         * or generic factions do not use rating adjustments, indicated by a rating level
+         * of -1. A faction that has one rating level is a special case that always has
+         * the indicated rating within the parent faction's system.
+         */
+        
+<span class="nc" id="L449">        int ratingLevel = -1;</span>
+<span class="nc" id="L450">        ArrayList&lt;String&gt; factionRatings = fRec.getRatingLevelSystem();</span>
+<span class="nc" id="L451">        int numRatingLevels = factionRatings.size();</span>
+<span class="nc bnc" id="L452" title="All 4 branches missed.">        if (rating == null &amp;&amp; fRec.getRatingLevels().size() == 1) {</span>
+<span class="nc" id="L453">            ratingLevel = factionRatings.indexOf(fRec.getRatingLevels().get(0));</span>
+        }
+<span class="nc bnc" id="L455" title="All 4 branches missed.">        if (rating != null &amp;&amp; numRatingLevels &gt; 1) {</span>
+<span class="nc" id="L456">            ratingLevel = factionRatings.indexOf(rating);</span>
+        }
+        
+<span class="nc bnc" id="L459" title="All 2 branches missed.">        for (String chassisKey : chassisIndex.get(early).keySet()) {</span>
+<span class="nc" id="L460">            ChassisRecord cRec = chassis.get(chassisKey);</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">            if (cRec == null) {</span>
+<span class="nc" id="L462">                MegaMek.getLogger().error(&quot;Could not locate chassis &quot; + chassisKey);</span>
+<span class="nc" id="L463">                continue;</span>
+            }
+            
+<span class="nc bnc" id="L466" title="All 4 branches missed.">            if (cRec.getUnitType() != unitType &amp;&amp;</span>
+                    !(unitType == UnitType.TANK
+<span class="nc bnc" id="L468" title="All 2 branches missed.">                        &amp;&amp; cRec.getUnitType() == UnitType.VTOL</span>
+<span class="nc bnc" id="L469" title="All 2 branches missed.">                        &amp;&amp; movementModes.contains(EntityMovementMode.VTOL))) {</span>
+<span class="nc" id="L470">                continue;</span>
+            }
+
+<span class="nc" id="L473">            AvailabilityRating ar = findChassisAvailabilityRecord(early,</span>
+<span class="nc" id="L474">                        cRec.getChassisKey(), fRec, year);</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">            if (ar == null) {</span>
+<span class="nc" id="L476">                continue;</span>
+            }
+<span class="nc" id="L478">            double cAv = cRec.calcAvailability(ar, ratingLevel, numRatingLevels, early);</span>
+<span class="nc" id="L479">            cAv = interpolate(cAv,</span>
+<span class="nc" id="L480">                    cRec.calcAvailability(ar, ratingLevel, numRatingLevels, late),</span>
+<span class="nc" id="L481">                    Math.max(early, cRec.getIntroYear()), late, year);</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">            if (cAv &gt; 0) {</span>
+<span class="nc" id="L483">                double totalModelWeight = cRec.totalModelWeight(early,</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">                        cRec.isOmni()?user : fRec);</span>
+<span class="nc bnc" id="L485" title="All 2 branches missed.">                for (ModelRecord mRec : cRec.getModels()) {</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">                    if (mRec.getIntroYear() &gt;= year</span>
+<span class="nc bnc" id="L487" title="All 2 branches missed.">                            || (weightClasses.size() &gt; 0</span>
+<span class="nc bnc" id="L488" title="All 2 branches missed.">                                    &amp;&amp; !weightClasses.contains(mRec.getWeightClass()))</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">                            || (networkMask &amp; mRec.getNetworkMask()) != networkMask) {</span>
+<span class="nc" id="L490">                        continue;</span>
+                    }
+<span class="nc bnc" id="L492" title="All 4 branches missed.">                    if (movementModes.size() &gt; 0 &amp;&amp; !movementModes.contains(mRec.getMovementMode())) {</span>
+<span class="nc" id="L493">                        continue;</span>
+                    }
+<span class="nc" id="L495">                    ar = findModelAvailabilityRecord(early,</span>
+<span class="nc" id="L496">                            mRec.getKey(), fRec);</span>
+<span class="nc bnc" id="L497" title="All 4 branches missed.">                    if (ar == null || ar.getAvailability() == 0) {</span>
+<span class="nc" id="L498">                        continue;</span>
+                    }
+<span class="nc" id="L500">                    double mAv = mRec.calcAvailability(ar, ratingLevel, numRatingLevels, early);</span>
+<span class="nc" id="L501">                    mAv = interpolate(mAv,</span>
+<span class="nc" id="L502">                            mRec.calcAvailability(ar, ratingLevel, numRatingLevels, late),</span>
+<span class="nc" id="L503">                            Math.max(early, mRec.getIntroYear()), late, year);</span>
+<span class="nc" id="L504">                    Double adjMAv = MissionRole.adjustAvailabilityByRole(mAv, roles, mRec, year, roleStrictness);</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">                    if (adjMAv != null) {</span>
+<span class="nc" id="L506">                        double mWt = AvailabilityRating.calcWeight(adjMAv) / totalModelWeight</span>
+<span class="nc" id="L507">                                * AvailabilityRating.calcWeight(cAv);</span>
+
+<span class="nc bnc" id="L509" title="All 2 branches missed.">                        if (mWt &gt; 0) {</span>
+<span class="nc" id="L510">                            unitWeights.put(mRec, mWt);</span>
+                        }
+                    }
+<span class="nc" id="L513">                }</span>
+            }                        
+<span class="nc" id="L515">        }</span>
+
+<span class="nc bnc" id="L517" title="All 2 branches missed.">        if (unitWeights.size() == 0) {</span>
+<span class="nc" id="L518">            return new ArrayList&lt;&gt;();</span>
+        }
+        
+        /* If there is more than one weight class and the faction record (or parent)
+         * indicates a certain distribution of weight classes, adjust the weight value
+         * to conform to the given ratio.
+         */
+
+<span class="nc bnc" id="L526" title="All 2 branches missed.">        if (weightClasses.size() &gt; 1) {</span>
+            // Get standard weight class distribution for faction
+<span class="nc" id="L528">            ArrayList&lt;Integer&gt; wcd = fRec.getWeightDistribution(early, unitType);</span>
+            
+<span class="nc bnc" id="L530" title="All 4 branches missed.">            if (wcd != null &amp;&amp; wcd.size() &gt; 0) {</span>
+                /* Ultra-light and superheavy are too rare to warrant their own values and
+                 * for weight class distribution purposes are grouped with light and
+                 * assault, respectively.
+                 */
+<span class="nc" id="L535">                final int[] wcdIndex = {0, 0, 1, 2, 3, 3};</span>
+                //Find the totals of the weight for the generated table 
+<span class="nc" id="L537">                double totalMRWeight = unitWeights.values().stream().mapToDouble(Double::doubleValue).sum();</span>
+                //Find the sum of the weight distribution values for all weight classes in use.
+<span class="nc bnc" id="L539" title="All 2 branches missed.">                int totalWCDWeights = weightClasses.stream().filter(wc -&gt; wcdIndex[wc] &lt; wcd.size())</span>
+<span class="nc" id="L540">                        .mapToInt(wc -&gt; wcd.get(wcdIndex[wc])).sum();</span>
+                
+<span class="nc bnc" id="L542" title="All 2 branches missed.">                if (totalWCDWeights &gt; 0) {</span>
+                    //Group all the models of the generated table by weight class.
+<span class="nc" id="L544">                    java.util.function.Function&lt;ModelRecord,Integer&gt; grouper =</span>
+<span class="nc" id="L545">                            mr -&gt; wcdIndex[mr.getWeightClass()];</span>
+<span class="nc" id="L546">                    Map&lt;Integer,List&lt;ModelRecord&gt;&gt; weightGroups = unitWeights.keySet().stream()</span>
+<span class="nc" id="L547">                            .collect(Collectors.groupingBy(grouper));</span>
+                    
+                    /* Go through the weight class groups and adjust the table weights so the
+                     * total of each group corresponds to the distribution for this faction. */
+<span class="nc bnc" id="L551" title="All 2 branches missed.">                    for (int i : weightGroups.keySet()) {</span>
+<span class="nc" id="L552">                        double totalWeight = weightGroups.get(i).stream()</span>
+<span class="nc" id="L553">                                .mapToDouble(unitWeights::get).sum();</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">                        if (totalWeight &gt; 0) {</span>
+<span class="nc" id="L555">                            double adj = totalMRWeight * wcd.get(i) / (totalWeight * totalWCDWeights);</span>
+<span class="nc" id="L556">                            weightGroups.get(i).forEach(mr -&gt; unitWeights.merge(mr, adj, (x,y) -&gt; x*y));</span>
+                        }
+<span class="nc" id="L558">                    }</span>
+                }
+            }
+        }
+        
+<span class="nc" id="L563">        double total = unitWeights.values().stream().mapToDouble(Double::doubleValue).sum();</span>
+
+<span class="nc bnc" id="L565" title="All 2 branches missed.">        if (fRec.getPctSalvage(early) != null) {</span>
+<span class="nc" id="L566">            HashMap&lt;String,Double&gt; salvageEntries = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L567" title="All 2 branches missed.">            for (Map.Entry&lt;String,Integer&gt; entry : fRec.getSalvage(early).entrySet()) {</span>
+<span class="nc" id="L568">                salvageEntries.put(entry.getKey(),</span>
+<span class="nc" id="L569">                        interpolate(entry.getValue(),</span>
+<span class="nc" id="L570">                                fRec.getSalvage(late).get(entry.getKey()),</span>
+<span class="nc" id="L571">                                        early, late, year));</span>
+<span class="nc" id="L572">            }</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">            if (!late.equals(early)) {</span>
+<span class="nc bnc" id="L574" title="All 2 branches missed.">                for (Map.Entry&lt;String,Integer&gt; entry : fRec.getSalvage(late).entrySet()) {</span>
+<span class="nc bnc" id="L575" title="All 2 branches missed.">                    if (!salvageEntries.containsKey(entry.getKey())) {</span>
+<span class="nc" id="L576">                        salvageEntries.put(entry.getKey(), interpolate(0.0,</span>
+<span class="nc" id="L577">                                entry.getValue(), early, late, year));</span>
+                    }
+<span class="nc" id="L579">                }</span>
+            }            
+            
+<span class="nc" id="L582">            double salvage = fRec.getPctSalvage(early);</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">            if (salvage &gt;= 100) {</span>
+<span class="nc" id="L584">                salvage = total;</span>
+<span class="nc" id="L585">                unitWeights.clear();</span>
+            } else {
+<span class="nc" id="L587">                salvage = salvage * total / (100 - salvage);</span>
+            }
+<span class="nc" id="L589">            double totalFactionWeight = salvageEntries.values().stream()</span>
+<span class="nc" id="L590">                    .mapToDouble(Double::doubleValue).sum();</span>
+<span class="nc bnc" id="L591" title="All 2 branches missed.">            for (String fKey : salvageEntries.keySet()) {</span>
+<span class="nc" id="L592">                FactionRecord salvageFaction = factions.get(fKey);</span>
+<span class="nc bnc" id="L593" title="All 2 branches missed.">                if (salvageFaction == null) {</span>
+<span class="nc" id="L594">                    MegaMek.getLogger().debug(&quot;Could not locate faction &quot; + fKey </span>
+<span class="nc" id="L595">                            + &quot; for &quot; + fRec.getKey() + &quot; salvage&quot;);</span>
+                } else {
+<span class="nc" id="L597">                    double wt = salvage * salvageEntries.get(fKey) / totalFactionWeight;</span>
+<span class="nc" id="L598">                    salvageWeights.put(salvageFaction, wt);</span>
+                }
+<span class="nc" id="L600">            }</span>
+        }
+        
+<span class="nc bnc" id="L603" title="All 2 branches missed.">        if (ratingLevel &gt;= 0) {</span>
+<span class="nc" id="L604">            adjustForRating(fRec, unitType, year, ratingLevel,</span>
+                    unitWeights, salvageWeights, early, late);
+        }
+        
+        
+        /* Increase weights if necessary to keep smallest from rounding down to zero */
+        
+<span class="nc" id="L611">        double adj = 1.0;</span>
+<span class="nc" id="L612">        DoubleSummaryStatistics stats = Stream.concat(salvageWeights.values().stream(),</span>
+<span class="nc" id="L613">                unitWeights.values().stream())</span>
+<span class="nc" id="L614">                .mapToDouble(Double::doubleValue)</span>
+<span class="nc bnc" id="L615" title="All 2 branches missed.">                .filter(d -&gt; d &gt; 0)</span>
+<span class="nc" id="L616">                .summaryStatistics();</span>
+<span class="nc bnc" id="L617" title="All 4 branches missed.">        if (stats.getMin() &lt; 0.5 || stats.getMax() &gt; 1000) {</span>
+<span class="nc" id="L618">            adj = 0.5 / stats.getMin();</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">            if (stats.getMax() * adj &gt; 1000.0) {</span>
+<span class="nc" id="L620">                adj = 1000.0 / stats.getMax();</span>
+            }
+        }
+        
+<span class="nc" id="L624">        List&lt;UnitTable.TableEntry&gt; retVal = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">        for (FactionRecord faction : salvageWeights.keySet()) {</span>
+<span class="nc" id="L626">            int wt = (int)(salvageWeights.get(faction) * adj + 0.5);</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">            if (wt &gt; 0) {</span>
+<span class="nc" id="L628">                retVal.add(new UnitTable.TableEntry(wt, faction));</span>
+            }
+<span class="nc" id="L630">        }</span>
+<span class="nc bnc" id="L631" title="All 2 branches missed.">        for (ModelRecord mRec : unitWeights.keySet()) {</span>
+<span class="nc" id="L632">            int wt = (int)(unitWeights.get(mRec) * adj + 0.5);</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">            if (wt &gt; 0) {</span>
+<span class="nc" id="L634">                retVal.add(new UnitTable.TableEntry(wt, mRec.getMechSummary()));</span>
+            }
+<span class="nc" id="L636">        }</span>
+<span class="nc" id="L637">        return retVal;</span>
+    }
+
+    private void adjustForRating(FactionRecord fRec, int unitType, int year,
+            int rating, HashMap&lt;ModelRecord, Double&gt; unitWeights,
+            HashMap&lt;FactionRecord, Double&gt; salvageWeights, Integer early,
+            Integer late) {
+<span class="nc" id="L644">        double total = 0.0;</span>
+<span class="nc" id="L645">        double totalOmni = 0.0;</span>
+<span class="nc" id="L646">        double totalClan = 0.0;</span>
+<span class="nc" id="L647">        double totalSL = 0.0;</span>
+<span class="nc bnc" id="L648" title="All 2 branches missed.">        for (Map.Entry&lt;ModelRecord, Double&gt; entry : unitWeights.entrySet()) {</span>
+<span class="nc" id="L649">            total += entry.getValue();</span>
+<span class="nc bnc" id="L650" title="All 2 branches missed.">            if (entry.getKey().isOmni()) {</span>
+<span class="nc" id="L651">                totalOmni += entry.getValue();</span>
+            }
+<span class="nc bnc" id="L653" title="All 2 branches missed.">            if (entry.getKey().isClan()) {</span>
+<span class="nc" id="L654">                totalClan += entry.getValue();</span>
+<span class="nc bnc" id="L655" title="All 2 branches missed.">            } else if (entry.getKey().isSL()) {</span>
+<span class="nc" id="L656">                totalSL += entry.getValue();</span>
+            }
+<span class="nc" id="L658">        }</span>
+<span class="nc" id="L659">        Double pctOmni = null;</span>
+<span class="nc" id="L660">        Double pctNonOmni = null;</span>
+<span class="nc" id="L661">        Double pctSL = null;</span>
+<span class="nc" id="L662">        Double pctClan = null;</span>
+<span class="nc" id="L663">        Double pctOther = null;</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">        if (unitType == UnitType.MEK) {</span>
+<span class="nc" id="L665">            pctOmni = interpolate(fRec.findPctTech(FactionRecord.TechCategory.OMNI, early, rating),</span>
+<span class="nc" id="L666">                    fRec.findPctTech(FactionRecord.TechCategory.OMNI, late, rating), early, late, year);</span>
+<span class="nc" id="L667">            pctClan = interpolate(fRec.findPctTech(FactionRecord.TechCategory.CLAN, early, rating),</span>
+<span class="nc" id="L668">                    fRec.findPctTech(FactionRecord.TechCategory.CLAN, late, rating), early, late, year);</span>
+<span class="nc" id="L669">            pctSL = interpolate(fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED, early, rating),</span>
+<span class="nc" id="L670">                    fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED, late, rating), early, late, year);</span>
+        }
+<span class="nc bnc" id="L672" title="All 2 branches missed.">        if (unitType == UnitType.AERO) {</span>
+<span class="nc" id="L673">            pctOmni = interpolate(fRec.findPctTech(FactionRecord.TechCategory.OMNI_AERO, early, rating),</span>
+<span class="nc" id="L674">                    fRec.findPctTech(FactionRecord.TechCategory.OMNI_AERO, late, rating), early, late, year);</span>
+<span class="nc" id="L675">            pctClan = interpolate(fRec.findPctTech(FactionRecord.TechCategory.CLAN_AERO, early, rating),</span>
+<span class="nc" id="L676">                    fRec.findPctTech(FactionRecord.TechCategory.CLAN_AERO, late, rating), early, late, year);</span>
+<span class="nc" id="L677">            pctSL = interpolate(fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED_AERO, early, rating),</span>
+<span class="nc" id="L678">                    fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED_AERO, late, rating), early, late, year);</span>
+        }
+<span class="nc bnc" id="L680" title="All 4 branches missed.">        if (unitType == UnitType.TANK || unitType == UnitType.VTOL) {</span>
+<span class="nc" id="L681">            pctClan = interpolate(fRec.findPctTech(FactionRecord.TechCategory.CLAN_VEE, early, rating),</span>
+<span class="nc" id="L682">                    fRec.findPctTech(FactionRecord.TechCategory.CLAN_VEE, late, rating), early, late, year);</span>
+<span class="nc" id="L683">            pctSL = interpolate(fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED_VEE, early, rating),</span>
+<span class="nc" id="L684">                    fRec.findPctTech(FactionRecord.TechCategory.IS_ADVANCED_VEE, late, rating), early, late, year);</span>
+        }
+        /* Adjust for lack of precision in post-FM:Updates extrapolations */
+<span class="nc bnc" id="L687" title="All 4 branches missed.">        if (pctSL != null || pctClan != null) {</span>
+<span class="nc" id="L688">            pctOther = 100.0;</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">            if (pctSL != null) {</span>
+<span class="nc" id="L690">                pctOther -= pctSL;</span>
+            }
+<span class="nc bnc" id="L692" title="All 2 branches missed.">            if (pctClan != null) {</span>
+<span class="nc" id="L693">                pctOther -= pctClan;</span>
+            }
+<span class="nc" id="L695">            Double techMargin = interpolate(fRec.getTechMargin(early),</span>
+<span class="nc" id="L696">                    fRec.getTechMargin(late),</span>
+<span class="nc" id="L697">                    early, late, year);</span>
+<span class="nc bnc" id="L698" title="All 4 branches missed.">            if (techMargin != null &amp;&amp; techMargin &gt; 0) {</span>
+<span class="nc bnc" id="L699" title="All 2 branches missed.">                if (pctClan != null) {</span>
+<span class="nc" id="L700">                    double pct = 100.0 * totalClan / total;</span>
+<span class="nc bnc" id="L701" title="All 2 branches missed.">                    if (pct &lt; pctClan - techMargin) {</span>
+<span class="nc" id="L702">                        pctClan -= techMargin;</span>
+<span class="nc bnc" id="L703" title="All 2 branches missed.">                    } else if (pct &gt; pctClan + techMargin) {</span>
+<span class="nc" id="L704">                        pctClan += techMargin;</span>
+                    }
+                }
+<span class="nc bnc" id="L707" title="All 2 branches missed.">                if (pctSL != null) {</span>
+<span class="nc" id="L708">                    double pct = 100.0 * totalSL / total;</span>
+<span class="nc bnc" id="L709" title="All 2 branches missed.">                    if (pct &lt; pctSL - techMargin) {</span>
+<span class="nc" id="L710">                        pctSL -= techMargin;</span>
+<span class="nc bnc" id="L711" title="All 2 branches missed.">                    } else if (pct &gt; pctSL + techMargin) {</span>
+<span class="nc" id="L712">                        pctSL += techMargin;</span>
+                    }
+                }                    
+            }
+<span class="nc" id="L716">            Double upgradeMargin = interpolate(fRec.getUpgradeMargin(early),</span>
+<span class="nc" id="L717">                    fRec.getUpgradeMargin(late),</span>
+<span class="nc" id="L718">                    early, late, year);</span>
+<span class="nc bnc" id="L719" title="All 4 branches missed.">            if (upgradeMargin != null &amp;&amp; upgradeMargin &gt; 0) {</span>
+<span class="nc" id="L720">                double pct = 100.0 * (total - totalClan - totalSL) / total;</span>
+<span class="nc bnc" id="L721" title="All 2 branches missed.">                if (pct &lt; pctOther - upgradeMargin) {</span>
+<span class="nc" id="L722">                    pctOther -= upgradeMargin;</span>
+<span class="nc bnc" id="L723" title="All 2 branches missed.">                } else if (pct &gt; pctOther + upgradeMargin) {</span>
+<span class="nc" id="L724">                    pctOther += upgradeMargin;</span>
+                }
+                /* If clan, sl, and other are all adjusted, the values probably
+                 * don't add up to 100, which is fine unless the upgradeMargin is
+                 * &lt;= techMargin. Then pctOther is more certain, and we adjust 
+                 * the values of clan and sl to keep the value of &quot;other&quot; equal to
+                 * a percentage. 
+                 */
+<span class="nc bnc" id="L732" title="All 2 branches missed.">                if (techMargin != null) {</span>
+<span class="nc bnc" id="L733" title="All 2 branches missed.">                    if (upgradeMargin &lt;= techMargin) {</span>
+<span class="nc bnc" id="L734" title="All 4 branches missed.">                        if (pctClan == null || pctClan == 0) {</span>
+<span class="nc" id="L735">                            pctSL = 100.0 - pctOther;</span>
+<span class="nc bnc" id="L736" title="All 4 branches missed.">                        } else if (pctSL == null || pctSL == 0) {</span>
+<span class="nc" id="L737">                            pctClan = 100.0 - pctOther;</span>
+                        } else {
+<span class="nc" id="L739">                            pctSL = (100.0 - pctOther) * pctSL / (pctSL + pctClan);</span>
+<span class="nc" id="L740">                            pctClan = 100.0 - pctOther - pctSL;</span>
+                        }
+                    }
+                }
+            }
+        }
+<span class="nc bnc" id="L746" title="All 2 branches missed.">        if (pctOmni != null) {</span>
+<span class="nc" id="L747">            Double omniMargin = interpolate(fRec.getOmniMargin(early),</span>
+<span class="nc" id="L748">                    fRec.getOmniMargin(late),</span>
+<span class="nc" id="L749">                    early, late, year);</span>
+<span class="nc bnc" id="L750" title="All 4 branches missed.">            if (omniMargin != null &amp;&amp; omniMargin &gt; 0) {</span>
+<span class="nc" id="L751">                double pct = 100.0 * totalOmni / total;</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">                if (pct &lt; pctOmni - omniMargin) {</span>
+<span class="nc" id="L753">                    pctOmni -= omniMargin;</span>
+<span class="nc bnc" id="L754" title="All 2 branches missed.">                } else if (pct &gt; pctOmni + omniMargin) {</span>
+<span class="nc" id="L755">                    pctOmni += omniMargin;</span>
+                }
+            }
+<span class="nc" id="L758">            pctNonOmni = 100.0 - pctOmni;</span>
+        }            
+                
+        /* For non-Clan factions, the amount of salvage from Clan factions is
+         * part of the overall Clan percentage.
+         */
+<span class="nc bnc" id="L764" title="All 6 branches missed.">        if (!fRec.isClan() &amp;&amp; pctClan != null &amp;&amp; totalClan &gt; 0) {</span>
+<span class="nc" id="L765">            double clanSalvage = salvageWeights.keySet().stream().filter(FactionRecord::isClan)</span>
+<span class="nc" id="L766">                    .mapToDouble(salvageWeights::get).sum();</span>
+<span class="nc" id="L767">            total += clanSalvage;</span>
+<span class="nc" id="L768">            totalClan += clanSalvage;</span>
+<span class="nc bnc" id="L769" title="All 2 branches missed.">            for (FactionRecord fr : salvageWeights.keySet()) {</span>
+<span class="nc bnc" id="L770" title="All 2 branches missed.">                if (fr.isClan()) {</span>
+<span class="nc" id="L771">                    salvageWeights.put(fr, salvageWeights.get(fr)</span>
+<span class="nc" id="L772">                            * (pctClan / 100.0) * (total / totalClan));</span>
+                }
+<span class="nc" id="L774">            }</span>
+        }
+<span class="nc" id="L776">        double totalOther = total - totalClan - totalSL;</span>
+<span class="nc bnc" id="L777" title="All 2 branches missed.">        for (ModelRecord mRec : unitWeights.keySet()) {</span>
+<span class="nc bnc" id="L778" title="All 6 branches missed.">            if (pctOmni != null &amp;&amp; mRec.isOmni() &amp;&amp; totalOmni &lt; total) {</span>
+<span class="nc" id="L779">                unitWeights.put(mRec, unitWeights.get(mRec) * (pctOmni / 100.0) * (total / totalOmni));</span>
+            }
+<span class="nc bnc" id="L781" title="All 6 branches missed.">            if (pctNonOmni != null &amp;&amp; !mRec.isOmni() &amp;&amp; totalOmni &gt; 0) {</span>
+<span class="nc" id="L782">                unitWeights.put(mRec, unitWeights.get(mRec) * (pctNonOmni / 100.0) * (total / (total - totalOmni)));                        </span>
+            }
+<span class="nc bnc" id="L784" title="All 6 branches missed.">            if (pctSL != null &amp;&amp; mRec.isSL()</span>
+                    &amp;&amp; totalSL &gt; 0) {
+<span class="nc" id="L786">                unitWeights.put(mRec, unitWeights.get(mRec) * (pctSL / 100.0) * (total / totalSL));</span>
+            }
+<span class="nc bnc" id="L788" title="All 6 branches missed.">            if (pctClan != null &amp;&amp; mRec.isClan()</span>
+                    &amp;&amp; totalClan &gt; 0) {
+<span class="nc" id="L790">                unitWeights.put(mRec, unitWeights.get(mRec) * (pctClan / 100.0) * (total / totalClan));</span>
+            }
+<span class="nc bnc" id="L792" title="All 8 branches missed.">            if (pctOther != null &amp;&amp; pctOther &gt; 0 &amp;&amp; !mRec.isClan() &amp;&amp; !mRec.isSL()) {</span>
+<span class="nc" id="L793">                unitWeights.put(mRec, unitWeights.get(mRec) * (pctOther / 100.0)</span>
+                        * (total / totalOther));
+            }
+<span class="nc" id="L796">        }</span>
+<span class="nc" id="L797">        double multiplier = total / unitWeights.values().stream().mapToDouble(Double::doubleValue).sum();</span>
+<span class="nc bnc" id="L798" title="All 2 branches missed.">        for (ModelRecord mRec : unitWeights.keySet()) {</span>
+<span class="nc" id="L799">            unitWeights.merge(mRec, multiplier, (a, b) -&gt; a * b);</span>
+<span class="nc" id="L800">        }</span>
+<span class="nc" id="L801">    }</span>
+
+    public void dispose() {
+<span class="nc" id="L804">        interrupted = true;</span>
+<span class="nc" id="L805">        dispose = true;</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">        if (initialized){</span>
+<span class="nc" id="L807">            rg = null;</span>
+        }
+<span class="nc" id="L809">    }</span>
+
+    private synchronized void initialize(File dir) {
+        // Give the MSC some time to initialize
+<span class="nc" id="L813">        MechSummaryCache msc = MechSummaryCache.getInstance();</span>
+<span class="nc" id="L814">        long waitLimit = System.currentTimeMillis() + 3000; /* 3 seconds */</span>
+<span class="nc bnc" id="L815" title="All 6 branches missed.">        while( !interrupted &amp;&amp; !msc.isInitialized() &amp;&amp; waitLimit &gt; System.currentTimeMillis() ) {</span>
+            try {
+<span class="nc" id="L817">                Thread.sleep(50);</span>
+<span class="nc" id="L818">            } catch(InterruptedException e) {</span>
+                // Ignore
+<span class="nc" id="L820">            }</span>
+        }
+
+<span class="nc bnc" id="L823" title="All 4 branches missed.">        if (!(dir.exists() &amp;&amp; dir.isDirectory())) {</span>
+<span class="nc" id="L824">            MegaMek.getLogger().error(dir + &quot; is not a directory&quot;);</span>
+        } else {
+<span class="nc" id="L826">            loadFactions(dir);</span>
+
+<span class="nc bnc" id="L828" title="All 2 branches missed.">            for (File f : dir.listFiles()) {</span>
+<span class="nc bnc" id="L829" title="All 2 branches missed.">                if (f.getName().matches(&quot;\\d+\\.xml&quot;)) {</span>
+<span class="nc" id="L830">                    eraSet.add(Integer.parseInt(f.getName().replace(&quot;.xml&quot;, &quot;&quot;)));</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L835" title="All 2 branches missed.">        if (!interrupted) {</span>
+<span class="nc" id="L836">            rg.initialized = true;</span>
+<span class="nc" id="L837">            rg.notifyListenersOfInitialization();</span>
+        }
+
+<span class="nc bnc" id="L840" title="All 2 branches missed.">        if (dispose) {</span>
+<span class="nc" id="L841">            rg = null;</span>
+<span class="nc" id="L842">            dispose = false;</span>
+        }
+<span class="nc" id="L844">    }</span>
+    
+    /**
+     * If the year is equal to one of the era marks, it loads that era. If it is between two, it
+     * loads eras on both sides. Otherwise, just load the closest era.
+     */
+    public void loadYear(final int year) {
+<span class="nc bnc" id="L851" title="All 2 branches missed.">        if (getEraSet().isEmpty()) {</span>
+<span class="nc" id="L852">            return;</span>
+<span class="nc bnc" id="L853" title="All 2 branches missed.">        } else if (getEraSet().contains(year)) {</span>
+<span class="nc" id="L854">            loadEra(year);</span>
+<span class="nc" id="L855">            return;</span>
+        }
+
+<span class="nc bnc" id="L858" title="All 2 branches missed.">        if (year &gt; getEraSet().first()) {</span>
+<span class="nc" id="L859">            loadEra(getEraSet().floor(year));</span>
+        }
+
+<span class="nc bnc" id="L862" title="All 2 branches missed.">        if (year &lt; getEraSet().last()) {</span>
+<span class="nc" id="L863">            loadEra(getEraSet().ceiling(year));</span>
+        }
+<span class="nc" id="L865">    }</span>
+    
+    private void loadFactions(File dir) {
+<span class="nc" id="L868">        File file = new MegaMekFile(dir, &quot;factions.xml&quot;).getFile();</span>
+        FileInputStream fis;
+        try {
+<span class="nc" id="L871">            fis = new FileInputStream(file);</span>
+<span class="nc" id="L872">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L873">            MegaMek.getLogger().error(&quot;Unable to read RAT generator factions file&quot;);</span>
+<span class="nc" id="L874">            return;</span>
+<span class="nc" id="L875">        }</span>
+
+        Document xmlDoc;
+
+        try {
+<span class="nc" id="L880">            DocumentBuilder db = MegaMekXmlUtil.newSafeDocumentBuilder();</span>
+<span class="nc" id="L881">            xmlDoc = db.parse(fis);</span>
+<span class="nc" id="L882">        } catch (Exception ex) {</span>
+<span class="nc" id="L883">            MegaMek.getLogger().error(ex);</span>
+<span class="nc" id="L884">            return;</span>
+<span class="nc" id="L885">        }</span>
+
+<span class="nc" id="L887">        Element element = xmlDoc.getDocumentElement();</span>
+<span class="nc" id="L888">        NodeList nl = element.getChildNodes();</span>
+
+<span class="nc" id="L890">        element.normalize();</span>
+
+<span class="nc bnc" id="L892" title="All 2 branches missed.">        for (int x = 0; x &lt; nl.getLength(); x++) {</span>
+<span class="nc" id="L893">            Node wn = nl.item(x);</span>
+<span class="nc bnc" id="L894" title="All 2 branches missed.">            if (wn.getNodeName().equalsIgnoreCase(&quot;faction&quot;)) {</span>
+<span class="nc bnc" id="L895" title="All 2 branches missed.">                if (wn.getAttributes().getNamedItem(&quot;key&quot;) != null) {</span>
+<span class="nc" id="L896">                    FactionRecord rec = FactionRecord.createFromXml(wn);</span>
+<span class="nc" id="L897">                    factions.put(rec.getKey(), rec);</span>
+<span class="nc" id="L898">                } else {</span>
+<span class="nc" id="L899">                    MegaMek.getLogger().warning(&quot;Faction key not found in &quot; + file.getPath());</span>
+                }
+            }            
+        }
+<span class="nc" id="L903">    }</span>
+
+    /**
+     * @param era the era to load, which may be null if there isn't anything found
+     */
+    private void loadEra(final @Nullable Integer era) {
+<span class="nc bnc" id="L909" title="All 2 branches missed.">        if (era != null) {</span>
+<span class="nc" id="L910">            loadEra(era, Configuration.forceGeneratorDir());</span>
+        }
+<span class="nc" id="L912">    }</span>
+    
+    private synchronized void loadEra(int era, File dir) {
+<span class="nc bnc" id="L915" title="All 2 branches missed.">        if (eraIsLoaded(era)) {</span>
+<span class="nc" id="L916">            return;</span>
+        }
+<span class="nc" id="L918">        chassisIndex.put(era, new HashMap&lt;&gt;());</span>
+<span class="nc" id="L919">        modelIndex.put(era, new HashMap&lt;&gt;());</span>
+<span class="nc" id="L920">        File file = new MegaMekFile(dir, era + &quot;.xml&quot;).getFile();</span>
+        FileInputStream fis;
+        try {
+<span class="nc" id="L923">            fis = new FileInputStream(file);</span>
+<span class="nc" id="L924">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L925">            MegaMek.getLogger().error(&quot;Unable to read RAT generator file for era &quot; + era);</span>
+<span class="nc" id="L926">            return;</span>
+<span class="nc" id="L927">        }</span>
+<span class="nc bnc" id="L928" title="All 2 branches missed.">        while (!MechSummaryCache.getInstance().isInitialized()) {</span>
+            try {
+<span class="nc" id="L930">                Thread.sleep(50);</span>
+<span class="nc" id="L931">            } catch (InterruptedException ex) {</span>
+                //do nothing
+<span class="nc" id="L933">            }</span>
+        }
+
+        Document xmlDoc;
+
+        try {
+<span class="nc" id="L939">            DocumentBuilder db = MegaMekXmlUtil.newSafeDocumentBuilder();</span>
+<span class="nc" id="L940">            xmlDoc = db.parse(fis);</span>
+<span class="nc" id="L941">        } catch (Exception ex) {</span>
+<span class="nc" id="L942">            MegaMek.getLogger().error(ex);</span>
+<span class="nc" id="L943">            return;</span>
+<span class="nc" id="L944">        }</span>
+
+<span class="nc" id="L946">        Element element = xmlDoc.getDocumentElement();</span>
+<span class="nc" id="L947">        NodeList nl = element.getChildNodes();</span>
+
+<span class="nc" id="L949">        element.normalize();</span>
+
+<span class="nc bnc" id="L951" title="All 2 branches missed.">        for (int x = 0; x &lt; nl.getLength(); x++) {</span>
+<span class="nc" id="L952">            Node mainNode = nl.item(x);</span>
+<span class="nc bnc" id="L953" title="All 2 branches missed.">            if (mainNode.getNodeName().equalsIgnoreCase(&quot;factions&quot;)) {</span>
+<span class="nc bnc" id="L954" title="All 2 branches missed.">                for (int i = 0; i &lt; mainNode.getChildNodes().getLength(); i++) {</span>
+<span class="nc" id="L955">                    Node wn = mainNode.getChildNodes().item(i);</span>
+<span class="nc bnc" id="L956" title="All 2 branches missed.">                    if (wn.getNodeName().equalsIgnoreCase(&quot;faction&quot;)) {</span>
+<span class="nc" id="L957">                        String fKey = wn.getAttributes().getNamedItem(&quot;key&quot;).getTextContent();</span>
+<span class="nc bnc" id="L958" title="All 2 branches missed.">                        if (fKey != null) {</span>
+<span class="nc" id="L959">                            FactionRecord rec = factions.get(fKey);</span>
+<span class="nc bnc" id="L960" title="All 2 branches missed.">                            if (rec != null) {</span>
+<span class="nc" id="L961">                                rec.loadEra(wn, era);</span>
+                            } else {
+<span class="nc" id="L963">                                MegaMek.getLogger().error(&quot;Faction &quot; + fKey + &quot; not found in &quot;</span>
+<span class="nc" id="L964">                                        + file.getPath());</span>
+                            }
+<span class="nc" id="L966">                        } else {</span>
+<span class="nc" id="L967">                            MegaMek.getLogger().error(&quot;Faction key not found in &quot; + file.getPath());</span>
+                        }
+                    }
+                }
+<span class="nc bnc" id="L971" title="All 2 branches missed.">            } else if (mainNode.getNodeName().equalsIgnoreCase(&quot;units&quot;)) {</span>
+<span class="nc bnc" id="L972" title="All 2 branches missed.">                for (int i = 0; i &lt; mainNode.getChildNodes().getLength(); i++) {</span>
+<span class="nc" id="L973">                    Node wn = mainNode.getChildNodes().item(i);</span>
+<span class="nc bnc" id="L974" title="All 2 branches missed.">                    if (wn.getNodeName().equalsIgnoreCase(&quot;chassis&quot;)) {</span>
+<span class="nc" id="L975">                        parseChassisNode(era, wn);</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L980">        notifyListenersEraLoaded();</span>
+<span class="nc" id="L981">    }</span>
+    
+    /**
+     * Creates model and chassis records for all units that don't already have entries. This should
+     * only be called after all availability records are loaded, otherwise they will be overwritten.
+     * 
+     * Used for editing.
+     */
+    public void initRemainingUnits() {
+<span class="nc bnc" id="L990" title="All 2 branches missed.">        for (MechSummary ms : MechSummaryCache.getInstance().getAllMechs()) {</span>
+<span class="nc bnc" id="L991" title="All 2 branches missed.">            if (models.containsKey(ms.getName())) {</span>
+<span class="nc" id="L992">                continue;</span>
+            }
+<span class="nc" id="L994">            ModelRecord mr = new ModelRecord(ms);</span>
+
+<span class="nc" id="L996">            models.put(mr.getKey(), mr);</span>
+<span class="nc" id="L997">            String chassisKey = mr.getChassisKey();</span>
+<span class="nc bnc" id="L998" title="All 2 branches missed.">            if (chassis.containsKey(chassisKey)) {</span>
+<span class="nc bnc" id="L999" title="All 2 branches missed.">                if (chassis.get(chassisKey).getIntroYear() == 0 ||</span>
+<span class="nc bnc" id="L1000" title="All 2 branches missed.">                        chassis.get(chassisKey).getIntroYear() &gt; ms.getYear()) {</span>
+<span class="nc" id="L1001">                    chassis.get(chassisKey).setIntroYear(ms.getYear());</span>
+                }
+<span class="nc" id="L1003">                chassis.get(chassisKey).addModel(mr);</span>
+            } else {
+<span class="nc" id="L1005">                ChassisRecord cr = new ChassisRecord(mr.getChassis());</span>
+<span class="nc" id="L1006">                cr.setIntroYear(mr.getIntroYear());</span>
+<span class="nc" id="L1007">                cr.setOmni(mr.isOmni());</span>
+<span class="nc" id="L1008">                cr.setClan(mr.isClan());</span>
+<span class="nc" id="L1009">                cr.setUnitType(mr.getUnitType());</span>
+<span class="nc" id="L1010">                cr.addModel(mr);</span>
+<span class="nc" id="L1011">                chassis.put(chassisKey, cr);</span>
+            }
+        }
+<span class="nc" id="L1014">    }</span>
+
+    private void parseChassisNode(int era, Node wn) {
+<span class="nc" id="L1017">        boolean omni = false;</span>
+<span class="nc" id="L1018">        String chassisName = wn.getAttributes().getNamedItem(&quot;name&quot;).getTextContent();</span>
+<span class="nc" id="L1019">        String unitType = wn.getAttributes().getNamedItem(&quot;unitType&quot;).getTextContent();</span>
+<span class="nc" id="L1020">        String chassisKey = chassisName + &quot;[&quot; + unitType + &quot;]&quot;;</span>
+<span class="nc bnc" id="L1021" title="All 2 branches missed.">        if (wn.getAttributes().getNamedItem(&quot;omni&quot;) != null) {</span>
+<span class="nc" id="L1022">            omni = true;</span>
+<span class="nc bnc" id="L1023" title="All 2 branches missed.">            if (wn.getAttributes().getNamedItem(&quot;omni&quot;).getTextContent().equalsIgnoreCase(&quot;IS&quot;)) {</span>
+<span class="nc" id="L1024">                chassisKey += &quot;ISOmni&quot;;</span>
+            } else {
+<span class="nc" id="L1026">                chassisKey += &quot;ClanOmni&quot;;</span>
+            }
+        }
+<span class="nc" id="L1029">        ChassisRecord cr = chassis.get(chassisKey);</span>
+<span class="nc bnc" id="L1030" title="All 2 branches missed.">        if (cr == null) {</span>
+<span class="nc" id="L1031">            cr = new ChassisRecord(chassisName);</span>
+<span class="nc" id="L1032">            cr.setOmni(omni);</span>
+<span class="nc" id="L1033">            cr.setUnitType(unitType);</span>
+<span class="nc" id="L1034">            cr.setClan(chassisKey.endsWith(&quot;ClanOmni&quot;));</span>
+<span class="nc" id="L1035">            chassis.put(chassisKey, cr);</span>
+        }
+<span class="nc bnc" id="L1037" title="All 2 branches missed.">        for (int j = 0; j &lt; wn.getChildNodes().getLength(); j++) {</span>
+<span class="nc" id="L1038">            Node wn2 = wn.getChildNodes().item(j);</span>
+<span class="nc bnc" id="L1039" title="All 2 branches missed.">            if (wn2.getNodeName().equalsIgnoreCase(&quot;availability&quot;)) {</span>
+<span class="nc" id="L1040">                chassisIndex.get(era).put(chassisKey,</span>
+                        new HashMap&lt;&gt;());
+<span class="nc" id="L1042">                String [] codes = wn2.getTextContent().trim().split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L1043" title="All 2 branches missed.">                for (String code : codes) {</span>
+<span class="nc" id="L1044">                    AvailabilityRating ar = new AvailabilityRating(chassisKey, era, code);</span>
+<span class="nc" id="L1045">                    cr.getIncludedFactions().add(code.split(&quot;:&quot;)[0]);</span>
+<span class="nc" id="L1046">                    chassisIndex.get(era).get(chassisKey).put(ar.getFactionCode(), ar);</span>
+                }
+<span class="nc bnc" id="L1048" title="All 2 branches missed.">            } else if (wn2.getNodeName().equalsIgnoreCase(&quot;model&quot;)) {</span>
+<span class="nc" id="L1049">                parseModelNode(era, cr, wn2);</span>
+            }
+        }
+<span class="nc" id="L1052">    }</span>
+    
+    private void parseModelNode(int era, ChassisRecord cr, Node wn) {
+<span class="nc" id="L1055">        String modelKey = (cr.getChassis() + &quot; &quot; + wn.getAttributes().getNamedItem(&quot;name&quot;).getTextContent()).trim();</span>
+<span class="nc" id="L1056">        boolean newEntry = false;</span>
+<span class="nc" id="L1057">        ModelRecord mr = models.get(modelKey);</span>
+<span class="nc bnc" id="L1058" title="All 2 branches missed.">        if (mr == null) {</span>
+<span class="nc" id="L1059">            newEntry = true;</span>
+<span class="nc" id="L1060">            MechSummary ms = MechSummaryCache.getInstance().getMech(modelKey);</span>
+<span class="nc bnc" id="L1061" title="All 2 branches missed.">            if (ms != null) {</span>
+<span class="nc" id="L1062">                mr = new ModelRecord(ms);</span>
+<span class="nc" id="L1063">                mr.setOmni(cr.isOmni());</span>
+<span class="nc" id="L1064">                models.put(modelKey, mr);</span>
+            }
+<span class="nc bnc" id="L1066" title="All 2 branches missed.">            if (mr == null) {</span>
+<span class="nc" id="L1067">                MegaMek.getLogger().error(cr.getChassis() + &quot; &quot; </span>
+<span class="nc" id="L1068">                        + wn.getAttributes().getNamedItem(&quot;name&quot;).getTextContent() + &quot; not found.&quot;);</span>
+<span class="nc" id="L1069">                return;</span>
+            }
+        }
+<span class="nc" id="L1072">        cr.addModel(mr);</span>
+<span class="nc bnc" id="L1073" title="All 2 branches missed.">        if (wn.getAttributes().getNamedItem(&quot;mechanized&quot;) != null) {</span>
+<span class="nc" id="L1074">            mr.setMechanizedBA(Boolean.parseBoolean(wn.getAttributes().getNamedItem(&quot;mechanized&quot;).getTextContent()));</span>
+        }
+        
+<span class="nc bnc" id="L1077" title="All 2 branches missed.">        for (int k = 0; k &lt; wn.getChildNodes().getLength(); k++) {</span>
+<span class="nc" id="L1078">            Node wn2 = wn.getChildNodes().item(k);</span>
+<span class="nc bnc" id="L1079" title="All 4 branches missed.">            if (wn2.getNodeName().equalsIgnoreCase(&quot;roles&quot;) &amp;&amp; newEntry) {</span>
+<span class="nc" id="L1080">                mr.addRoles(wn2.getTextContent().trim());</span>
+<span class="nc bnc" id="L1081" title="All 4 branches missed.">            } else if (wn2.getNodeName().equalsIgnoreCase(&quot;deployedWith&quot;) &amp;&amp; newEntry) {</span>
+<span class="nc" id="L1082">                mr.setRequiredUnits(wn2.getTextContent().trim());                                        </span>
+<span class="nc bnc" id="L1083" title="All 2 branches missed.">            } else if (wn2.getNodeName().equalsIgnoreCase(&quot;availability&quot;)) {</span>
+<span class="nc" id="L1084">                modelIndex.get(era).put(mr.getKey(), new HashMap&lt;&gt;());</span>
+<span class="nc" id="L1085">                String [] codes = wn2.getTextContent().trim().split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L1086" title="All 2 branches missed.">                for (String code : codes) {</span>
+<span class="nc" id="L1087">                    AvailabilityRating ar = new AvailabilityRating(mr.getKey(), era, code);</span>
+<span class="nc" id="L1088">                    mr.getIncludedFactions().add(code.split(&quot;:&quot;)[0]);</span>
+<span class="nc" id="L1089">                    modelIndex.get(era).get(mr.getKey()).put(ar.getFactionCode(), ar);</span>
+                }
+            } 
+        }        
+<span class="nc" id="L1093">    }</span>
+
+    public synchronized void registerListener(ActionListener l){
+<span class="nc" id="L1096">        listeners.add(l);</span>
+<span class="nc" id="L1097">    }</span>
+
+    public synchronized void removeListener(ActionListener l){
+<span class="nc" id="L1100">        listeners.remove(l);</span>
+<span class="nc" id="L1101">    }</span>
+
+    /**
+     * Notifies all the listeners that initialization is finished
+     */
+    public void notifyListenersOfInitialization(){
+<span class="nc bnc" id="L1107" title="All 2 branches missed.">        if (initialized){</span>
+            // Possibility of adding a new listener during notification.
+<span class="nc bnc" id="L1109" title="All 2 branches missed.">            for (ActionListener l : new ArrayList&lt;&gt;(listeners)){</span>
+<span class="nc" id="L1110">                l.actionPerformed(new ActionEvent(</span>
+                        this,ActionEvent.ACTION_PERFORMED,&quot;ratGenInitialized&quot;));
+<span class="nc" id="L1112">            }</span>
+        }
+<span class="nc" id="L1114">    }</span>
+
+    /**
+     * Notifies all the listeners that era is loaded
+     */
+    public void notifyListenersEraLoaded(){
+<span class="nc bnc" id="L1120" title="All 2 branches missed.">        if (initialized){</span>
+<span class="nc bnc" id="L1121" title="All 2 branches missed.">            for (ActionListener l : listeners){</span>
+<span class="nc" id="L1122">                l.actionPerformed(new ActionEvent(</span>
+                        this,ActionEvent.ACTION_PERFORMED,&quot;ratGenEraLoaded&quot;));
+<span class="nc" id="L1124">            }</span>
+        }
+<span class="nc" id="L1126">    }</span>
+    
+    public void exportRATGen(File dir) {
+        File file;
+        PrintWriter pw;
+        
+<span class="nc" id="L1132">        FactionRecord[] factionRecs = factions.values().toArray(new FactionRecord[0]);</span>
+<span class="nc" id="L1133">        Arrays.sort(factionRecs, (arg0, arg1) -&gt; {</span>
+<span class="nc bnc" id="L1134" title="All 4 branches missed.">            if (arg0.getParentFactions() == null &amp;&amp; arg1.getParentFactions() != null) {</span>
+<span class="nc" id="L1135">                return -1;</span>
+            }
+<span class="nc bnc" id="L1137" title="All 4 branches missed.">            if (arg0.getParentFactions() != null &amp;&amp; arg1.getParentFactions() == null) {</span>
+<span class="nc" id="L1138">                return 1;</span>
+            }
+<span class="nc bnc" id="L1140" title="All 4 branches missed.">            if (arg0.getKey().contains(&quot;.&quot;) &amp;&amp; !arg1.getKey().contains(&quot;.&quot;)) {</span>
+<span class="nc" id="L1141">                return 1;</span>
+            }
+<span class="nc bnc" id="L1143" title="All 4 branches missed.">            if (!arg0.getKey().contains(&quot;.&quot;) &amp;&amp; arg1.getKey().contains(&quot;.&quot;)) {</span>
+<span class="nc" id="L1144">                return -1;</span>
+            }
+<span class="nc" id="L1146">            return arg0.getName().compareTo(arg1.getName());</span>
+        });
+
+<span class="nc" id="L1149">        file = new File(dir + &quot;/factions.xml&quot;);</span>
+        try {
+<span class="nc" id="L1151">            pw = new PrintWriter(file, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L1152">        } catch (Exception e1) {</span>
+<span class="nc" id="L1153">            e1.printStackTrace();</span>
+<span class="nc" id="L1154">            return;</span>
+<span class="nc" id="L1155">        }</span>
+<span class="nc" id="L1156">        pw.println(&quot;&lt;?xml version='1.0' encoding='UTF-8'?&gt;&quot;);</span>
+<span class="nc" id="L1157">        pw.println(&quot;&lt;factions&gt;&quot;);</span>
+<span class="nc bnc" id="L1158" title="All 2 branches missed.">        for (FactionRecord fRec : factionRecs) {</span>
+<span class="nc" id="L1159">            fRec.writeToXml(pw);</span>
+        }
+<span class="nc" id="L1161">        pw.println(&quot;&lt;/factions&gt;&quot;);</span>
+<span class="nc" id="L1162">        pw.close();</span>
+
+<span class="nc" id="L1164">        ChassisRecord[] chassisRecs = chassis.values().toArray(new ChassisRecord[0]);</span>
+<span class="nc" id="L1165">        Arrays.sort(chassisRecs, Comparator.comparing(AbstractUnitRecord::getKey));</span>
+<span class="nc" id="L1166">        ArrayList&lt;String&gt; avFields = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc" id="L1168">        final List&lt;Integer&gt; ERAS = new ArrayList&lt;&gt;(eraSet);</span>
+
+<span class="nc bnc" id="L1170" title="All 2 branches missed.">        for (int i = 0; i &lt; ERAS.size(); i++) {</span>
+<span class="nc" id="L1171">            int era = ERAS.get(i);</span>
+<span class="nc bnc" id="L1172" title="All 2 branches missed.">            int nextEra = (i &lt; ERAS.size() - 1)? ERAS.get(i + 1) : era;</span>
+            try {
+<span class="nc" id="L1174">                file = new File(dir + &quot;/&quot; + era + &quot;.xml&quot;);</span>
+<span class="nc" id="L1175">                pw = new PrintWriter(file, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L1176">                pw.println(&quot;&lt;?xml version='1.0' encoding='UTF-8'?&gt;&quot;);</span>
+<span class="nc" id="L1177">                pw.println(&quot;&lt;!-- Era &quot; + era + &quot;--&gt;&quot;);</span>
+<span class="nc" id="L1178">                pw.println(&quot;&lt;ratgen&gt;&quot;);</span>
+<span class="nc" id="L1179">                pw.println(&quot;&lt;factions&gt;&quot;);</span>
+<span class="nc bnc" id="L1180" title="All 2 branches missed.">                for (FactionRecord fRec : factionRecs) {</span>
+<span class="nc bnc" id="L1181" title="All 2 branches missed.">                    if (fRec.isInEra(era)) {</span>
+<span class="nc" id="L1182">                        fRec.writeToXml(pw, era);</span>
+                    }
+                }
+<span class="nc" id="L1185">                pw.println(&quot;&lt;/factions&gt;&quot;);</span>
+<span class="nc" id="L1186">                pw.println(&quot;&lt;units&gt;&quot;);</span>
+<span class="nc bnc" id="L1187" title="All 2 branches missed.">                for (ChassisRecord cr : chassisRecs) {</span>
+<span class="nc bnc" id="L1188" title="All 4 branches missed.">                    if (cr.getIntroYear() &lt; nextEra &amp;&amp; chassisIndex.get(era).containsKey(cr.getKey())) {</span>
+<span class="nc" id="L1189">                        avFields.clear();</span>
+<span class="nc bnc" id="L1190" title="All 2 branches missed.">                        for (AvailabilityRating av : chassisIndex.get(era).get(cr.getKey()).values()) {</span>
+<span class="nc bnc" id="L1191" title="All 2 branches missed.">                            if (shouldExportAv(av, era)) {</span>
+<span class="nc" id="L1192">                                avFields.add(av.toString());</span>
+                            }
+<span class="nc" id="L1194">                        }</span>
+<span class="nc bnc" id="L1195" title="All 2 branches missed.">                        if (avFields.size() &gt; 0) {</span>
+<span class="nc" id="L1196">                            String omni = &quot;&quot;;</span>
+<span class="nc bnc" id="L1197" title="All 4 branches missed.">                            if (cr.isOmni() &amp;&amp; cr.getModels().size() &gt; 0) {</span>
+<span class="nc bnc" id="L1198" title="All 2 branches missed.">                                omni = cr.getModels().iterator().next().isClan()?</span>
+<span class="nc" id="L1199">                                        &quot;' omni='Clan&quot; : &quot;' omni='IS&quot;;</span>
+                            }
+<span class="nc" id="L1201">                            pw.println(&quot;\t&lt;chassis name='&quot; + cr.getChassis().replaceAll(&quot;'&quot;, &quot;&amp;apos;&quot;)</span>
+<span class="nc" id="L1202">                                    + &quot;' unitType='&quot; + UnitType.getTypeName(cr.getUnitType())</span>
+                                    + omni + &quot;'&gt;&quot;);
+<span class="nc" id="L1204">                            pw.print(&quot;\t\t&lt;availability&gt;&quot;);</span>
+<span class="nc bnc" id="L1205" title="All 2 branches missed.">                            for (Iterator&lt;String&gt; iter = avFields.iterator(); iter.hasNext();) {</span>
+<span class="nc" id="L1206">                                pw.print(iter.next());</span>
+<span class="nc bnc" id="L1207" title="All 2 branches missed.">                                if (iter.hasNext()) {</span>
+<span class="nc" id="L1208">                                    pw.print(&quot;,&quot;);</span>
+                                }
+                            }
+<span class="nc" id="L1211">                            pw.println(&quot;&lt;/availability&gt;&quot;);</span>
+
+<span class="nc bnc" id="L1213" title="All 2 branches missed.">                            for (ModelRecord mr : cr.getModels()) {</span>
+<span class="nc bnc" id="L1214" title="All 2 branches missed.">                                if (cr.getIntroYear() &lt; nextEra</span>
+<span class="nc bnc" id="L1215" title="All 2 branches missed.">                                        &amp;&amp; modelIndex.get(era).containsKey(mr.getKey())) {</span>
+<span class="nc" id="L1216">                                    avFields.clear();</span>
+<span class="nc bnc" id="L1217" title="All 2 branches missed.">                                    for (AvailabilityRating av : modelIndex.get(era).get(mr.getKey()).values()) {</span>
+<span class="nc bnc" id="L1218" title="All 2 branches missed.">                                        if (shouldExportAv(av, era)) {</span>
+<span class="nc" id="L1219">                                            avFields.add(av.toString());</span>
+                                        }
+<span class="nc" id="L1221">                                    }</span>
+<span class="nc bnc" id="L1222" title="All 2 branches missed.">                                    for (String fKey : mr.getExcludedFactions()) {</span>
+<span class="nc" id="L1223">                                        avFields.add(fKey + &quot;:0&quot;);</span>
+<span class="nc" id="L1224">                                    }</span>
+<span class="nc bnc" id="L1225" title="All 2 branches missed.">                                    if (avFields.size() &gt; 0) {</span>
+<span class="nc" id="L1226">                                        pw.print(&quot;\t\t&lt;model name='&quot; + mr.getModel().replaceAll(&quot;'&quot;, &quot;&amp;apos;&quot;));</span>
+<span class="nc bnc" id="L1227" title="All 2 branches missed.">                                        if (mr.getUnitType() == UnitType.BATTLE_ARMOR) {</span>
+<span class="nc" id="L1228">                                            pw.print(&quot;' mechanized='&quot; + mr.canDoMechanizedBA());</span>
+                                        }
+<span class="nc" id="L1230">                                        pw.println(&quot;'&gt;&quot;);</span>
+<span class="nc bnc" id="L1231" title="All 2 branches missed.">                                        if (mr.getRoles().size() &gt; 0) {</span>
+<span class="nc" id="L1232">                                            String str = mr.getRoles().stream().map(Object::toString).collect(Collectors.joining(&quot;,&quot;));</span>
+<span class="nc bnc" id="L1233" title="All 2 branches missed.">                                            if (str.length() &gt; 0) {</span>
+<span class="nc" id="L1234">                                                pw.println(&quot;\t\t\t&lt;roles&gt;&quot; + str + &quot;&lt;/roles&gt;&quot;);</span>
+                                            }
+                                        }
+<span class="nc bnc" id="L1237" title="All 4 branches missed.">                                        if (mr.getDeployedWith().size() &gt; 0 || mr.getRequiredUnits().size() &gt; 0) {</span>
+<span class="nc" id="L1238">                                            pw.print(&quot;\t\t\t&lt;deployedWith&gt;&quot;);</span>
+<span class="nc" id="L1239">                                            StringJoiner sj = new StringJoiner(&quot;,&quot;);</span>
+<span class="nc" id="L1240">                                            mr.getDeployedWith().forEach(sj::add);</span>
+<span class="nc" id="L1241">                                            mr.getRequiredUnits().forEach(s -&gt; sj.add(&quot;req:&quot; + s));</span>
+<span class="nc" id="L1242">                                            pw.print(sj.toString());</span>
+<span class="nc" id="L1243">                                            pw.println(&quot;&lt;/deployedWith&gt;&quot;);</span>
+                                        }
+<span class="nc" id="L1245">                                        pw.print(&quot;\t\t\t&lt;availability&gt;&quot;);</span>
+<span class="nc bnc" id="L1246" title="All 2 branches missed.">                                        for (Iterator&lt;String&gt; iter = avFields.iterator(); iter.hasNext();) {</span>
+<span class="nc" id="L1247">                                            pw.print(iter.next());</span>
+<span class="nc bnc" id="L1248" title="All 2 branches missed.">                                            if (iter.hasNext()) {</span>
+<span class="nc" id="L1249">                                                pw.print(&quot;,&quot;);</span>
+                                            }
+                                        }
+<span class="nc" id="L1252">                                        pw.println(&quot;&lt;/availability&gt;&quot;);</span>
+<span class="nc" id="L1253">                                        pw.println(&quot;\t\t&lt;/model&gt;&quot;);                         </span>
+                                    }
+                                }
+<span class="nc" id="L1256">                            }</span>
+<span class="nc" id="L1257">                            pw.println(&quot;\t&lt;/chassis&gt;&quot;);</span>
+                        }
+                    }
+                }
+<span class="nc" id="L1261">                pw.println(&quot;&lt;/units&gt;&quot;);</span>
+<span class="nc" id="L1262">                pw.println(&quot;&lt;/ratgen&gt;&quot;);</span>
+<span class="nc" id="L1263">                pw.close();</span>
+<span class="nc" id="L1264">            } catch (Exception e) {</span>
+<span class="nc" id="L1265">                e.printStackTrace();</span>
+<span class="nc" id="L1266">            }</span>
+        }
+<span class="nc" id="L1268">    }</span>
+
+    private boolean shouldExportAv(AvailabilityRating av, int era) {
+<span class="nc" id="L1271">        FactionRecord fRec = factions.get(av.getFaction());</span>
+<span class="nc bnc" id="L1272" title="All 4 branches missed.">        return fRec == null || fRec.isInEra(era);</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

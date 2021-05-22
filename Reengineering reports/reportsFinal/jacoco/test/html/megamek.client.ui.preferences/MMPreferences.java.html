@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MMPreferences.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.preferences</a> &gt; <span class="el_source">MMPreferences.java</span></div><h1>MMPreferences.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MegaMek.
+ *
+ * MegaMek is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MegaMek is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MegaMek. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package megamek.client.ui.preferences;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import megamek.MegaMek;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MMPreferences {
+    //region Variable Declarations
+    private static final String PREFERENCES_TOKEN = &quot;preferences&quot;;
+    private static final String CLASS_TOKEN = &quot;class&quot;;
+    private static final String ELEMENTS_TOKEN = &quot;elements&quot;;
+    private static final String NAME_TOKEN = &quot;element&quot;;
+    private static final String VALUE_TOKEN = &quot;value&quot;;
+    private final Map&lt;String, PreferencesNode&gt; nameToPreferencesMap;
+    //endregion Variable Declarations
+
+    //region Constructors
+<span class="nc" id="L45">    public MMPreferences() {</span>
+<span class="nc" id="L46">        nameToPreferencesMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L47">    }</span>
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Map&lt;String, PreferencesNode&gt; getNameToPreferencesMap() {
+<span class="nc" id="L52">        return nameToPreferencesMap;</span>
+    }
+    //endregion Getters/Setters
+
+    public PreferencesNode forClass(final Class&lt;?&gt; classToManage) {
+<span class="nc" id="L57">        return getNameToPreferencesMap().computeIfAbsent(classToManage.getName(), c -&gt; new PreferencesNode(classToManage));</span>
+    }
+
+    //region Write To File
+    public void saveToFile(final String filePath) {
+        try {
+<span class="nc" id="L63">            try (FileOutputStream output = new FileOutputStream(filePath)) {</span>
+<span class="nc" id="L64">                MegaMek.getLogger().debug(&quot;Saving nameToPreferencesMap to: &quot; + filePath);</span>
+
+<span class="nc" id="L66">                final JsonFactory factory = new JsonFactory();</span>
+<span class="nc" id="L67">                final JsonGenerator writer = factory.createGenerator(output).useDefaultPrettyPrinter();</span>
+<span class="nc" id="L68">                writer.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);</span>
+
+<span class="nc" id="L70">                writer.writeStartObject();</span>
+<span class="nc" id="L71">                writer.writeFieldName(PREFERENCES_TOKEN);</span>
+<span class="nc" id="L72">                writer.writeStartArray();</span>
+
+                // Write each PreferencesNode
+<span class="nc bnc" id="L75" title="All 2 branches missed.">                for (final Map.Entry&lt;String, PreferencesNode&gt; preferences : getNameToPreferencesMap().entrySet()) {</span>
+<span class="nc" id="L76">                    writePreferencesNode(writer, preferences);</span>
+<span class="nc" id="L77">                }</span>
+
+<span class="nc" id="L79">                writer.writeEndArray();</span>
+<span class="nc" id="L80">                writer.writeEndObject();</span>
+
+<span class="nc" id="L82">                writer.close();</span>
+            }
+<span class="nc" id="L84">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L85">            MegaMek.getLogger().error(&quot;Could not save nameToPreferencesMap to: &quot; + filePath, e);</span>
+<span class="nc" id="L86">        } catch (IOException e) {</span>
+<span class="nc" id="L87">            MegaMek.getLogger().error(&quot;Error writing to the nameToPreferencesMap file: &quot; + filePath, e);</span>
+<span class="nc" id="L88">        }</span>
+<span class="nc" id="L89">    }</span>
+
+    private static void writePreferencesNode(final JsonGenerator writer,
+                                             final Map.Entry&lt;String, PreferencesNode&gt; nodeInfo) throws IOException {
+<span class="nc" id="L93">        writer.writeStartObject();</span>
+<span class="nc" id="L94">        writer.writeStringField(CLASS_TOKEN, nodeInfo.getKey());</span>
+<span class="nc" id="L95">        writer.writeFieldName(ELEMENTS_TOKEN);</span>
+<span class="nc" id="L96">        writer.writeStartArray();</span>
+
+        // Write all PreferenceElement in this node
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (final Map.Entry&lt;String, String&gt; element : nodeInfo.getValue().getFinalValues().entrySet()) {</span>
+<span class="nc" id="L100">            writePreferenceElement(writer, element);</span>
+<span class="nc" id="L101">        }</span>
+
+<span class="nc" id="L103">        writer.writeEndArray();</span>
+<span class="nc" id="L104">        writer.writeEndObject();</span>
+<span class="nc" id="L105">    }</span>
+
+    private static void writePreferenceElement(final JsonGenerator writer,
+                                               final Map.Entry&lt;String, String&gt; element) throws IOException {
+<span class="nc" id="L109">        writer.writeStartObject();</span>
+<span class="nc" id="L110">        writer.writeStringField(NAME_TOKEN, element.getKey());</span>
+<span class="nc" id="L111">        writer.writeStringField(VALUE_TOKEN, element.getValue());</span>
+<span class="nc" id="L112">        writer.writeEndObject();</span>
+<span class="nc" id="L113">    }</span>
+    //endregion Write To File
+
+    //region Load From File
+    public void loadFromFile(final String filePath) {
+        try {
+<span class="nc" id="L119">            try (FileInputStream input = new FileInputStream(filePath)) {</span>
+<span class="nc" id="L120">                MegaMek.getLogger().info(&quot;Loading user preferences from: &quot; + filePath);</span>
+
+<span class="nc" id="L122">                final JsonFactory factory = new JsonFactory();</span>
+<span class="nc" id="L123">                final JsonParser parser = factory.createParser(input);</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (parser.nextToken() != JsonToken.START_OBJECT) {</span>
+<span class="nc" id="L126">                    throw new IOException(&quot;Expected an object start ({)&quot; + getParserInformation(parser));</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">                } else if (parser.nextToken() != JsonToken.FIELD_NAME &amp;&amp; !parser.getCurrentName().equals(PREFERENCES_TOKEN)) {</span>
+<span class="nc" id="L128">                    throw new IOException(&quot;Expected a field called (&quot; + PREFERENCES_TOKEN + &quot;)&quot; + getParserInformation(parser));</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                } else if (parser.nextToken() != JsonToken.START_ARRAY) {</span>
+<span class="nc" id="L130">                    throw new IOException(&quot;Expected an array start ([)&quot; + getParserInformation(parser));</span>
+                }
+
+                // Parse all PreferencesNode
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                while (parser.nextToken() != JsonToken.END_ARRAY) {</span>
+                    try {
+<span class="nc" id="L136">                        readPreferencesNode(parser, getNameToPreferencesMap());</span>
+<span class="nc" id="L137">                    } catch (IOException e) {</span>
+<span class="nc" id="L138">                        MegaMek.getLogger().error(&quot;Error reading node. &quot; + getParserInformation(parser), e);</span>
+<span class="nc" id="L139">                    }</span>
+                }
+
+<span class="nc" id="L142">                parser.close();</span>
+
+<span class="nc" id="L144">                MegaMek.getLogger().info(&quot;Finished loading user preferences&quot;);</span>
+            }
+<span class="nc" id="L146">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L147">            MegaMek.getLogger().error(&quot;No user preferences file found: &quot; + filePath, e);</span>
+<span class="nc" id="L148">        } catch (IOException e) {</span>
+<span class="nc" id="L149">            MegaMek.getLogger().error(&quot;Error reading from the user preferences file: &quot; + filePath, e);</span>
+<span class="nc" id="L150">        }</span>
+<span class="nc" id="L151">    }</span>
+
+    private static String getParserInformation(final JsonParser parser) throws IOException {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        return (parser == null) ? &quot;&quot; : &quot;. Current token: &quot; + parser.getCurrentName() +</span>
+<span class="nc" id="L155">                &quot;. Line number: &quot; + parser.getCurrentLocation().getLineNr() +</span>
+<span class="nc" id="L156">                &quot;. Column number: &quot; + parser.getCurrentLocation().getColumnNr();</span>
+    }
+
+    private static void readPreferencesNode(final JsonParser parser,
+                                            final Map&lt;String, PreferencesNode&gt; nodes) throws IOException {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (parser.currentToken() != JsonToken.START_OBJECT) {</span>
+<span class="nc" id="L162">            return;</span>
+<span class="nc bnc" id="L163" title="All 4 branches missed.">        } else if ((parser.nextToken() != JsonToken.FIELD_NAME) &amp;&amp; !parser.getCurrentName().equals(CLASS_TOKEN)) {</span>
+<span class="nc" id="L164">            return;</span>
+        }
+
+<span class="nc" id="L167">        final String className = parser.nextTextValue();</span>
+
+<span class="nc bnc" id="L169" title="All 4 branches missed.">        if ((parser.nextToken() != JsonToken.FIELD_NAME) &amp;&amp; !parser.getCurrentName().equals(ELEMENTS_TOKEN)) {</span>
+<span class="nc" id="L170">            return;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        } else if (parser.nextToken() != JsonToken.START_ARRAY) {</span>
+<span class="nc" id="L172">            return;</span>
+        }
+
+<span class="nc" id="L175">        final Map&lt;String, String&gt; elements = new HashMap&lt;&gt;();</span>
+
+        // Parse all PreferenceElement in this node
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        while (parser.nextToken() != JsonToken.END_ARRAY) {</span>
+            try {
+<span class="nc" id="L180">                readPreferenceElement(parser, elements);</span>
+<span class="nc" id="L181">            } catch (IOException e) {</span>
+<span class="nc" id="L182">                MegaMek.getLogger().warning(&quot;Error reading elements for node: &quot; + className + &quot;.&quot;, e);</span>
+<span class="nc" id="L183">            }</span>
+        }
+
+        try {
+<span class="nc" id="L187">            final PreferencesNode node = new PreferencesNode(Class.forName(className));</span>
+<span class="nc" id="L188">            node.initialize(elements);</span>
+<span class="nc" id="L189">            nodes.put(node.getNode().getName(), node);</span>
+<span class="nc" id="L190">        } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L191">            MegaMek.getLogger().error(&quot;No class with name &quot; + className + &quot; found&quot;, e);</span>
+<span class="nc" id="L192">        }</span>
+<span class="nc" id="L193">    }</span>
+
+    private static void readPreferenceElement(final JsonParser parser, final Map&lt;String, String&gt; elements) throws IOException {
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (parser.currentToken() != JsonToken.START_OBJECT) {</span>
+<span class="nc" id="L197">            return;</span>
+<span class="nc bnc" id="L198" title="All 4 branches missed.">        } else if ((parser.nextToken() != JsonToken.FIELD_NAME) &amp;&amp; !parser.getCurrentName().equals(NAME_TOKEN)) {</span>
+<span class="nc" id="L199">            return;</span>
+        }
+
+<span class="nc" id="L202">        final String name = parser.nextTextValue();</span>
+
+<span class="nc bnc" id="L204" title="All 4 branches missed.">        if ((parser.nextToken() != JsonToken.FIELD_NAME) &amp;&amp; !parser.getCurrentName().equals(VALUE_TOKEN)) {</span>
+<span class="nc" id="L205">            return;</span>
+        }
+
+<span class="nc" id="L208">        final String value = parser.nextTextValue();</span>
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (parser.nextToken() != JsonToken.END_OBJECT) {</span>
+<span class="nc" id="L211">            return;</span>
+        }
+
+<span class="nc" id="L214">        elements.put(name, value);</span>
+<span class="nc" id="L215">    }</span>
+    //endregion Load From File
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

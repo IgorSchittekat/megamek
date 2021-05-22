@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MechSummaryCache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common</a> &gt; <span class="el_source">MechSummaryCache.java</span></div><h1>MechSummaryCache.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2000,2001,2002,2003,2004 Ben Mazur (bmazur@sev.org)
+ * Copyright © 2013 Edward Cullen (eddy@obsessedcomputers.co.uk)
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.common;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import megamek.MegaMek;
+import megamek.common.loaders.EntityLoadingException;
+import megamek.common.logging.*;
+import megamek.common.util.fileUtils.MegaMekFile;
+import megamek.common.verifier.*;
+
+/**
+ * Cache of the Mech summary information. Implemented as Singleton so a client
+ * and server running in the same process can share it
+ *
+ * @author arlith
+ * @author Others...
+ */
+public class MechSummaryCache {
+    
+<span class="nc" id="L51">    private static final LogLevel LOGLVL = LogLevel.WARNING;</span>
+
+    public interface Listener {
+        void doneLoading();
+    }
+
+    private static final String FILENAME_UNITS_CACHE = &quot;units.cache&quot;;
+    private static final String FILENAME_LOOKUP = &quot;name_changes.txt&quot;;
+
+    private static MechSummaryCache m_instance;
+<span class="nc" id="L61">    private static boolean disposeInstance = false;</span>
+<span class="nc" id="L62">    private static boolean interrupted = false;</span>
+
+<span class="nc" id="L64">    private boolean initialized = false;</span>
+<span class="nc" id="L65">    private boolean initializing = false;</span>
+
+    private MechSummary[] m_data;
+    private final Map&lt;String, MechSummary&gt; m_nameMap;
+    private final Map&lt;String, MechSummary&gt; m_fileNameMap;
+    private Map&lt;String, String&gt; hFailedFiles;
+    private int cacheCount;
+    private int fileCount;
+    private int zipCount;
+
+<span class="nc" id="L75">    private final List&lt;Listener&gt; listeners = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L77">    private StringBuffer loadReport = new StringBuffer();</span>
+<span class="nc" id="L78">    private EntityVerifier entityVerifier = null;</span>
+    private Thread loader;
+<span class="nc" id="L80">    private static final Object lock = new Object();</span>
+
+    public static synchronized MechSummaryCache getInstance() {
+<span class="nc" id="L83">        return getInstance(false);</span>
+    }
+
+    public static synchronized MechSummaryCache getInstance(boolean ignoreUnofficial) {
+<span class="nc" id="L87">        final boolean ignoringUnofficial = ignoreUnofficial;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (m_instance == null) {</span>
+<span class="nc" id="L89">            m_instance = new MechSummaryCache();</span>
+        }
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        if (!m_instance.initialized &amp;&amp; !m_instance.initializing) {</span>
+<span class="nc" id="L92">            m_instance.initializing = true;</span>
+<span class="nc" id="L93">            m_instance.initialized = false;</span>
+<span class="nc" id="L94">            interrupted = false;</span>
+<span class="nc" id="L95">            disposeInstance = false;</span>
+<span class="nc" id="L96">            m_instance.loader = new Thread(() -&gt; m_instance.loadMechData(ignoringUnofficial),</span>
+                    &quot;Mech Cache Loader&quot;);
+<span class="nc" id="L98">            m_instance.loader.setPriority(Thread.NORM_PRIORITY - 1);</span>
+<span class="nc" id="L99">            m_instance.loader.start();</span>
+        }
+<span class="nc" id="L101">        return m_instance;</span>
+    }
+
+    /**
+     * Checks the unit files directory for any changes since the last time the unit cache was
+     * loaded. If there are any updates, the new cache is saved.
+     *
+     * @param ignoreUnofficial If true, skips unofficial directories
+     */
+    public static void refreshUnitData(boolean ignoreUnofficial) {
+<span class="nc" id="L111">        m_instance.initializing = true;</span>
+<span class="nc" id="L112">        m_instance.initialized = false;</span>
+<span class="nc" id="L113">        interrupted = false;</span>
+<span class="nc" id="L114">        disposeInstance = false;</span>
+<span class="nc" id="L115">        File unit_cache_path = new MegaMekFile(getUnitCacheDir(), FILENAME_UNITS_CACHE).getFile();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        long lastModified = unit_cache_path.exists() ?</span>
+<span class="nc" id="L117">                unit_cache_path.lastModified() : megamek.MegaMek.TIMESTAMP;</span>
+
+<span class="nc" id="L119">        m_instance.loader = new Thread(() -&gt; m_instance.refreshCache(lastModified, ignoreUnofficial),</span>
+                &quot;Mech Cache Loader&quot;);
+<span class="nc" id="L121">        m_instance.loader.setPriority(Thread.NORM_PRIORITY - 1);</span>
+<span class="nc" id="L122">        m_instance.loader.start();</span>
+<span class="nc" id="L123">    }</span>
+
+    public static void dispose() {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (m_instance != null) {</span>
+<span class="nc" id="L127">            synchronized (lock) {</span>
+<span class="nc" id="L128">                interrupted = true;</span>
+<span class="nc" id="L129">                m_instance.loader.interrupt();</span>
+                // We can't do this, otherwise we can't notifyAll()
+                // m_instance = null;
+<span class="nc" id="L132">                disposeInstance = true;</span>
+<span class="nc" id="L133">            }</span>
+        }
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Get the directory for the unit cache file.
+     *
+     * @return The path to the directory containing the unit cache.
+     */
+    public static File getUnitCacheDir() {
+<span class="nc" id="L143">        return Configuration.unitsDir();</span>
+    }
+
+    public boolean isInitialized() {
+<span class="nc" id="L147">        return initialized;</span>
+    }
+
+    public void addListener(Listener listener) {
+<span class="nc" id="L151">        synchronized (listeners) {</span>
+<span class="nc" id="L152">            listeners.add(listener);</span>
+<span class="nc" id="L153">        }</span>
+<span class="nc" id="L154">    }</span>
+
+    public void removeListener(Listener listener) {
+<span class="nc" id="L157">        synchronized (listeners) {</span>
+<span class="nc" id="L158">            listeners.remove(listener);</span>
+<span class="nc" id="L159">        }</span>
+<span class="nc" id="L160">    }</span>
+
+<span class="nc" id="L162">    private MechSummaryCache() {</span>
+<span class="nc" id="L163">        m_nameMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L164">        m_fileNameMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L165">        MegaMek.getLogger().setLogLevel(LOGLVL);</span>
+<span class="nc" id="L166">    }</span>
+
+    public MechSummary[] getAllMechs() {
+<span class="nc" id="L169">        block();</span>
+<span class="nc" id="L170">        return m_data;</span>
+    }
+
+    private void block() {
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (!initialized) {</span>
+<span class="nc" id="L175">            synchronized (lock) {</span>
+                try {
+<span class="nc" id="L177">                    lock.wait();</span>
+<span class="nc" id="L178">                } catch (Exception e) {</span>
+                    // Ignore
+<span class="nc" id="L180">                }</span>
+<span class="nc" id="L181">            }</span>
+        }
+<span class="nc" id="L183">    }</span>
+
+    public MechSummary getMech(String sRef) {
+<span class="nc" id="L186">        block();</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        if (m_nameMap.containsKey(sRef)) {</span>
+<span class="nc" id="L188">            return m_nameMap.get(sRef);</span>
+        }
+<span class="nc" id="L190">        return m_fileNameMap.get(sRef);</span>
+    }
+
+    public Map&lt;String, String&gt; getFailedFiles() {
+<span class="nc" id="L194">        block();</span>
+<span class="nc" id="L195">        return hFailedFiles;</span>
+    }
+
+    public void loadMechData() {
+<span class="nc" id="L199">        loadMechData(false);</span>
+<span class="nc" id="L200">    }</span>
+
+    public void loadMechData(boolean ignoreUnofficial) {
+<span class="nc" id="L203">        Vector&lt;MechSummary&gt; vMechs = new Vector&lt;&gt;();</span>
+<span class="nc" id="L204">        Set&lt;String&gt; sKnownFiles = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L205">        long lLastCheck = 0;</span>
+<span class="nc" id="L206">        entityVerifier = EntityVerifier.getInstance(new MegaMekFile(getUnitCacheDir(),</span>
+<span class="nc" id="L207">                EntityVerifier.CONFIG_FILENAME).getFile());</span>
+<span class="nc" id="L208">        hFailedFiles = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L210">        EquipmentType.initializeTypes(); // load master equipment lists</span>
+
+<span class="nc" id="L212">        loadReport.append(&quot;\n&quot;);</span>
+<span class="nc" id="L213">        loadReport.append(&quot;Reading unit files:\n&quot;);</span>
+
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (!ignoreUnofficial) {</span>
+<span class="nc" id="L216">            File unit_cache_path = new MegaMekFile(getUnitCacheDir(),</span>
+<span class="nc" id="L217">                    FILENAME_UNITS_CACHE).getFile();</span>
+            // check the cache
+            try {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                if (unit_cache_path.exists()</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                        &amp;&amp; (unit_cache_path.lastModified() &gt;= megamek.MegaMek.TIMESTAMP)) {</span>
+<span class="nc" id="L222">                    loadReport.append(&quot;  Reading from unit cache file...\n&quot;);</span>
+<span class="nc" id="L223">                    lLastCheck = unit_cache_path.lastModified();</span>
+<span class="nc" id="L224">                    InputStream istream = new BufferedInputStream(</span>
+                            new FileInputStream(unit_cache_path));
+<span class="nc" id="L226">                    ObjectInputStream fin = new ObjectInputStream(istream);</span>
+<span class="nc" id="L227">                    Integer num_units = (Integer) fin.readObject();</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                    for (int i = 0; i &lt; num_units; i++) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">                        if (interrupted) {</span>
+<span class="nc" id="L230">                            done();</span>
+<span class="nc" id="L231">                            fin.close();</span>
+<span class="nc" id="L232">                            istream.close();</span>
+<span class="nc" id="L233">                            return;</span>
+                        }
+<span class="nc" id="L235">                        MechSummary ms = (MechSummary) fin.readObject();</span>
+                        // Verify that this file still exists and is older than
+                        // the cache.
+<span class="nc" id="L238">                        File fSource = ms.getSourceFile();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">                        if (fSource.exists()) {</span>
+<span class="nc" id="L240">                            vMechs.addElement(ms);</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">                            if (null == ms.getEntryName()) {</span>
+<span class="nc" id="L242">                                sKnownFiles.add(fSource.toString());</span>
+                            } else {
+<span class="nc" id="L244">                                sKnownFiles.add(ms.getEntryName());</span>
+                            }
+<span class="nc" id="L246">                            cacheCount++;</span>
+                        }
+                    }
+<span class="nc" id="L249">                    fin.close();</span>
+<span class="nc" id="L250">                    istream.close();</span>
+                }
+<span class="nc" id="L252">            } catch (Exception e) {</span>
+<span class="nc" id="L253">                loadReport.append(&quot;  Unable to load unit cache: &quot;)</span>
+<span class="nc" id="L254">                        .append(e.getMessage()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L255">                MegaMek.getLogger().error(e);</span>
+<span class="nc" id="L256">            }</span>
+        }
+
+<span class="nc" id="L259">        checkForChanges(ignoreUnofficial, vMechs, sKnownFiles, lLastCheck);</span>
+<span class="nc" id="L260">        updateData(vMechs);</span>
+<span class="nc" id="L261">        addLookupNames();</span>
+<span class="nc" id="L262">        logReport();</span>
+
+<span class="nc" id="L264">        done();</span>
+<span class="nc" id="L265">    }</span>
+
+    private void checkForChanges(boolean ignoreUnofficial, Vector&lt;MechSummary&gt; vMechs,
+                                 Set&lt;String&gt; sKnownFiles, long lLastCheck) {
+        // load any changes since the last check time
+<span class="nc" id="L270">        boolean bNeedsUpdate = loadMechsFromDirectory(vMechs, sKnownFiles,</span>
+<span class="nc" id="L271">                lLastCheck, Configuration.unitsDir(), ignoreUnofficial);</span>
+
+<span class="nc" id="L273">        File userDataUnits = new File(Configuration.userdataDir(), Configuration.unitsDir().toString());</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (userDataUnits.isDirectory()) {</span>
+<span class="nc" id="L275">            bNeedsUpdate |= loadMechsFromDirectory(vMechs, sKnownFiles, lLastCheck, userDataUnits, ignoreUnofficial);</span>
+        }
+
+        // save updated cache back to disk
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (bNeedsUpdate) {</span>
+<span class="nc" id="L280">            saveCache(vMechs);</span>
+        }
+<span class="nc" id="L282">    }</span>
+
+    private void updateData(Vector&lt;MechSummary&gt; vMechs) {
+        // convert to array
+<span class="nc" id="L286">        m_data = new MechSummary[vMechs.size()];</span>
+<span class="nc" id="L287">        vMechs.copyInto(m_data);</span>
+<span class="nc" id="L288">        m_nameMap.clear();</span>
+<span class="nc" id="L289">        m_fileNameMap.clear();</span>
+
+        // store map references
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        for (MechSummary element : m_data) {</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">            if (interrupted) {</span>
+<span class="nc" id="L294">                done();</span>
+<span class="nc" id="L295">                return;</span>
+            }
+<span class="nc" id="L297">            m_nameMap.put(element.getName(), element);</span>
+<span class="nc" id="L298">            String entryName = element.getEntryName();</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">            if (entryName == null) {</span>
+<span class="nc" id="L300">                m_fileNameMap.put(element.getSourceFile().getName(), element);</span>
+            } else {
+<span class="nc" id="L302">                String unitName = entryName;</span>
+
+<span class="nc bnc" id="L304" title="All 2 branches missed.">                if (unitName.contains(&quot;\\&quot;)) {</span>
+<span class="nc" id="L305">                    unitName = unitName</span>
+<span class="nc" id="L306">                            .substring(unitName.lastIndexOf(&quot;\\&quot;) + 1);</span>
+                }
+
+<span class="nc bnc" id="L309" title="All 2 branches missed.">                if (unitName.contains(&quot;/&quot;)) {</span>
+<span class="nc" id="L310">                    unitName = unitName</span>
+<span class="nc" id="L311">                            .substring(unitName.lastIndexOf(&quot;/&quot;) + 1);</span>
+                }
+
+<span class="nc" id="L314">                m_fileNameMap.put(unitName, element);</span>
+            }
+        }
+<span class="nc" id="L317">    }</span>
+
+    private void logReport() {
+<span class="nc" id="L320">        loadReport.append(m_data.length).append(&quot; units loaded.\n&quot;);</span>
+
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (hFailedFiles.size() &gt; 0) {</span>
+<span class="nc" id="L323">            loadReport.append(&quot;  &quot;).append(hFailedFiles.size())</span>
+<span class="nc" id="L324">                    .append(&quot; units failed to load...\n&quot;);</span>
+        }
+
+<span class="nc" id="L327">        MegaMek.getLogger().info(loadReport.toString());</span>
+<span class="nc" id="L328">    }</span>
+
+    private void done() {
+<span class="nc" id="L331">        synchronized (lock) {</span>
+<span class="nc" id="L332">            lock.notifyAll();</span>
+
+<span class="nc" id="L334">            initialized = true;</span>
+
+<span class="nc bnc" id="L336" title="All 2 branches missed.">            for (Listener listener : listeners) {</span>
+<span class="nc" id="L337">                listener.doneLoading();</span>
+<span class="nc" id="L338">            }</span>
+
+<span class="nc bnc" id="L340" title="All 2 branches missed.">            if (disposeInstance) {</span>
+<span class="nc" id="L341">                m_instance = null;</span>
+<span class="nc" id="L342">                initialized = false;</span>
+            }
+<span class="nc" id="L344">        }</span>
+<span class="nc" id="L345">    }</span>
+
+    private void saveCache(List&lt;MechSummary&gt; data) {
+<span class="nc" id="L348">        loadReport.append(&quot;Saving unit cache.\n&quot;);</span>
+<span class="nc" id="L349">        File unit_cache_path = new MegaMekFile(getUnitCacheDir(), FILENAME_UNITS_CACHE).getFile();</span>
+<span class="nc" id="L350">        try (ObjectOutputStream wr = new ObjectOutputStream(</span>
+                new BufferedOutputStream(new FileOutputStream(unit_cache_path)))) {
+<span class="nc" id="L352">            wr.writeObject(data.size());</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">            for (MechSummary element : data) {</span>
+<span class="nc" id="L354">                wr.writeObject(element);</span>
+<span class="nc" id="L355">            }</span>
+<span class="nc" id="L356">        } catch (Exception e) {</span>
+<span class="nc" id="L357">            loadReport.append(&quot; Unable to save mech cache\n&quot;);</span>
+<span class="nc" id="L358">            MegaMek.getLogger().error(e);</span>
+<span class="nc" id="L359">        }</span>
+<span class="nc" id="L360">    }</span>
+
+    private void refreshCache(long lastCheck, boolean ignoreUnofficial) {
+<span class="nc" id="L363">        loadReport = new StringBuffer();</span>
+<span class="nc" id="L364">        loadReport.append(&quot;Refreshing unit cache:\n&quot;);</span>
+<span class="nc" id="L365">        Vector&lt;MechSummary&gt; units = new Vector&lt;&gt;();</span>
+<span class="nc" id="L366">        Set&lt;String&gt; knownFiles = new HashSet&lt;&gt;();</span>
+        // Loop through current contents and make sure the file is still there.
+        // Note which files are represented so we can skip them if they haven't changed
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        for (MechSummary ms : m_data) {</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">            if (interrupted) {</span>
+<span class="nc" id="L371">                done();</span>
+<span class="nc" id="L372">                return;</span>
+            }
+<span class="nc" id="L374">            File source = ms.getSourceFile();</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">            if (source.exists()) {</span>
+<span class="nc" id="L376">                units.add(ms);</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">                if (null == ms.getEntryName()) {</span>
+<span class="nc" id="L378">                    knownFiles.add(source.toString());</span>
+                } else {
+<span class="nc" id="L380">                    knownFiles.add(ms.getEntryName());</span>
+                }
+            }
+        }
+
+        // load any changes since the last check time
+<span class="nc" id="L386">        checkForChanges(ignoreUnofficial, units, knownFiles, lastCheck);</span>
+<span class="nc" id="L387">        updateData(units);</span>
+<span class="nc" id="L388">        addLookupNames();</span>
+<span class="nc" id="L389">        logReport();</span>
+
+<span class="nc" id="L391">        done();</span>
+<span class="nc" id="L392">    }</span>
+
+    private MechSummary getSummary(Entity e, File f, String entry) {
+<span class="nc" id="L395">        MechSummary ms = new MechSummary();</span>
+<span class="nc" id="L396">        ms.setName(e.getShortNameRaw());</span>
+<span class="nc" id="L397">        ms.setChassis(e.getChassis());</span>
+<span class="nc" id="L398">        ms.setModel(e.getModel());</span>
+<span class="nc" id="L399">        ms.setUnitType(UnitType.getTypeName(e.getUnitType()));</span>
+<span class="nc" id="L400">        ms.setSourceFile(f);</span>
+<span class="nc" id="L401">        ms.setEntryName(entry);</span>
+<span class="nc" id="L402">        ms.setYear(e.getYear());</span>
+<span class="nc" id="L403">        ms.setType(e.getTechLevel());</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        if (TechConstants.convertFromNormalToSimple(e.getTechLevel()) == TechConstants.T_SIMPLE_UNOFFICIAL) {</span>
+<span class="nc" id="L405">            int[] alt = new int[3];</span>
+<span class="nc" id="L406">            Arrays.fill(alt, e.getTechLevel());</span>
+<span class="nc" id="L407">            ms.setAltTypes(alt);</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">        } else if (e.isClan()) {</span>
+<span class="nc" id="L409">            ms.setAltTypes(new int[] { TechConstants.T_CLAN_TW, TechConstants.T_CLAN_ADVANCED,</span>
+                    TechConstants.T_CLAN_EXPERIMENTAL });
+<span class="nc bnc" id="L411" title="All 2 branches missed.">        } else if (e.getTechLevel() == TechConstants.T_INTRO_BOXSET) {</span>
+<span class="nc" id="L412">            ms.setAltTypes(new int[] { TechConstants.T_INTRO_BOXSET, TechConstants.T_IS_ADVANCED,</span>
+                    TechConstants.T_IS_EXPERIMENTAL });
+        } else {
+<span class="nc" id="L415">            ms.setAltTypes(new int[] { TechConstants.T_IS_TW_NON_BOX, TechConstants.T_IS_ADVANCED,</span>
+                    TechConstants.T_IS_EXPERIMENTAL });
+        }
+<span class="nc" id="L418">        ms.setTons(e.getWeight());</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">        if (e instanceof BattleArmor){</span>
+<span class="nc" id="L420">            ms.setTOweight(((BattleArmor)e).getAlternateWeight());</span>
+<span class="nc" id="L421">            ms.setTWweight(e.getWeight());</span>
+<span class="nc" id="L422">            ms.setSuitWeight(((BattleArmor)e).getTrooperWeight());</span>
+        }
+<span class="nc" id="L424">        ms.setBV(e.calculateBattleValue());</span>
+<span class="nc" id="L425">        e.setUseGeometricBV(true);</span>
+<span class="nc" id="L426">        ms.setGMBV(e.calculateBattleValue());</span>
+<span class="nc" id="L427">        e.setUseGeometricBV(false);</span>
+<span class="nc" id="L428">        e.setUseReducedOverheatModifierBV(true);</span>
+<span class="nc" id="L429">        ms.setRHBV(e.calculateBattleValue());</span>
+<span class="nc" id="L430">        e.setUseGeometricBV(true);</span>
+<span class="nc" id="L431">        ms.setRHGMBV(e.calculateBattleValue());</span>
+<span class="nc" id="L432">        e.setUseGeometricBV(false);</span>
+<span class="nc" id="L433">        e.setUseReducedOverheatModifierBV(false);</span>
+<span class="nc" id="L434">        ms.setLevel(TechConstants.T_SIMPLE_LEVEL[e.getTechLevel()]);</span>
+<span class="nc" id="L435">        ms.setAdvancedYear(e.getProductionDate(e.isClan()));</span>
+<span class="nc" id="L436">        ms.setStandardYear(e.getCommonDate(e.isClan()));</span>
+<span class="nc" id="L437">        ms.setCost((long) e.getCost(false));</span>
+<span class="nc" id="L438">        ms.setUnloadedCost(((long) e.getCost(true)));</span>
+<span class="nc" id="L439">        ms.setAlternateCost((int) e.getAlternateCost());</span>
+<span class="nc" id="L440">        ms.setCanon(e.isCanon());</span>
+<span class="nc" id="L441">        ms.setWalkMp(e.getWalkMP(false, false));</span>
+<span class="nc" id="L442">        ms.setRunMp(e.getRunMP(false, false, false));</span>
+<span class="nc" id="L443">        ms.setJumpMp(e.getJumpMP(false));</span>
+<span class="nc" id="L444">        ms.setClan(e.isClan());</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">        if (e.isSupportVehicle()) {</span>
+<span class="nc" id="L446">            ms.setSupport(true);</span>
+        }
+<span class="nc bnc" id="L448" title="All 2 branches missed.">        if (e instanceof Mech) {</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">            if (((Mech) e).isIndustrial()) {</span>
+<span class="nc" id="L450">                ms.setUnitSubType(&quot;Industrial&quot;);</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">            } else if (e.isOmni()) {</span>
+<span class="nc" id="L452">                ms.setUnitSubType(&quot;Omni&quot;);</span>
+            } else {
+<span class="nc" id="L454">                ms.setUnitSubType(&quot;BattleMech&quot;);</span>
+            }
+        } else {
+<span class="nc" id="L457">            ms.setUnitSubType(e.getMovementModeAsString());</span>
+        }
+<span class="nc" id="L459">        ms.setEquipment(e.getEquipment());</span>
+<span class="nc" id="L460">        ms.setTotalArmor(e.getTotalArmor());</span>
+<span class="nc" id="L461">        ms.setTotalInternal(e.getTotalInternal());</span>
+<span class="nc" id="L462">        ms.setInternalsType(e.getStructureType());</span>
+<span class="nc" id="L463">        int[] armorTypes = new int[e.locations()];</span>
+<span class="nc" id="L464">        int[] armorTechTypes = new int[e.locations()];</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">        for (int i = 0; i &lt; armorTypes.length; i++) {</span>
+<span class="nc" id="L466">            armorTypes[i] = e.getArmorType(i);</span>
+<span class="nc" id="L467">            armorTechTypes[i] = e.getArmorTechLevel(i);</span>
+        }
+<span class="nc" id="L469">        ms.setArmorType(armorTypes);</span>
+<span class="nc" id="L470">        ms.setArmorTypes(armorTypes);</span>
+<span class="nc" id="L471">        ms.setArmorTechTypes(armorTechTypes);</span>
+
+        // Check to see if this entity has a cockpit, and if so, set it's type
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        if ((e instanceof Mech)) {</span>
+<span class="nc" id="L475">            ms.setCockpitType(((Mech) e).getCockpitType());</span>
+<span class="nc bnc" id="L476" title="All 2 branches missed.">        } else if ((e instanceof Aero)) {</span>
+<span class="nc" id="L477">            ms.setCockpitType(((Aero) e).getCockpitType());</span>
+        } else {
+            // TODO: There's currently no NO_COCKPIT type value, if this value
+            // existed, Entity could have a getCockpitType function and this
+            // logic could become unnecessary
+<span class="nc" id="L482">            ms.setCockpitType(-2);</span>
+        }
+
+        // we can only test meks, vehicles, ASF, and Battlearmor right now
+<span class="nc" id="L486">        TestEntity testEntity = null;</span>
+<span class="nc bnc" id="L487" title="All 2 branches missed.">        if (e instanceof Mech) {</span>
+<span class="nc" id="L488">            testEntity = new TestMech((Mech) e, entityVerifier.mechOption, null);</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">        } else if (e instanceof Protomech) {</span>
+<span class="nc" id="L490">            testEntity = new TestProtomech((Protomech) e, entityVerifier.protomechOption, null);</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">        } else if (e.isSupportVehicle()) {</span>
+<span class="nc" id="L492">            testEntity = new TestSupportVehicle(e, entityVerifier.tankOption, null);</span>
+<span class="nc bnc" id="L493" title="All 4 branches missed.">        } else if (e instanceof Tank &amp;&amp; !(e instanceof GunEmplacement)) {</span>
+<span class="nc" id="L494">            testEntity = new TestTank((Tank) e, entityVerifier.tankOption, null);</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">        } else if (e instanceof BattleArmor) {</span>
+<span class="nc" id="L496">            testEntity = new TestBattleArmor((BattleArmor) e, entityVerifier.baOption, null);</span>
+<span class="nc bnc" id="L497" title="All 2 branches missed.">        } else if (e instanceof Infantry) {</span>
+<span class="nc" id="L498">            testEntity = new TestInfantry((Infantry) e, entityVerifier.infOption, null);</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">        } else if (e instanceof Jumpship) {</span>
+<span class="nc" id="L500">            testEntity = new TestAdvancedAerospace((Jumpship) e, entityVerifier.aeroOption, null);</span>
+<span class="nc bnc" id="L501" title="All 2 branches missed.">        } else if (e instanceof SmallCraft) {</span>
+<span class="nc" id="L502">            testEntity = new TestSmallCraft((SmallCraft) e, entityVerifier.aeroOption, null);</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">        } else if (e instanceof Aero) {</span>
+            // FighterSquadron and TeleMissile are also instanceof Aero but they won't be showing up in the unit files
+<span class="nc" id="L505">            testEntity = new TestAero((Aero) e, entityVerifier.aeroOption, null);</span>
+        }
+<span class="nc bnc" id="L507" title="All 2 branches missed.">        if (testEntity != null &amp;&amp;</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">                !testEntity.correctEntity(new StringBuffer())) {</span>
+<span class="nc" id="L509">            ms.setLevel(&quot;F&quot;);</span>
+        }
+
+<span class="nc" id="L512">        ms.setGyroType(e.getGyroType());</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">        if (e.hasEngine()){</span>
+<span class="nc" id="L514">            ms.setEngineName(e.getEngine().getEngineName());</span>
+        } else {
+<span class="nc" id="L516">            ms.setEngineName(&quot;None&quot;);</span>
+        }
+
+<span class="nc bnc" id="L519" title="All 2 branches missed.">        if (e instanceof Mech){</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">            if (((Mech)e).hasTSM()) {</span>
+<span class="nc" id="L521">                ms.setMyomerName(&quot;Triple-Strength&quot;);</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">            } else if (((Mech)e).hasIndustrialTSM()) {</span>
+<span class="nc" id="L523">                ms.setMyomerName(&quot;Industrial Triple-Strength&quot;);</span>
+            } else {
+<span class="nc" id="L525">                ms.setMyomerName(&quot;Standard&quot;);</span>
+            }
+        } else {
+<span class="nc" id="L528">            ms.setMyomerName(&quot;None&quot;);</span>
+        }
+
+<span class="nc" id="L531">        return ms;</span>
+    }
+
+    /**
+     * Loading a complete {@link Entity} object for each summary is a bear and should be
+     * changed, but it lets me use the existing parsers
+     *
+     * @param vMechs      List to add units to as they are loaded
+     * @param sKnownFiles Files that have been processed so far and can be skipped
+     * @param lLastCheck  The timestamp of the last time the cache was updated
+     * @param fDir        The directory to load units from
+     * @return            Whether the list of units has changed, requiring rewriting the cache
+     */
+    private boolean loadMechsFromDirectory(Vector&lt;MechSummary&gt; vMechs,
+            Set&lt;String&gt; sKnownFiles, long lLastCheck, File fDir,
+            boolean ignoreUnofficial) {
+<span class="nc" id="L547">        boolean bNeedsUpdate = false;</span>
+<span class="nc" id="L548">        loadReport.append(&quot;  Looking in &quot;).append(fDir.getPath())</span>
+<span class="nc" id="L549">                .append(&quot;...\n&quot;);</span>
+<span class="nc" id="L550">        int thisDirectoriesFileCount = 0;</span>
+<span class="nc" id="L551">        String[] sa = fDir.list();</span>
+
+<span class="nc bnc" id="L553" title="All 2 branches missed.">        if (sa != null) {</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">            for (String element : sa) {</span>
+<span class="nc bnc" id="L555" title="All 2 branches missed.">                if (interrupted) {</span>
+<span class="nc" id="L556">                    done();</span>
+<span class="nc" id="L557">                    return false;</span>
+                }
+<span class="nc" id="L559">                File f = new MegaMekFile(fDir, element).getFile();</span>
+<span class="nc bnc" id="L560" title="All 2 branches missed.">                if (f.equals(new MegaMekFile(getUnitCacheDir(), FILENAME_UNITS_CACHE).getFile())) {</span>
+<span class="nc" id="L561">                    continue;</span>
+                }
+<span class="nc bnc" id="L563" title="All 2 branches missed.">                if (f.isDirectory()) {</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">                    if (f.getName().equalsIgnoreCase(&quot;unsupported&quot;)) {</span>
+                        // Mechs in this directory are ignored because
+                        // they have features not implemented in MM yet.
+<span class="nc" id="L567">                        continue;</span>
+<span class="nc bnc" id="L568" title="All 4 branches missed.">                    } else if (f.getName().equalsIgnoreCase(&quot;unofficial&quot;) &amp;&amp; ignoreUnofficial) {</span>
+                        // Mechs in this directory are ignored because
+                        // they are unofficial and we don't want those right
+                        // now.
+<span class="nc" id="L572">                        continue;</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">                    } else if (f.getName().equalsIgnoreCase(&quot;_svn&quot;)</span>
+<span class="nc bnc" id="L574" title="All 2 branches missed.">                            || f.getName().equalsIgnoreCase(&quot;.svn&quot;)) {</span>
+                        // This is a Subversion work directory. Lets ignore it.
+<span class="nc" id="L576">                        continue;</span>
+                    }
+                    // recursion is fun
+<span class="nc" id="L579">                    bNeedsUpdate |= loadMechsFromDirectory(vMechs, sKnownFiles,</span>
+                            lLastCheck, f, ignoreUnofficial);
+<span class="nc" id="L581">                    continue;</span>
+                }
+<span class="nc bnc" id="L583" title="All 2 branches missed.">                if (f.getName().indexOf('.') == -1) {</span>
+<span class="nc" id="L584">                    continue;</span>
+                }
+<span class="nc bnc" id="L586" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.gitignore&quot;)) {</span>
+<span class="nc" id="L587">                    continue;</span>
+                }
+<span class="nc bnc" id="L589" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.txt&quot;)) {</span>
+<span class="nc" id="L590">                    continue;</span>
+                }
+<span class="nc bnc" id="L592" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.log&quot;)) {</span>
+<span class="nc" id="L593">                    continue;</span>
+                }
+<span class="nc bnc" id="L595" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.svn-base&quot;)) {</span>
+<span class="nc" id="L596">                    continue;</span>
+                }
+<span class="nc bnc" id="L598" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.svn-work&quot;)) {</span>
+<span class="nc" id="L599">                    continue;</span>
+                }
+<span class="nc bnc" id="L601" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.ds_store&quot;)) {</span>
+<span class="nc" id="L602">                    continue;</span>
+                }
+<span class="nc bnc" id="L604" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.yml&quot;)) {</span>
+<span class="nc" id="L605">                    continue;</span>
+                }
+<span class="nc bnc" id="L607" title="All 2 branches missed.">                if (f.getName().equals(&quot;UnitVerifierOptions.xml&quot;)) {</span>
+<span class="nc" id="L608">                    continue;</span>
+                }
+<span class="nc bnc" id="L610" title="All 2 branches missed.">                if (f.getName().toLowerCase().endsWith(&quot;.zip&quot;)) {</span>
+<span class="nc" id="L611">                    bNeedsUpdate |= loadMechsFromZipFile(vMechs, sKnownFiles,</span>
+                            lLastCheck, f);
+<span class="nc" id="L613">                    continue;</span>
+                }
+<span class="nc bnc" id="L615" title="All 2 branches missed.">                if ((f.lastModified() &lt; lLastCheck)</span>
+<span class="nc bnc" id="L616" title="All 2 branches missed.">                        &amp;&amp; sKnownFiles.contains(f.toString())) {</span>
+<span class="nc" id="L617">                    continue;</span>
+                }
+                try {
+<span class="nc" id="L620">                    MechFileParser mfp = new MechFileParser(f);</span>
+<span class="nc" id="L621">                    Entity e = mfp.getEntity();</span>
+<span class="nc" id="L622">                    MechSummary ms = getSummary(e, f, null);</span>
+                    // if this is unit's MechSummary is already known,
+                    // remove it first, so we don't get duplicates
+<span class="nc bnc" id="L625" title="All 2 branches missed.">                    if (sKnownFiles.contains(f.toString())) {</span>
+<span class="nc" id="L626">                        vMechs.removeElement(ms);</span>
+                    }
+<span class="nc" id="L628">                    vMechs.addElement(ms);</span>
+<span class="nc" id="L629">                    sKnownFiles.add(f.toString());</span>
+<span class="nc" id="L630">                    bNeedsUpdate = true;</span>
+<span class="nc" id="L631">                    thisDirectoriesFileCount++;</span>
+<span class="nc" id="L632">                    fileCount++;</span>
+<span class="nc" id="L633">                    Iterator&lt;String&gt; failedEquipment = e.getFailedEquipment();</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">                    if (failedEquipment.hasNext()) {</span>
+<span class="nc" id="L635">                        loadReport.append(&quot;    Loading from &quot;).append(f)</span>
+<span class="nc" id="L636">                                .append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L637" title="All 2 branches missed.">                        while (failedEquipment.hasNext()) {</span>
+<span class="nc" id="L638">                            loadReport</span>
+<span class="nc" id="L639">                                    .append(&quot;      Failed to load equipment: &quot;)</span>
+<span class="nc" id="L640">                                    .append(failedEquipment.next())</span>
+<span class="nc" id="L641">                                    .append(&quot;\n&quot;);</span>
+                        }
+                    }
+<span class="nc" id="L644">                } catch (EntityLoadingException ex) {</span>
+<span class="nc" id="L645">                    loadReport.append(&quot;    Loading from &quot;).append(f)</span>
+<span class="nc" id="L646">                            .append(&quot;\n&quot;);</span>
+<span class="nc" id="L647">                    loadReport.append(&quot;***   Unable to load file: &quot;);</span>
+<span class="nc" id="L648">                    StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L649">                    PrintWriter printWriter = new PrintWriter(stringWriter);</span>
+<span class="nc" id="L650">                    ex.printStackTrace(printWriter);</span>
+<span class="nc" id="L651">                    loadReport.append(stringWriter.getBuffer()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L652">                    hFailedFiles.put(f.toString(), ex.getMessage());</span>
+<span class="nc" id="L653">                }</span>
+            }
+        }
+
+<span class="nc" id="L657">        loadReport.append(&quot;  ...loaded &quot;).append(thisDirectoriesFileCount)</span>
+<span class="nc" id="L658">                .append(&quot; files.\n&quot;);</span>
+
+<span class="nc" id="L660">        return bNeedsUpdate;</span>
+    }
+
+    private boolean loadMechsFromZipFile(Vector&lt;MechSummary&gt; vMechs,
+            Set&lt;String&gt; sKnownFiles, long lLastCheck, File fZipFile) {
+<span class="nc" id="L665">        boolean bNeedsUpdate = false;</span>
+        ZipFile zFile;
+<span class="nc" id="L667">        int thisZipFileCount = 0;</span>
+        try {
+<span class="nc" id="L669">            zFile = new ZipFile(fZipFile);</span>
+<span class="nc" id="L670">        } catch (Exception ex) {</span>
+<span class="nc" id="L671">            loadReport.append(&quot;  Unable to load file &quot;)</span>
+<span class="nc" id="L672">                    .append(fZipFile.getName()).append(&quot;: &quot;);</span>
+<span class="nc" id="L673">            StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L674">            PrintWriter printWriter = new PrintWriter(stringWriter);</span>
+<span class="nc" id="L675">            ex.printStackTrace(printWriter);</span>
+<span class="nc" id="L676">            loadReport.append(stringWriter.getBuffer()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L677">            return false;</span>
+<span class="nc" id="L678">        }</span>
+<span class="nc" id="L679">        loadReport.append(&quot;  Looking in zip file &quot;).append(fZipFile.getPath())</span>
+<span class="nc" id="L680">                .append(&quot;...\n&quot;);</span>
+
+<span class="nc bnc" id="L682" title="All 2 branches missed.">        for (Enumeration&lt;?&gt; i = zFile.entries(); i.hasMoreElements();) {</span>
+<span class="nc bnc" id="L683" title="All 2 branches missed.">            if (interrupted) {</span>
+<span class="nc" id="L684">                done();</span>
+                try {
+<span class="nc" id="L686">                    zFile.close();</span>
+<span class="nc" id="L687">                    return false;</span>
+<span class="nc" id="L688">                } catch (IOException e) {</span>
+<span class="nc" id="L689">                    MegaMek.getLogger().error(e);</span>
+                }
+            }
+<span class="nc" id="L692">            ZipEntry zEntry = (ZipEntry) i.nextElement();</span>
+
+<span class="nc bnc" id="L694" title="All 2 branches missed.">            if (zEntry.isDirectory()) {</span>
+<span class="nc bnc" id="L695" title="All 2 branches missed.">                if (zEntry.getName().equalsIgnoreCase(&quot;unsupported&quot;)) {</span>
+<span class="nc" id="L696">                    loadReport.append(&quot; Do not place special 'unsupported' type folders in zip files, they must \nbe uncompressed directories to work properly. Note that you may place \nzip files inside of 'unsupported' type folders, though.\n&quot;);</span>
+                }
+                continue;
+            }
+<span class="nc bnc" id="L700" title="All 2 branches missed.">            if (zEntry.getName().toLowerCase().endsWith(&quot;.txt&quot;)) {</span>
+<span class="nc" id="L701">                continue;</span>
+            }
+<span class="nc bnc" id="L703" title="All 2 branches missed.">            if (zEntry.getName().toLowerCase().endsWith(&quot;.yml&quot;)) {</span>
+<span class="nc" id="L704">                continue;</span>
+            }
+<span class="nc bnc" id="L706" title="All 2 branches missed.">            if ((Math.max(fZipFile.lastModified(), zEntry.getTime()) &lt; lLastCheck)</span>
+<span class="nc bnc" id="L707" title="All 2 branches missed.">                    &amp;&amp; sKnownFiles.contains(zEntry.getName())) {</span>
+<span class="nc" id="L708">                continue;</span>
+            }
+
+            try {
+<span class="nc" id="L712">                MechFileParser mfp = new MechFileParser(</span>
+<span class="nc" id="L713">                        zFile.getInputStream(zEntry), zEntry.getName());</span>
+<span class="nc" id="L714">                Entity e = mfp.getEntity();</span>
+<span class="nc" id="L715">                MechSummary ms = getSummary(e, fZipFile, zEntry.getName());</span>
+<span class="nc" id="L716">                vMechs.addElement(ms);</span>
+<span class="nc" id="L717">                sKnownFiles.add(zEntry.getName());</span>
+<span class="nc" id="L718">                bNeedsUpdate = true;</span>
+<span class="nc" id="L719">                thisZipFileCount++;</span>
+<span class="nc" id="L720">                zipCount++;</span>
+<span class="nc" id="L721">                Iterator&lt;String&gt; failedEquipment = e.getFailedEquipment();</span>
+<span class="nc bnc" id="L722" title="All 2 branches missed.">                if (failedEquipment.hasNext()) {</span>
+<span class="nc" id="L723">                    loadReport.append(&quot;    Loading from zip file&quot;)</span>
+<span class="nc" id="L724">                            .append(&quot; &gt;&gt; &quot;).append(zEntry.getName())</span>
+<span class="nc" id="L725">                            .append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L726" title="All 2 branches missed.">                    while (failedEquipment.hasNext()) {</span>
+<span class="nc" id="L727">                        loadReport.append(&quot;      Failed to load equipment: &quot;)</span>
+<span class="nc" id="L728">                                .append(failedEquipment.next()).append(&quot;\n&quot;);</span>
+                    }
+                }
+<span class="nc" id="L731">            } catch (Exception ex) {</span>
+<span class="nc" id="L732">                loadReport.append(&quot;    Loading from zip file&quot;).append(&quot; &gt;&gt; &quot;)</span>
+<span class="nc" id="L733">                        .append(zEntry.getName()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L734">                loadReport.append(&quot;      Unable to load file: &quot;);</span>
+<span class="nc" id="L735">                StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L736">                PrintWriter printWriter = new PrintWriter(stringWriter);</span>
+<span class="nc" id="L737">                ex.printStackTrace(printWriter);</span>
+<span class="nc" id="L738">                loadReport.append(stringWriter.getBuffer()).append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L739" title="All 2 branches missed.">                if (!(ex.getMessage() == null)) {</span>
+<span class="nc" id="L740">                    hFailedFiles.put(zEntry.getName(), ex.getMessage());</span>
+                }
+<span class="nc" id="L742">            }</span>
+<span class="nc" id="L743">        }</span>
+
+        try {
+<span class="nc" id="L746">            zFile.close();</span>
+<span class="nc" id="L747">        } catch (Exception ex) {</span>
+<span class="nc" id="L748">            MegaMek.getLogger().error(ex);</span>
+<span class="nc" id="L749">        }</span>
+
+<span class="nc" id="L751">        loadReport.append(&quot;  ...loaded &quot;).append(thisZipFileCount)</span>
+<span class="nc" id="L752">                .append(&quot; files.\n&quot;);</span>
+
+<span class="nc" id="L754">        return bNeedsUpdate;</span>
+    }
+
+    private void addLookupNames() {
+<span class="nc" id="L758">        File lookupNames = new MegaMekFile(getUnitCacheDir(), FILENAME_LOOKUP).getFile();</span>
+<span class="nc bnc" id="L759" title="All 2 branches missed.">        if (lookupNames.exists()) {</span>
+<span class="nc" id="L760">            try (InputStream is = new FileInputStream(lookupNames);</span>
+<span class="nc" id="L761">                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {</span>
+                String line;
+                String lookupName;
+                String entryName;
+<span class="nc bnc" id="L765" title="All 2 branches missed.">                while (null != (line = reader.readLine())) {</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">                    if (line.startsWith(&quot;#&quot;)) {</span>
+<span class="nc" id="L767">                        continue;</span>
+                    }
+<span class="nc" id="L769">                    int index = line.indexOf(&quot;|&quot;);</span>
+<span class="nc bnc" id="L770" title="All 2 branches missed.">                    if (index &gt; 0) {</span>
+<span class="nc" id="L771">                        lookupName = line.substring(0, index);</span>
+<span class="nc" id="L772">                        entryName = line.substring(index + 1);</span>
+<span class="nc bnc" id="L773" title="All 2 branches missed.">                        if (!m_nameMap.containsKey(lookupName)) {</span>
+<span class="nc" id="L774">                            MechSummary ms = m_nameMap.get(entryName);</span>
+<span class="nc bnc" id="L775" title="All 2 branches missed.">                            if (null != ms) {</span>
+<span class="nc" id="L776">                                m_nameMap.put(lookupName, ms);</span>
+                            }
+                        }
+                    }
+<span class="nc" id="L780">                }</span>
+<span class="nc" id="L781">            } catch (IOException ex) {</span>
+<span class="nc" id="L782">                MegaMek.getLogger().error(ex);</span>
+<span class="nc" id="L783">            }</span>
+        }
+<span class="nc" id="L785">    }</span>
+
+
+    public int getCacheCount() {
+<span class="nc" id="L789">        return cacheCount;</span>
+    }
+
+    public int getFileCount() {
+<span class="nc" id="L793">        return fileCount;</span>
+    }
+
+    public int getZipCount() {
+<span class="nc" id="L797">        return zipCount;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShowTileCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.commands</a> &gt; <span class="el_source">ShowTileCommand.java</span></div><h1>ShowTileCommand.java</h1><pre class="source lang-java linenums">/**
+ *
+ */
+package megamek.client.commands;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import megamek.client.Client;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.IHex;
+import megamek.common.options.OptionsConstants;
+
+/**
+ * @author dirk
+ *         This command exists to print tile information to the chat
+ *         window, it's primarily intended for vissually impaired users.
+ */
+
+public class ShowTileCommand extends ClientCommand {
+<span class="fc" id="L24">    public final static Set&lt;String&gt; directions = new HashSet&lt;&gt;();</span>
+    {
+<span class="fc" id="L26">        directions.add(&quot;N&quot;);</span>
+<span class="fc" id="L27">        directions.add(&quot;NW&quot;);</span>
+<span class="fc" id="L28">        directions.add(&quot;NE&quot;);</span>
+<span class="fc" id="L29">        directions.add(&quot;S&quot;);</span>
+<span class="fc" id="L30">        directions.add(&quot;SW&quot;);</span>
+<span class="fc" id="L31">        directions.add(&quot;SE&quot;);</span>
+    }
+
+    public ShowTileCommand(Client client) {
+<span class="fc" id="L35">        super(</span>
+                client,
+                &quot;tile&quot;,
+                &quot;print the information about a tile into the chat window. &quot; +
+                        &quot;Usage: #tile 01 01 [dir1 ...] which would show the details for the hex numbered 01 01. &quot; +
+                        &quot;The command can be followed with any number of directions (N,NE,SE,S,SW,NW) to list &quot; +
+                        &quot;the tiles following those directions. Updates Current Hex. &quot; +
+                        &quot;Can also list just directions to look from current tile.&quot;);
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Run this command with the arguments supplied
+     *
+     * @see megamek.server.commands.ServerCommand#run(int, java.lang.String[])
+     */
+    @Override
+    public String run(String[] args) {
+        try {
+<span class="nc" id="L53">            int i = 3;</span>
+<span class="nc" id="L54">            String str = &quot;&quot;, report = &quot;&quot;;</span>
+            Coords coord;
+<span class="nc bnc" id="L56" title="All 4 branches missed.">            if ((args.length &gt;= 1) &amp;&amp; directions.contains(args[0].toUpperCase())) {</span>
+<span class="nc" id="L57">                i = 1;</span>
+<span class="nc" id="L58">                coord = getClient().getCurrentHex().translated(args[0]);</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">            } else if ((args.length &gt; 1) &amp;&amp; directions.contains(args[1].toUpperCase()) ) {</span>
+<span class="nc" id="L60">                i = 2;</span>
+<span class="nc" id="L61">                coord = getClient().getCurrentHex().translated(args[1]);</span>
+            } else {
+<span class="nc" id="L63">                coord = new Coords(Integer.parseInt(args[1]) - 1, Integer</span>
+<span class="nc" id="L64">                        .parseInt(args[2]) - 1);</span>
+            }
+            IHex hex;
+
+            do {
+<span class="nc" id="L69">                hex = getClient().getGame().getBoard().getHex(coord);</span>
+<span class="nc" id="L70">                getClient().setCurrentHex(hex);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                if (hex != null) {</span>
+<span class="nc" id="L72">                    str = &quot;Details for hex (&quot; + (coord.getX() + 1) + &quot;, &quot;</span>
+<span class="nc" id="L73">                          + (coord.getY() + 1) + &quot;) : &quot; + hex.toString();</span>
+
+                    // if we are not playing in double blind mode also list the
+                    // units in this tile.
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                    if (!getClient().getGame().getOptions().booleanOption(OptionsConstants.ADVANCED_DOUBLE_BLIND)) {</span>
+<span class="nc" id="L78">                        Iterator&lt;Entity&gt; entList = getClient().getGame()</span>
+<span class="nc" id="L79">                                                              .getEntities(coord);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                        if (entList.hasNext()) {</span>
+<span class="nc" id="L81">                            str = str + &quot;; Contains entities: &quot;</span>
+<span class="nc" id="L82">                                  + entList.next().getId();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                            while (entList.hasNext()) {</span>
+<span class="nc" id="L84">                                str = str + &quot;, &quot;</span>
+<span class="nc" id="L85">                                      + entList.next().getId();</span>
+                            }
+                        }
+                    }
+
+<span class="nc" id="L90">                    report = report + str + &quot;\n&quot;;</span>
+                } else {
+<span class="nc" id="L92">                    report = report + &quot;Hex (&quot; + (coord.getX() + 1) + &quot;, &quot;</span>
+<span class="nc" id="L93">                             + (coord.getY() + 1) + &quot;) is not on the board.\n&quot;;</span>
+                }
+
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                if (i &lt; args.length) {</span>
+<span class="nc" id="L97">                    coord = coord.translated(args[i]);</span>
+                }
+
+<span class="nc" id="L100">                i++;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            } while (i &lt;= args.length);</span>
+
+<span class="nc" id="L103">            return report;</span>
+<span class="nc" id="L104">        } catch (NumberFormatException nfe) {</span>
+<span class="nc" id="L105">        } catch (NullPointerException npe) {</span>
+<span class="nc" id="L106">        } catch (IndexOutOfBoundsException ioobe) {</span>
+<span class="nc" id="L107">        }</span>
+
+<span class="nc" id="L109">        return &quot;Error parsing the command.&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

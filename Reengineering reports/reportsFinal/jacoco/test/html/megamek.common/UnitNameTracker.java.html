@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnitNameTracker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common</a> &gt; <span class="el_source">UnitNameTracker.java</span></div><h1>UnitNameTracker.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (C) 2021 - The MegaMek Team
+ *
+ *  This program is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *  for more details.
+ */
+
+package megamek.common;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import megamek.common.annotations.Nullable;
+
+/**
+ * Provides a means to track unit names for collisions.
+ * 
+ * @implNote This API is not thread safe.
+ */
+<span class="fc" id="L30">public class UnitNameTracker {</span>
+<span class="fc" id="L31">    private final Map&lt;String, List&lt;Entity&gt;&gt; entityMap = new HashMap&lt;&gt;();</span>
+
+    /**
+     * Adds an entity to the name tracker.
+     * @param entity The entity to track for name collisions.
+     */
+    public void add(Entity entity) {
+<span class="fc" id="L38">        List&lt;Entity&gt; entities = entityMap.computeIfAbsent(entity.getShortNameRaw(), k -&gt; new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L39">        entities.add(entity);</span>
+<span class="fc" id="L40">        entity.setDuplicateMarker(entities.size());</span>
+<span class="fc" id="L41">    }</span>
+
+    /**
+     * Removes an entity from the name tracker.
+     * @param entity The entity to remove from the name tracker.
+     * @return A value indicating whether or not the entity was removed.
+     */
+    public boolean remove(Entity entity) {
+<span class="fc" id="L49">        return remove(entity, null);</span>
+    }
+
+    /**
+     * Removes an entity from the name tracker.
+     * @param entity The entity to remove from the name tracker.
+     * @param onEntityUpdated An optional function to execute when an entity is updated
+     *                        due to a duplicate name change.
+     * @return A value indicating whether or not the entity was removed.
+     */
+    public boolean remove(Entity entity, @Nullable Consumer&lt;Entity&gt; onEntityUpdated) {
+<span class="fc" id="L60">        String rawName = entity.getShortNameRaw();</span>
+<span class="fc" id="L61">        int removedDuplicateMarker = entity.getDuplicateMarker();</span>
+
+        // Decrease the number of duplicate names, removing it if there was only one left
+<span class="fc" id="L64">        List&lt;Entity&gt; entities = entityMap.get(rawName);</span>
+<span class="pc bpc" id="L65" title="2 of 4 branches missed.">        if ((entities == null) || !entities.remove(entity)) {</span>
+<span class="nc" id="L66">            return false;</span>
+        }
+
+        // If there are more than one entities with this raw name,
+        // go through the list of matching entities and update their
+        // duplicate number
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for (Entity e : entities) {</span>
+<span class="fc" id="L73">            boolean updated = e.updateDuplicateMarkerAfterDelete(removedDuplicateMarker);</span>
+<span class="pc bpc" id="L74" title="3 of 4 branches missed.">            if (updated &amp;&amp; (onEntityUpdated != null)) {</span>
+<span class="nc" id="L75">                onEntityUpdated.accept(e);</span>
+            }
+<span class="fc" id="L77">        }</span>
+
+<span class="fc" id="L79">        return true;</span>
+    }
+
+    /**
+     * Clears the unit name tracker of all tracked entities.
+     */
+    public void clear() {
+<span class="fc" id="L86">        entityMap.clear();</span>
+<span class="fc" id="L87">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

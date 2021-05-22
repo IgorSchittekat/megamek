@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlasmaCannonHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons</a> &gt; <span class="el_source">PlasmaCannonHandler.java</span></div><h1>PlasmaCannonHandler.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2005 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+package megamek.common.weapons;
+
+import java.util.Vector;
+
+import megamek.common.BattleArmor;
+import megamek.common.Building;
+import megamek.common.BuildingTarget;
+import megamek.common.Compute;
+import megamek.common.Coords;
+import megamek.common.Entity;
+import megamek.common.EquipmentType;
+import megamek.common.HitData;
+import megamek.common.IAimingModes;
+import megamek.common.IGame;
+import megamek.common.LosEffects;
+import megamek.common.Mech;
+import megamek.common.Report;
+import megamek.common.TargetRoll;
+import megamek.common.Targetable;
+import megamek.common.ToHitData;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.common.options.OptionsConstants;
+import megamek.server.Server;
+
+public class PlasmaCannonHandler extends AmmoWeaponHandler {
+    private static final long serialVersionUID = 2304364403526293671L;
+
+    /**
+     * @param toHit
+     * @param waa
+     * @param g
+     */
+    public PlasmaCannonHandler(ToHitData toHit, WeaponAttackAction waa,
+            IGame g, Server s) {
+<span class="nc" id="L48">        super(toHit, waa, g, s);</span>
+<span class="nc" id="L49">        generalDamageType = HitData.DAMAGE_ENERGY;</span>
+<span class="nc" id="L50">    }</span>
+
+    /**
+     * Largely the same as the method in &lt;code&gt;WeaponHandler&lt;/code&gt;, however we
+     * need to adjust the &lt;code&gt;target&lt;/code&gt; state variable so damage is
+     * applied properly.
+     * 
+     * @param entityTarget  The target Entity
+     * @param vPhaseReport
+     * @param hit
+     * @param bldg
+     * @param hits
+     * @param nCluster
+     * @param bldgAbsorbs
+     */
+    @Override
+    protected void handlePartialCoverHit(Entity entityTarget,
+            Vector&lt;Report&gt; vPhaseReport, HitData hit, Building bldg, int hits,
+            int nCluster, int bldgAbsorbs) {
+
+        // Report the hit and table description, if this isn't part of a salvo
+        Report r;
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (!bSalvo) {</span>
+<span class="nc" id="L73">            r = new Report(3405);</span>
+<span class="nc" id="L74">            r.subject = subjectId;</span>
+<span class="nc" id="L75">            r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L76">            r.add(entityTarget.getLocationAbbr(hit));</span>
+<span class="nc" id="L77">            vPhaseReport.addElement(r);</span>
+        } else {
+            // Keep spacing consistent
+<span class="nc" id="L80">            Report.addNewline(vPhaseReport);</span>
+        }
+
+<span class="nc" id="L83">        r = new Report(3460);</span>
+<span class="nc" id="L84">        r.subject = subjectId;</span>
+<span class="nc" id="L85">        r.add(entityTarget.getShortName());</span>
+<span class="nc" id="L86">        r.add(entityTarget.getLocationAbbr(hit));</span>
+<span class="nc" id="L87">        r.indent(2);</span>
+<span class="nc" id="L88">        vPhaseReport.addElement(r);</span>
+
+<span class="nc" id="L90">        int damagableCoverType = LosEffects.DAMAGABLE_COVER_NONE;</span>
+<span class="nc" id="L91">        Building coverBuilding = null;</span>
+<span class="nc" id="L92">        Entity coverDropship = null;</span>
+<span class="nc" id="L93">        Coords coverLoc = null;</span>
+
+        // Determine if there is primary and secondary cover,
+        // and then determine which one gets hit
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        if ((toHit.getCover() == LosEffects.COVER_75RIGHT || toHit.getCover() == LosEffects.COVER_75LEFT)</span>
+                ||
+                // 75% cover has a primary and secondary
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                (toHit.getCover() == LosEffects.COVER_HORIZONTAL &amp;&amp; toHit</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                        .getDamagableCoverTypeSecondary() != LosEffects.DAMAGABLE_COVER_NONE)) {</span>
+            // Horiztonal cover provided by two 25%'s, so primary and secondary
+<span class="nc" id="L103">            int hitLoc = hit.getLocation();</span>
+            // Primary stores the left side, from the perspective of the
+            // attacker
+<span class="nc bnc" id="L106" title="All 6 branches missed.">            if (hitLoc == Mech.LOC_RLEG || hitLoc == Mech.LOC_RT</span>
+                    || hitLoc == Mech.LOC_RARM) {
+                // Left side is primary
+<span class="nc" id="L109">                damagableCoverType = toHit.getDamagableCoverTypePrimary();</span>
+<span class="nc" id="L110">                coverBuilding = toHit.getCoverBuildingPrimary();</span>
+<span class="nc" id="L111">                coverDropship = toHit.getCoverDropshipPrimary();</span>
+<span class="nc" id="L112">                coverLoc = toHit.getCoverLocPrimary();</span>
+            } else {
+                // If not left side, then right side, which is secondary
+<span class="nc" id="L115">                damagableCoverType = toHit.getDamagableCoverTypeSecondary();</span>
+<span class="nc" id="L116">                coverBuilding = toHit.getCoverBuildingSecondary();</span>
+<span class="nc" id="L117">                coverDropship = toHit.getCoverDropshipSecondary();</span>
+<span class="nc" id="L118">                coverLoc = toHit.getCoverLocSecondary();</span>
+            }
+<span class="nc" id="L120">        } else { // Only primary cover exists</span>
+<span class="nc" id="L121">            damagableCoverType = toHit.getDamagableCoverTypePrimary();</span>
+<span class="nc" id="L122">            coverBuilding = toHit.getCoverBuildingPrimary();</span>
+<span class="nc" id="L123">            coverDropship = toHit.getCoverDropshipPrimary();</span>
+<span class="nc" id="L124">            coverLoc = toHit.getCoverLocPrimary();</span>
+        }
+        // Check if we need to damage the cover that absorbed the hit.
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (damagableCoverType == LosEffects.DAMAGABLE_COVER_DROPSHIP) {</span>
+            // We need to adjust some state and then restore it later
+            // This allows us to make a call to handleEntityDamage
+<span class="nc" id="L130">            ToHitData savedToHit = toHit;</span>
+<span class="nc" id="L131">            int savedAimingMode = waa.getAimingMode();</span>
+<span class="nc" id="L132">            waa.setAimingMode(IAimingModes.AIM_MODE_NONE);</span>
+
+<span class="nc" id="L134">            int savedAimedLocation = waa.getAimedLocation();</span>
+<span class="nc" id="L135">            waa.setAimedLocation(Entity.LOC_NONE);</span>
+<span class="nc" id="L136">            boolean savedSalvo = bSalvo;</span>
+<span class="nc" id="L137">            bSalvo = true;</span>
+<span class="nc" id="L138">            Targetable origTarget = target;</span>
+<span class="nc" id="L139">            target = coverDropship;</span>
+<span class="nc" id="L140">            hits = calcHits(vPhaseReport);</span>
+            // Create new toHitData
+<span class="nc" id="L142">            toHit = new ToHitData(0, &quot;&quot;, ToHitData.HIT_NORMAL,</span>
+<span class="nc" id="L143">                    Compute.targetSideTable(ae, coverDropship));</span>
+            // Report cover was damaged
+<span class="nc" id="L145">            int sizeBefore = vPhaseReport.size();</span>
+<span class="nc" id="L146">            r = new Report(3465);</span>
+<span class="nc" id="L147">            r.subject = subjectId;</span>
+<span class="nc" id="L148">            r.add(coverDropship.getShortName());</span>
+<span class="nc" id="L149">            r.newlines++;</span>
+<span class="nc" id="L150">            vPhaseReport.add(r);</span>
+            // Damage the dropship
+<span class="nc" id="L152">            handleEntityDamage(coverDropship, vPhaseReport, bldg, hits,</span>
+                    nCluster, bldgAbsorbs);
+            // Remove a blank line in the report list
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            if (vPhaseReport.elementAt(sizeBefore).newlines &gt; 0)</span>
+<span class="nc" id="L156">                vPhaseReport.elementAt(sizeBefore).newlines--;</span>
+            // Indent reports related to the damage absorption
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            while (sizeBefore &lt; vPhaseReport.size()) {</span>
+<span class="nc" id="L159">                vPhaseReport.elementAt(sizeBefore).indent(3);</span>
+<span class="nc" id="L160">                sizeBefore++;</span>
+            }
+            // Restore state
+<span class="nc" id="L163">            toHit = savedToHit;</span>
+<span class="nc" id="L164">            waa.setAimingMode(savedAimingMode);</span>
+<span class="nc" id="L165">            waa.setAimedLocation(savedAimedLocation);</span>
+<span class="nc" id="L166">            bSalvo = savedSalvo;</span>
+<span class="nc" id="L167">            target = origTarget;</span>
+            // Damage a building that blocked a shot
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        } else if (damagableCoverType == LosEffects.DAMAGABLE_COVER_BUILDING) {</span>
+            // Normal damage
+<span class="nc" id="L171">            Targetable origTarget = target;</span>
+<span class="nc" id="L172">            target = new BuildingTarget(coverLoc, game.getBoard(), false);</span>
+<span class="nc" id="L173">            hits = calcHits(vPhaseReport);</span>
+            // Plasma Cannons do double damage per-hit to buildings
+<span class="nc" id="L175">            int nDamage = 2 * hits;</span>
+<span class="nc" id="L176">            Vector&lt;Report&gt; buildingReport = server.damageBuilding(</span>
+                    coverBuilding, nDamage, &quot; blocks the shot and takes &quot;,
+                    coverLoc);
+<span class="nc" id="L179">            target = origTarget;</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            for (Report report : buildingReport) {</span>
+<span class="nc" id="L181">                report.subject = subjectId;</span>
+<span class="nc" id="L182">                report.indent();</span>
+<span class="nc" id="L183">            }</span>
+<span class="nc" id="L184">            vPhaseReport.addAll(buildingReport);</span>
+            // Damage any infantry in the building.
+<span class="nc" id="L186">            Vector&lt;Report&gt; infantryReport = server.damageInfantryIn(</span>
+                    coverBuilding, nDamage, coverLoc,
+<span class="nc" id="L188">                    wtype.getInfantryDamageClass());</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            for (Report report : infantryReport) {</span>
+<span class="nc" id="L190">                report.indent(2);</span>
+<span class="nc" id="L191">            }</span>
+<span class="nc" id="L192">            vPhaseReport.addAll(infantryReport);</span>
+        }
+<span class="nc" id="L194">        missed = true;</span>
+<span class="nc" id="L195">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * megamek.common.weapons.WeaponHandler#handleEntityDamage(megamek.common
+     * .Entity, java.util.Vector, megamek.common.Building, int, int, int, int)
+     */
+    @Override
+    protected void handleEntityDamage(Entity entityTarget,
+            Vector&lt;Report&gt; vPhaseReport, Building bldg, int hits, int nCluster,
+            int bldgAbsorbs) {
+
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (entityTarget.tracksHeat()) {</span>
+<span class="nc" id="L210">            hit = entityTarget.rollHitLocation(toHit.getHitTable(),</span>
+<span class="nc" id="L211">                    toHit.getSideTable(), waa.getAimedLocation(),</span>
+<span class="nc" id="L212">                    waa.getAimingMode(), toHit.getCover());</span>
+<span class="nc" id="L213">            hit.setGeneralDamageType(generalDamageType);</span>
+<span class="nc" id="L214">            hit.setAttackerId(getAttackerId());</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">            if (entityTarget.removePartialCoverHits(hit.getLocation(), toHit</span>
+<span class="nc" id="L216">                    .getCover(), Compute.targetSideTable(ae, entityTarget,</span>
+<span class="nc" id="L217">                    weapon.getCalledShot().getCall()))) {</span>
+                // Weapon strikes Partial Cover.
+<span class="nc" id="L219">                handlePartialCoverHit(entityTarget, vPhaseReport, hit, bldg,</span>
+                        hits, nCluster, bldgAbsorbs);
+<span class="nc" id="L221">                return;</span>
+            }
+<span class="nc bnc" id="L223" title="All 2 branches missed.">            if (!bSalvo) {</span>
+                // Each hit in the salvo get's its own hit location.
+<span class="nc" id="L225">                Report r = new Report(3405);</span>
+<span class="nc" id="L226">                r.subject = subjectId;</span>
+<span class="nc" id="L227">                r.add(toHit.getTableDesc());</span>
+<span class="nc" id="L228">                r.add(entityTarget.getLocationAbbr(hit));</span>
+<span class="nc" id="L229">                vPhaseReport.addElement(r);</span>
+            }
+<span class="nc" id="L231">            Report r = new Report(3400);</span>
+<span class="nc" id="L232">            r.subject = subjectId;</span>
+<span class="nc" id="L233">            r.indent(2);</span>
+<span class="nc" id="L234">            int extraHeat = Compute.d6(2);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            if (entityTarget.getArmor(hit) &gt; 0 &amp;&amp;                        </span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">                    (entityTarget.getArmorType(hit.getLocation()) == </span>
+                       EquipmentType.T_ARMOR_REFLECTIVE)){
+<span class="nc" id="L238">               entityTarget.heatFromExternal += Math.max(1, extraHeat/2);</span>
+<span class="nc" id="L239">               r.add(Math.max(1, extraHeat/2));</span>
+<span class="nc" id="L240">               r.choose(true);</span>
+<span class="nc" id="L241">               r.messageId=3406;</span>
+<span class="nc" id="L242">               r.add(extraHeat);</span>
+<span class="nc" id="L243">               r.add(EquipmentType.armorNames</span>
+<span class="nc" id="L244">                       [entityTarget.getArmorType(hit.getLocation())]);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            } else if (entityTarget.getArmor(hit) &gt; 0 &amp;&amp;  </span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                   (entityTarget.getArmorType(hit.getLocation()) == </span>
+                       EquipmentType.T_ARMOR_HEAT_DISSIPATING)){
+<span class="nc" id="L248">               entityTarget.heatFromExternal += extraHeat/2;</span>
+<span class="nc" id="L249">               r.add(extraHeat/2);</span>
+<span class="nc" id="L250">               r.choose(true);</span>
+<span class="nc" id="L251">               r.messageId=3406;</span>
+<span class="nc" id="L252">               r.add(extraHeat);</span>
+<span class="nc" id="L253">               r.add(EquipmentType.armorNames</span>
+<span class="nc" id="L254">                       [entityTarget.getArmorType(hit.getLocation())]);</span>
+            } else {
+<span class="nc" id="L256">               entityTarget.heatFromExternal += extraHeat;</span>
+<span class="nc" id="L257">               r.add(extraHeat);</span>
+<span class="nc" id="L258">               r.choose(true);</span>
+            }
+<span class="nc" id="L260">            vPhaseReport.addElement(r);            </span>
+<span class="nc" id="L261">        } else {</span>
+<span class="nc" id="L262">            super.handleEntityDamage(entityTarget, vPhaseReport, bldg, hits,</span>
+                    nCluster, bldgAbsorbs);
+        }
+<span class="nc" id="L265">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcDamagePerHit()
+     */
+    @Override
+    protected int calcDamagePerHit() {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (target.tracksHeat()) {</span>
+<span class="nc" id="L275">            return 0;</span>
+        }
+<span class="nc" id="L277">        int toReturn = 1;</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc" id="L279">            toReturn = Compute.d6(3);</span>
+            // pain shunted infantry get half damage
+<span class="nc bnc" id="L281" title="All 2 branches missed.">            if (bDirect) {</span>
+<span class="nc" id="L282">                toReturn += toHit.getMoS() / 3;</span>
+            }
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (((Entity) target).hasAbility(OptionsConstants.MD_PAIN_SHUNT)) {</span>
+<span class="nc" id="L285">                toReturn = Math.max(toReturn / 2, 1);</span>
+            }
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        } else if (bDirect) {</span>
+<span class="nc" id="L288">            toReturn = Math.min(toReturn + (toHit.getMoS() / 3), toReturn * 2);</span>
+        }
+<span class="nc" id="L290">        toReturn = applyGlancingBlowModifier(toReturn, target.isConventionalInfantry());</span>
+<span class="nc" id="L291">        return toReturn;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcnCluster()
+     */
+    @Override
+    protected int calcnCluster() {
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (target.tracksHeat()) {</span>
+<span class="nc" id="L302">            bSalvo = false;</span>
+<span class="nc" id="L303">            return 1;</span>
+        }
+<span class="nc" id="L305">        bSalvo = true;</span>
+<span class="nc" id="L306">        return 5;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcHits(java.util.Vector)
+     */
+    @Override
+    protected int calcHits(Vector&lt;Report&gt; vPhaseReport) {
+        // conventional infantry gets hit in one lump
+        // BAs can't mount Plasma Cannons
+<span class="nc bnc" id="L318" title="All 4 branches missed.">        if (target.isConventionalInfantry() || target.tracksHeat()) {</span>
+<span class="nc" id="L319">            return 1;</span>
+<span class="nc bnc" id="L320" title="All 4 branches missed.">        } else if ((target instanceof BattleArmor) &amp;&amp; ((BattleArmor) target).isFireResistant()) {</span>
+<span class="nc" id="L321">            return 0;</span>
+        } else {
+<span class="nc" id="L323">            return Compute.d6(3);</span>
+        }
+    }
+
+    @Override
+    protected void handleIgnitionDamage(Vector&lt;Report&gt; vPhaseReport, Building bldg, int hits) {
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (!bSalvo) {</span>
+            // hits!
+<span class="nc" id="L331">            Report r = new Report(2270);</span>
+<span class="nc" id="L332">            r.subject = subjectId;</span>
+<span class="nc" id="L333">            r.newlines = 0;</span>
+<span class="nc" id="L334">            vPhaseReport.addElement(r);</span>
+        }
+<span class="nc" id="L336">        TargetRoll tn = new TargetRoll(wtype.getFireTN(), wtype.getName());</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (tn.getValue() != TargetRoll.IMPOSSIBLE) {</span>
+<span class="nc" id="L338">            Report.addNewline(vPhaseReport);</span>
+<span class="nc" id="L339">            server.tryIgniteHex(target.getPosition(), subjectId, true, false,</span>
+                    tn, true, -1, vPhaseReport);
+        }
+<span class="nc" id="L342">    }</span>
+
+    @Override
+    protected void handleClearDamage(Vector&lt;Report&gt; vPhaseReport,
+            Building bldg, int nDamage) {
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (!bSalvo) {</span>
+            // hits!
+<span class="nc" id="L349">            Report r = new Report(2270);</span>
+<span class="nc" id="L350">            r.subject = subjectId;</span>
+<span class="nc" id="L351">            vPhaseReport.addElement(r);</span>
+        }
+
+<span class="nc" id="L354">        nDamage *= 2; // Plasma weapons deal double damage to woods.</span>
+
+        // report that damage was &quot;applied&quot; to terrain
+<span class="nc" id="L357">        Report r = new Report(3385);</span>
+<span class="nc" id="L358">        r.indent(2);</span>
+<span class="nc" id="L359">        r.subject = subjectId;</span>
+<span class="nc" id="L360">        r.add(nDamage);</span>
+<span class="nc" id="L361">        vPhaseReport.addElement(r);</span>
+
+        // Any clear attempt can result in accidental ignition, even
+        // weapons that can't normally start fires. that's weird.
+        // Buildings can't be accidentally ignited.
+        // TODO: change this for TacOps - now you roll another 2d6 first and on
+        // a 5 or less
+        // you do a normal ignition as though for intentional fires
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        if ((bldg != null)</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">                &amp;&amp; server.tryIgniteHex(target.getPosition(), subjectId, true,</span>
+                        false,
+<span class="nc" id="L372">                        new TargetRoll(wtype.getFireTN(), wtype.getName()), 5,</span>
+                        vPhaseReport)) {
+<span class="nc" id="L374">            return;</span>
+        }
+<span class="nc" id="L376">        Vector&lt;Report&gt; clearReports = server.tryClearHex(target.getPosition(),</span>
+                nDamage, subjectId);
+<span class="nc bnc" id="L378" title="All 2 branches missed.">        if (clearReports.size() &gt; 0) {</span>
+<span class="nc" id="L379">            vPhaseReport.lastElement().newlines = 0;</span>
+        }
+<span class="nc" id="L381">        vPhaseReport.addAll(clearReports);</span>
+<span class="nc" id="L382">        return;</span>
+    }
+
+    @Override
+    protected void handleBuildingDamage(Vector&lt;Report&gt; vPhaseReport,
+            Building bldg, int nDamage, Coords coords) {
+        // Plasma weapons deal double damage to buildings.
+<span class="nc" id="L389">        super.handleBuildingDamage(vPhaseReport, bldg, nDamage * 2, coords);</span>
+<span class="nc" id="L390">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

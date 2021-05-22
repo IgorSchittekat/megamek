@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NarcExplosiveHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.common.weapons</a> &gt; <span class="el_source">NarcExplosiveHandler.java</span></div><h1>NarcExplosiveHandler.java</h1><pre class="source lang-java linenums">/*
+ * MegaMek - Copyright (C) 2005 Ben Mazur (bmazur@sev.org)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+package megamek.common.weapons;
+
+import java.util.Vector;
+
+import megamek.common.AmmoType;
+import megamek.common.BattleArmor;
+import megamek.common.Compute;
+import megamek.common.IGame;
+import megamek.common.Infantry;
+import megamek.common.Report;
+import megamek.common.ToHitData;
+import megamek.common.WeaponType;
+import megamek.common.actions.WeaponAttackAction;
+import megamek.server.Server;
+
+/**
+ * @author Sebastian Brocks
+ */
+public class NarcExplosiveHandler extends MissileWeaponHandler {
+    private static final long serialVersionUID = -1655014339855184419L;
+
+    /**
+     * @param t
+     * @param w
+     * @param g
+     * @param s
+     */
+    public NarcExplosiveHandler(ToHitData t, WeaponAttackAction w, IGame g,
+            Server s) {
+<span class="nc" id="L43">        super(t, w, g, s);</span>
+<span class="nc" id="L44">        sSalvoType = &quot; explosive pod &quot;;</span>
+<span class="nc" id="L45">    }</span>
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcHits(java.util.Vector)
+     */
+    @Override
+    protected int calcHits(Vector&lt;Report&gt; vPhaseReport) {
+<span class="nc" id="L54">        getAMSHitsMod(vPhaseReport);</span>
+        // conventional infantry gets hit in one lump
+        // BAs do one lump of damage per BA suit
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (ae instanceof BattleArmor) {</span>
+<span class="nc" id="L59">                bSalvo = true;</span>
+<span class="nc" id="L60">                return ((BattleArmor) ae).getShootingStrength();</span>
+            }
+<span class="nc" id="L62">            return 1;</span>
+        }
+<span class="nc" id="L64">        bSalvo = true;</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (ae instanceof BattleArmor) {</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            if (amsEngaged) {</span>
+<span class="nc" id="L67">                return Compute.missilesHit(</span>
+<span class="nc" id="L68">                        ((BattleArmor) ae).getShootingStrength(), -2);</span>
+            }
+<span class="nc" id="L70">            return Compute</span>
+<span class="nc" id="L71">                    .missilesHit(((BattleArmor) ae).getShootingStrength());</span>
+        }
+
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (amsEngaged) {</span>
+<span class="nc" id="L75">            Report r = new Report(3235);</span>
+<span class="nc" id="L76">            r.subject = subjectId;</span>
+<span class="nc" id="L77">            vPhaseReport.add(r);</span>
+<span class="nc" id="L78">            r = new Report(3230);</span>
+<span class="nc" id="L79">            r.indent(1);</span>
+<span class="nc" id="L80">            r.subject = subjectId;</span>
+<span class="nc" id="L81">            vPhaseReport.add(r);</span>
+<span class="nc" id="L82">            int destroyRoll = Compute.d6();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (destroyRoll &lt;= 3) {</span>
+<span class="nc" id="L84">                r = new Report(3240);</span>
+<span class="nc" id="L85">                r.subject = subjectId;</span>
+<span class="nc" id="L86">                r.add(&quot;pod&quot;);</span>
+<span class="nc" id="L87">                r.add(destroyRoll);</span>
+<span class="nc" id="L88">                vPhaseReport.add(r);</span>
+<span class="nc" id="L89">                return 0;</span>
+            }
+<span class="nc" id="L91">            r = new Report(3241);</span>
+<span class="nc" id="L92">            r.add(&quot;pod&quot;);</span>
+<span class="nc" id="L93">            r.add(destroyRoll);</span>
+<span class="nc" id="L94">            r.subject = subjectId;</span>
+<span class="nc" id="L95">            vPhaseReport.add(r);</span>
+        }
+<span class="nc" id="L97">        return 1;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcnCluster()
+     */
+    @Override
+    protected int calcnCluster() {
+<span class="nc" id="L107">        return 1;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see megamek.common.weapons.WeaponHandler#calcDamagePerHit()
+     */
+    @Override
+    protected int calcDamagePerHit() {
+<span class="nc" id="L117">        AmmoType atype = (AmmoType) ammo.getType();</span>
+        double toReturn;
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (atype.getAmmoType() == AmmoType.T_INARC) {</span>
+<span class="nc" id="L120">            toReturn = 6;</span>
+        } else {
+<span class="nc" id="L122">            toReturn = 4;</span>
+        }
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (target.isConventionalInfantry()) {</span>
+<span class="nc" id="L125">            toReturn = Compute.directBlowInfantryDamage(toReturn,</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                    bDirect ? toHit.getMoS() / 3 : 0,</span>
+                    WeaponType.WEAPON_DIRECT_FIRE,
+<span class="nc" id="L128">                    ((Infantry) target).isMechanized(),</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                    toHit.getThruBldg() != null, ae.getId(), calcDmgPerHitReport);</span>
+<span class="nc" id="L130">            toReturn = Math.ceil(toReturn);</span>
+        }
+        
+<span class="nc" id="L133">        toReturn = applyGlancingBlowModifier(toReturn, target.isConventionalInfantry());</span>
+<span class="nc" id="L134">        return (int) toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
