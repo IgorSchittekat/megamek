@@ -510,11 +510,7 @@ public class AmmoType extends EquipmentType {
         }*/
 
         // General Launchers
-        if (is(other.getAmmoType()) && (getMunitionType() == other.getMunitionType())) {
-            return true;
-        }
-
-        return false;
+        return is(other.getAmmoType()) && (getMunitionType() == other.getMunitionType());
     }
 
     public int getAmmoType() {
@@ -3646,26 +3642,31 @@ public class AmmoType extends EquipmentType {
                 .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
         return ammo;
     }
-    /*
-     * private static AmmoType createCLLongTomCannonAmmo() { AmmoType ammo = new
-     * AmmoType();
-     *
-     * ammo.name = "Long Tom Cannon Ammo"; ammo.shortName = "Long Tom Cannon";
-     * ammo.setInternalName("CLLongTomCannonAmmo");
-     * ammo.addLookupName("CLLongTomCannon Ammo");
-     * ammo.addLookupName("CLLongTomArtilleryCannon Ammo");
-     * ammo.addLookupName("CL Ammo Long Tom Cannon");
-     * ammo.addLookupName("CL Long Tom Cannon Ammo"); ammo.damagePerShot = 1;
-     * ammo.rackSize = 20; ammo.ammoType = AmmoType.T_LONG_TOM_CANNON;
-     * ammo.shots = 5; ammo.bv = 41; ammo.cost = 20000; ammo.rulesRefs =
-     * "285,TO";
-     *
-     * ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-     * ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
-     * ammo.techAdvancement.setTechRating(RATING_B);
-     * ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_F,
-     * RATING_E, RATING_D }); return ammo; }
-     */
+
+//    private static AmmoType createCLLongTomCannonAmmo() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Long Tom Cannon Ammo";
+//        ammo.shortName = "Long Tom Cannon";
+//        ammo.setInternalName("CLLongTomCannonAmmo");
+//        ammo.addLookupName("CLLongTomCannon Ammo");
+//        ammo.addLookupName("CLLongTomArtilleryCannon Ammo");
+//        ammo.addLookupName("CL Ammo Long Tom Cannon");
+//        ammo.addLookupName("CL Long Tom Cannon Ammo");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 20;
+//        ammo.ammoType = AmmoType.T_LONG_TOM_CANNON;
+//        ammo.shots = 5;
+//        ammo.bv = 41;
+//        ammo.cost = 20000;
+//        ammo.rulesRefs = "285,TO";
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
+//        ammo.techAdvancement.setTechRating(RATING_B);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_F, RATING_E, RATING_D);
+//        return ammo;
+//    }
+
 
     private static AmmoType createISSniperCannonAmmo() {
         AmmoType ammo = new AmmoType();
@@ -3698,25 +3699,32 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    /*
-     * private static AmmoType createCLSniperCannonAmmo() { AmmoType ammo = new
-     * AmmoType();
-     *
-     * ammo.name = "Sniper Cannon Ammo"; ammo.shortName = "Sniper Cannon";
-     * ammo.setInternalName("CLSniperCannonAmmo");
-     * ammo.addLookupName("CLSniperCannon Ammo");
-     * ammo.addLookupName("CLSniperArtilleryCannon Ammo");
-     * ammo.addLookupName("CL Ammo Sniper Cannon");
-     * ammo.addLookupName("CL Sniper Cannon Ammo"); ammo.damagePerShot = 1;
-     * ammo.rackSize = 10; ammo.ammoType = AmmoType.T_SNIPER_CANNON; ammo.shots
-     * = 10; ammo.bv = 10; ammo.cost = 15000; ammo.rulesRefs = "285,TO";
-     *
-     * ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-     * ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
-     * ammo.techAdvancement.setTechRating(RATING_B);
-     * ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_F,
-     * RATING_E, RATING_D }); return ammo; }
-     */
+
+//    private static AmmoType createCLSniperCannonAmmo() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Sniper Cannon Ammo";
+//        ammo.shortName = "Sniper Cannon";
+//        ammo.setInternalName("CLSniperCannonAmmo");
+//        ammo.addLookupName("CLSniperCannon Ammo");
+//        ammo.addLookupName("CLSniperArtilleryCannon Ammo");
+//        ammo.addLookupName("CL Ammo Sniper Cannon");
+//        ammo.addLookupName("CL Sniper Cannon Ammo");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 10;
+//        ammo.ammoType = AmmoType.T_SNIPER_CANNON;
+//        ammo.shots = 10;
+//        ammo.bv = 10;
+//        ammo.cost = 15000;
+//        ammo.rulesRefs = "285,TO";
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
+//        ammo.techAdvancement.setTechRating(RATING_B);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_F, RATING_E, RATING_D);
+//        return ammo;
+//    }
+
 
     private static AmmoType createISThumperCannonAmmo() {
         AmmoType ammo = new AmmoType();
@@ -3749,25 +3757,32 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    /*
-     * private static AmmoType createCLThumperCannonAmmo() { AmmoType ammo = new
-     * AmmoType();
-     *
-     * ammo.name = "Thumper Cannon Ammo"; ammo.shortName = "Thumper Cannon";
-     * ammo.setInternalName("CLThumperCannonAmmo");
-     * ammo.addLookupName("CLThumperCannon Ammo");
-     * ammo.addLookupName("CLThumperArtilleryCannon Ammo");
-     * ammo.addLookupName("CL Ammo Thumper Cannon");
-     * ammo.addLookupName("CL Thumper Cannon Ammo"); ammo.damagePerShot = 1;
-     * ammo.rackSize = 5; ammo.ammoType = AmmoType.T_THUMPER_CANNON; ammo.shots
-     * = 20; ammo.bv = 5; ammo.cost = 10000; ammo.rulesRefs = "285,TO";
-     *
-     * ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-     * ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
-     * ammo.techAdvancement.setTechRating(RATING_B);
-     * ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_F,
-     * RATING_E, RATING_D }); return ammo; }
-     */
+
+//    private static AmmoType createCLThumperCannonAmmo() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Thumper Cannon Ammo";
+//        ammo.shortName = "Thumper Cannon";
+//        ammo.setInternalName("CLThumperCannonAmmo");
+//        ammo.addLookupName("CLThumperCannon Ammo");
+//        ammo.addLookupName("CLThumperArtilleryCannon Ammo");
+//        ammo.addLookupName("CL Ammo Thumper Cannon");
+//        ammo.addLookupName("CL Thumper Cannon Ammo");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 5;
+//        ammo.ammoType = AmmoType.T_THUMPER_CANNON;
+//        ammo.shots = 20;
+//        ammo.bv = 5;
+//        ammo.cost = 10000;
+//        ammo.rulesRefs = "285,TO";
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(3032, 3072, DATE_NONE);
+//        ammo.techAdvancement.setTechRating(RATING_B);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_F, RATING_E, RATING_D);
+//        return ammo;
+//    }
+
 
     private static AmmoType createBATubeArtyAmmo() {
         AmmoType ammo = new AmmoType();
@@ -5250,10 +5265,7 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-
-//Grenade Launcher Ammo (See Mutators above)
-
-
+    //Grenade Launcher Ammo (See Mutators above)
     private static AmmoType createISVGLAmmo() {
         AmmoType ammo = new AmmoType();
 
@@ -5434,7 +5446,6 @@ public class AmmoType extends EquipmentType {
     }
 
     //Light MGs
-
     private static AmmoType createISLightMGAmmo() {
         AmmoType ammo = new AmmoType();
 
@@ -5463,7 +5474,6 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_CC);
         return ammo;
     }
-
 
     private static AmmoType createCLLightMGAmmo() {
         AmmoType ammo = new AmmoType();
@@ -5553,9 +5563,7 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    //Heavy MGs
-
-
+    //Heavy MG
     private static AmmoType createISHeavyMGAmmo() {
         AmmoType ammo = new AmmoType();
 
@@ -7200,425 +7208,100 @@ public class AmmoType extends EquipmentType {
     }
 
     //Clan Streak LRMs - The protomek editions
-
-    private static AmmoType createCLStreakLRM1Ammo() {
+    private static AmmoType createCLStreakLRMAmmo(int rackSize, double kgPerShot, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Streak LRM 1 Ammo";
-        ammo.shortName = "Streak LRM 1";
-        ammo.setInternalName("Clan Streak LRM 1 Ammo");
-        ammo.addLookupName("CLStreakLRM1 Ammo");
+        ammo.name = "Streak LRM " + rackSize + " Ammo";
+        ammo.shortName = "Streak LRM " + rackSize;
+        ammo.setInternalName("Clan Streak LRM " + rackSize + " Ammo");
+        ammo.addLookupName("CLStreakLRM" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM_STREAK;
         ammo.flags = ammo.flags.or(F_PROTOMECH);
         ammo.shots = 1;
-        ammo.kgPerShot = 8.33;
-        ammo.bv = 0.016;
+        ammo.kgPerShot = kgPerShot;
+        ammo.bv = bv;
         ammo.cost = 60000;
         // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
         //But LRM Tech Base and Avail Ratings.
         ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
+        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
+                .setTechRating(RATING_F)
                 .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
+                .setClanAdvancement(3057, 3079, 3088)
+                .setClanApproximate(false, true, false)
+                .setPrototypeFactions(F_CCY)
+                .setProductionFactions(F_CJF)
                 .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
         return ammo;
+    }
+
+    private static AmmoType createCLStreakLRM1Ammo() {
+        return createCLStreakLRMAmmo(1, 8.33, 0.016);
     }
 
     private static AmmoType createCLStreakLRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 2 Ammo";
-        ammo.shortName = "Streak LRM 2";
-        ammo.setInternalName("Clan Streak LRM 2 Ammo");
-        ammo.addLookupName("CLStreakLRM2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 16.67;
-        ammo.bv = 0.033;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(2, 16.67, 0.033);
     }
 
     private static AmmoType createCLStreakLRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 3 Ammo";
-        ammo.shortName = "Streak LRM 3";
-        ammo.setInternalName("Clan Streak LRM 3 Ammo");
-        ammo.addLookupName("CLStreakLRM3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 24.99;
-        ammo.bv = 0.05;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(3, 24.99, 0.05);
     }
 
     private static AmmoType createCLStreakLRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 4 Ammo";
-        ammo.shortName = "Streak LRM 4";
-        ammo.setInternalName("Clan Streak LRM 4 Ammo");
-        ammo.addLookupName("CLStreakLRM4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 33.32;
-        ammo.bv = 0.067;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(4, 33.32, 0.067);
     }
 
 
     private static AmmoType createCLStreakLRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 6 Ammo";
-        ammo.shortName = "Streak LRM 6";
-        ammo.setInternalName("Clan Streak LRM 6 Ammo");
-        ammo.addLookupName("CLStreakLRM6 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 49.98;
-        ammo.bv = 0.1;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(6, 49.98, 0.1);
     }
 
     private static AmmoType createCLStreakLRM7Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 7 Ammo";
-        ammo.shortName = "Streak LRM 7";
-        ammo.setInternalName("Clan Streak LRM 7 Ammo");
-        ammo.addLookupName("CLStreakLRM7 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 7;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 58.31;
-        ammo.bv = 0.117;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(7, 58.31, 0.117);
     }
 
     private static AmmoType createCLStreakLRM8Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 8 Ammo";
-        ammo.shortName = "Streak LRM 8";
-        ammo.setInternalName("Clan Streak LRM 8 Ammo");
-        ammo.addLookupName("CLStreakLRM8 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 66.64;
-        ammo.bv = 0.133;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(8, 66.64, 0.133);
     }
 
     private static AmmoType createCLStreakLRM9Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 9 Ammo";
-        ammo.shortName = "Streak LRM 9";
-        ammo.setInternalName("Clan Streak LRM 9 Ammo");
-        ammo.addLookupName("CLStreakLRM9 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 9;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 74.97;
-        ammo.bv = 0.15;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(9, 74.97, 0.15);
     }
 
 
     private static AmmoType createCLStreakLRM11Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 11 Ammo";
-        ammo.shortName = "Streak LRM 11";
-        ammo.setInternalName("Clan Streak LRM 11 Ammo");
-        ammo.addLookupName("CLStreakLRM11 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 11;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 91.63;
-        ammo.bv = 0.183;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(11, 91.63, 0.183);
     }
 
     private static AmmoType createCLStreakLRM12Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 12 Ammo";
-        ammo.shortName = "Streak LRM 12";
-        ammo.setInternalName("Clan Streak LRM 12 Ammo");
-        ammo.addLookupName("CLStreakLRM12 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 12;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 99.96;
-        ammo.bv = 0.2;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(12, 99.96, 0.2);
     }
 
     private static AmmoType createCLStreakLRM13Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 13 Ammo";
-        ammo.shortName = "Streak LRM 13";
-        ammo.setInternalName("Clan Streak LRM 13 Ammo");
-        ammo.addLookupName("CLStreakLRM13 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 13;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 108.29;
-        ammo.bv = 0.216;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(13, 108.29, 0.216);
     }
 
     private static AmmoType createCLStreakLRM14Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 14 Ammo";
-        ammo.shortName = "Streak LRM 14";
-        ammo.setInternalName("Clan Streak LRM 14 Ammo");
-        ammo.addLookupName("CLStreakLRM14 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 14;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 116.62;
-        ammo.bv = 0.233;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(14, 116.62, 0.233);
     }
 
     private static AmmoType createCLStreakLRM16Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 16 Ammo";
-        ammo.shortName = "Streak LRM 16";
-        ammo.setInternalName("Clan Streak LRM 16 Ammo");
-        ammo.addLookupName("CLStreakLRM16 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 16;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 133.28;
-        ammo.bv = 0.266;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(16,133.28, 0.266);
     }
 
     private static AmmoType createCLStreakLRM17Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 17 Ammo";
-        ammo.shortName = "Streak LRM 17";
-        ammo.setInternalName("Clan Streak LRM 17 Ammo");
-        ammo.addLookupName("CLStreakLRM17 mmo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 17;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 141.61;
-        ammo.bv = 0.283;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(17, 141.61, 0.283);
     }
 
     private static AmmoType createCLStreakLRM18Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 18 Ammo";
-        ammo.shortName = "Streak LRM 18";
-        ammo.setInternalName("Clan Streak LRM 18 Ammo");
-        ammo.addLookupName("CLStreakLRM18 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 18;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 149.94;
-        ammo.bv = 0.3;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(18, 149.94, 0.3);
     }
 
     private static AmmoType createCLStreakLRM19Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak LRM 19 Ammo";
-        ammo.shortName = "Streak LRM 19";
-        ammo.setInternalName("Clan Streak LRM 19 Ammo");
-        ammo.addLookupName("CLStreakLRM19 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 19;
-        ammo.ammoType = AmmoType.T_LRM_STREAK;
-        ammo.flags = ammo.flags.or(F_PROTOMECH);
-        ammo.shots = 1;
-        ammo.kgPerShot = 158.27;
-        ammo.bv = 0.316;
-        ammo.cost = 60000;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "327,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN).setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3057, 3079, 3088).setClanApproximate(false, true, false)
-                .setPrototypeFactions(F_CCY).setProductionFactions(F_CJF)
-                .setStaticTechLevel(SimpleTechLevel.EXPERIMENTAL);
-        return ammo;
+        return createCLStreakLRMAmmo(19, 158.27, 0.316);
     }
-
 
     //CLAN PROTO LRMS
     private static AmmoType createCLLRMAmmo(int rackSize, double bv, double kgPerShot) {
@@ -7716,18 +7399,18 @@ public class AmmoType extends EquipmentType {
     }
 
     //Standard MRMs
-    private static AmmoType createISMRM10Ammo() {
+    private static AmmoType createISMRM229TMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "MRM 10 Ammo";
-        ammo.shortName = "MRM 10";
-        ammo.setInternalName("IS MRM 10 Ammo");
-        ammo.addLookupName("ISMRM10 Ammo");
+        ammo.name = "MRM " + rackSize + " Ammo";
+        ammo.shortName = "MRM " + rackSize;
+        ammo.setInternalName("IS MRM " + rackSize + " Ammo");
+        ammo.addLookupName("ISMRM" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_MRM;
-        ammo.shots = 24;
-        ammo.bv = 7;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 5000;
         ammo.rulesRefs = "229,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
@@ -7740,366 +7423,208 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_DC)
                 .setProductionFactions(F_DC);
         return ammo;
+    }
+
+    private static AmmoType createISMRM10Ammo() {
+        return createISMRM229TMAmmo(10, 24, 7);
     }
 
     private static AmmoType createISMRM20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 20 Ammo";
-        ammo.shortName = "MRM 20";
-        ammo.setInternalName("IS MRM 20 Ammo");
-        ammo.addLookupName("ISMRM20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.shots = 12;
-        ammo.bv = 14;
-        ammo.cost = 5000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3052, 3058, 3063, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRM229TMAmmo(20, 12, 14);
     }
 
     private static AmmoType createISMRM30Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MRM 30 Ammo";
-        ammo.shortName = "MRM 30";
-        ammo.setInternalName("IS MRM 30 Ammo");
-        ammo.addLookupName("ISMRM30 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 30;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.shots = 8;
-        ammo.bv = 21;
-        ammo.cost = 5000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3052, 3058, 3063, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createISMRM229TMAmmo(30, 8, 21);
     }
 
     private static AmmoType createISMRM40Ammo() {
+        return createISMRM229TMAmmo(40, 6, 28);
+    }
+
+    //Standard SRMs
+    private static AmmoType createISSRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "MRM 40 Ammo";
-        ammo.shortName = "MRM 40";
-        ammo.setInternalName("IS MRM 40 Ammo");
-        ammo.addLookupName("ISMRM40 Ammo");
+        ammo.name = "SRM " + rackSize + " Ammo";
+        ammo.shortName = "SRM " + rackSize;
+        ammo.setInternalName("IS Ammo SRM-" + rackSize);
+        ammo.addLookupName("ISSRM" + rackSize + " Ammo");
+        ammo.addLookupName("IS SRM " + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_SRM;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 27000;
+        ammo.rulesRefs = "229,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
+                .setIntroLevel(true)
+                .setUnofficial(false)
+                .setTechRating(RATING_C)
+                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
+                .setISAdvancement(2365, 2370, 2400, DATE_NONE, DATE_NONE)
+                .setISApproximate(false, false, false, false, false)
+                .setClanAdvancement(2365, 2370, 2400, 2836, DATE_NONE)
+                .setClanApproximate(false, false, false, false, false)
+                .setPrototypeFactions(F_TH)
+                .setProductionFactions(F_TH);
+        return ammo;
+    }
+
+    private static AmmoType createISSRM2Ammo() {
+        return createISSRMAmmo(2, 50, 3);
+    }
+
+    private static AmmoType createISSRM4Ammo() {
+        return createISSRMAmmo(4, 25, 5);
+    }
+
+    private static AmmoType createISSRM6Ammo() {
+        return createISSRMAmmo(6, 15, 7);
+    }
+
+    //Clan SRMs (Includes Proto ones)
+    private static AmmoType createCLSRM231TMAmmo(int rackSize, double bv, double kgPerShot) {
+        AmmoType ammo = new AmmoType();
+
+        ammo.name = "SRM " + rackSize + " Ammo";
+        ammo.shortName = "SRM " + rackSize;
+        ammo.setInternalName("Clan Ammo SRM-" + rackSize);
+        ammo.addLookupName("CLSRM" + rackSize + " Ammo");
+        ammo.addLookupName("Clan SRM " + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_SRM;
+        ammo.shots = 100;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
+        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
+        //But LRM Tech Base and Avail Ratings.
+        ammo.rulesRefs = "231,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
+                .setIntroLevel(false)
+                .setUnofficial(false)
+                .setTechRating(RATING_F)
+                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
+                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
+                .setClanApproximate(true, false, false, false, false)
+                .setPrototypeFactions(F_CSJ)
+                .setProductionFactions(F_CSJ);
+        return ammo;
+    }
+
+    private static AmmoType createCLSRM229TMAmmo(int rackSize, int shots, double bv, double kgPerShot) {
+        AmmoType ammo = new AmmoType();
+
+        ammo.name = "SRM " + rackSize + " Ammo";
+        ammo.shortName = "SRM " + rackSize;
+        ammo.setInternalName("Clan Ammo SRM-" + rackSize);
+        ammo.addLookupName("CLSRM" + rackSize + " Ammo");
+        ammo.addLookupName("Clan SRM " + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_SRM;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 27000;
+        ammo.kgPerShot = kgPerShot;
+        ammo.rulesRefs = "229,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
+                .setIntroLevel(false)
+                .setUnofficial(false)
+                .setTechRating(RATING_F)
+                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
+                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
+                .setClanApproximate(true, false, false, false, false)
+                .setPrototypeFactions(F_CCC)
+                .setProductionFactions(F_CCC);
+        return ammo;
+    }
+
+    private static AmmoType createCLSRM1Ammo() {
+        return createCLSRM231TMAmmo(1, 2, 10);
+    }
+
+    private static AmmoType createCLSRM2Ammo() {
+        return createCLSRM229TMAmmo(2, 50, 3, 20);
+    }
+
+    private static AmmoType createCLSRM3Ammo() {
+        return createCLSRM231TMAmmo(3, 4, 30);
+    }
+
+    private static AmmoType createCLSRM4Ammo() {
+        return createCLSRM229TMAmmo(4, 25, 5, 40);
+    }
+
+    private static AmmoType createCLSRM5Ammo() {
+        return createCLSRM231TMAmmo(5, 6, 50);
+    }
+
+    private static AmmoType createCLSRM6Ammo() {
+        return createCLSRM229TMAmmo(6, 15, 7, 60);
+    }
+
+    //Multi-Missile Launcher(MMLs)
+    private static AmmoType createISMMLLRMAmmo(int rackSize, int shots, double bv) {
+        AmmoType ammo = new AmmoType();
+
+        ammo.name = "MML " + rackSize + " LRM Ammo";
+        ammo.shortName = "MML " + rackSize + "/LRM";
+        ammo.setInternalName("IS Ammo MML-" + rackSize + " LRM");
+        ammo.addLookupName("ISMML" + rackSize + " LRM Ammo");
+        ammo.addLookupName("IS MML-" + rackSize + " LRM Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 40;
-        ammo.ammoType = AmmoType.T_MRM;
-        ammo.shots = 6;
-        ammo.bv = 28;
-        ammo.cost = 5000;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_MML;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 30000;
+        ammo.flags = ammo.flags.or(F_HOTLOAD).or(F_MML_LRM);
+        ammo.setModes(new String[]{"", "HotLoad"});
         ammo.rulesRefs = "229,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
                 .setUnofficial(false)
-                .setTechRating(RATING_C)
+                .setTechRating(RATING_D)
                 .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3052, 3058, 3063, DATE_NONE, DATE_NONE)
+                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
                 .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
+                .setPrototypeFactions(F_MERC)
+                .setProductionFactions(F_WB);
         return ammo;
     }
 
-    //Standard SRMs
-    private static AmmoType createISSRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 2 Ammo";
-        ammo.shortName = "SRM 2";
-        ammo.setInternalName("IS Ammo SRM-2");
-        ammo.addLookupName("ISSRM2 Ammo");
-        ammo.addLookupName("IS SRM 2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 50;
-        ammo.bv = 3;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2365, 2370, 2400, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setClanAdvancement(2365, 2370, 2400, 2836, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH);
-        return ammo;
-    }
-
-    private static AmmoType createISSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 4 Ammo";
-        ammo.shortName = "SRM 4";
-        ammo.setInternalName("IS Ammo SRM-4");
-        ammo.addLookupName("ISSRM4 Ammo");
-        ammo.addLookupName("IS SRM 4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 25;
-        ammo.bv = 5;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2365, 2370, 2400, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setClanAdvancement(2365, 2370, 2400, 2836, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH);
-        return ammo;
-    }
-
-    private static AmmoType createISSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 6 Ammo";
-        ammo.shortName = "SRM 6";
-        ammo.setInternalName("IS Ammo SRM-6");
-        ammo.addLookupName("ISSRM6 Ammo");
-        ammo.addLookupName("IS SRM 6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 15;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "230,TM";
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(true)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2365, 2370, 2400, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setClanAdvancement(2365, 2370, 2400, 2836, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH);
-        return ammo;
-    }
-
-    //Clan SRMs (Includes Proto ones)
-
-    private static AmmoType createCLSRM1Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 1 Ammo";
-        ammo.shortName = "SRM 1";
-        ammo.setInternalName("Clan Ammo SRM-1");
-        ammo.addLookupName("CLSRM1 Ammo");
-        ammo.addLookupName("Clan SRM 1 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 100;
-        ammo.bv = 2;
-        ammo.kgPerShot = 10;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-    }
-
-    private static AmmoType createCLSRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 2 Ammo";
-        ammo.shortName = "SRM 2";
-        ammo.setInternalName("Clan Ammo SRM-2");
-        ammo.addLookupName("CLSRM2 Ammo");
-        ammo.addLookupName("Clan SRM 2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 50;
-        ammo.bv = 3;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 20;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CCC)
-                .setProductionFactions(F_CCC);
-        return ammo;
-    }
-
-    private static AmmoType createCLSRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 3 Ammo";
-        ammo.shortName = "SRM 3";
-        ammo.setInternalName("Clan Ammo SRM-3");
-        ammo.addLookupName("CLSRM3 Ammo");
-        ammo.addLookupName("Clan SRM 3 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 100;
-        ammo.bv = 4;
-        ammo.kgPerShot = 30;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-    }
-
-    private static AmmoType createCLSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 4 Ammo";
-        ammo.shortName = "SRM 4";
-        ammo.setInternalName("Clan Ammo SRM-4");
-        ammo.addLookupName("CLSRM4 Ammo");
-        ammo.addLookupName("Clan SRM 4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 25;
-        ammo.bv = 5;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 40;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CCC)
-                .setProductionFactions(F_CCC);
-        return ammo;
-    }
-
-    private static AmmoType createCLSRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 5 Ammo";
-        ammo.shortName = "SRM 5";
-        ammo.setInternalName("Clan Ammo SRM-5");
-        ammo.addLookupName("CLSRM5 Ammo");
-        ammo.addLookupName("Clan SRM 5 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 100;
-        ammo.bv = 6;
-        ammo.kgPerShot = 50;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-    }
-
-    private static AmmoType createCLSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRM 6 Ammo";
-        ammo.shortName = "SRM 6";
-        ammo.setInternalName("Clan Ammo SRM-6");
-        ammo.addLookupName("CLSRM6 Ammo");
-        ammo.addLookupName("Clan SRM 6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM;
-        ammo.shots = 15;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 60;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CCC)
-                .setProductionFactions(F_CCC);
-        return ammo;
-    }
-
-
-    //Multi-Missile Launcher(MMLs)
     private static AmmoType createISMML3LRMAmmo() {
+        return createISMMLLRMAmmo(3, 40, 4);
+    }
+
+    private static AmmoType createISMML5LRMAmmo() {
+        return createISMMLLRMAmmo(5, 24, 6);
+    }
+
+    private static AmmoType createISMML7LRMAmmo() {
+        return createISMMLLRMAmmo(7, 17, 8);
+    }
+
+    private static AmmoType createISMML9LRMAmmo() {
+        return createISMMLLRMAmmo(9, 13, 11);
+    }
+
+    private static AmmoType createISMMLSRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "MML 3 LRM Ammo";
-        ammo.shortName = "MML 3/LRM";
-        ammo.setInternalName("IS Ammo MML-3 LRM");
-        ammo.addLookupName("ISMML3 LRM Ammo");
-        ammo.addLookupName("IS MML-3 LRM Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
+        ammo.name = "MML " + rackSize + " SRM Ammo";
+        ammo.shortName = "MML " + rackSize + "/SRM";
+        ammo.setInternalName("IS Ammo MML-" + rackSize + " SRM");
+        ammo.addLookupName("ISMML" + rackSize + " SRM Ammo");
+        ammo.addLookupName("IS MML-" + rackSize + " SRM Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 40;
-        ammo.bv = 4;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD).or(F_MML_LRM);
-        ammo.setModes(new String[]{"", "HotLoad"});
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 27000;
         ammo.rulesRefs = "229,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -8114,212 +7639,34 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISMML3SRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 3 SRM Ammo";
-        ammo.shortName = "MML 3/SRM";
-        ammo.setInternalName("IS Ammo MML-3 SRM");
-        ammo.addLookupName("ISMML3 SRM Ammo");
-        ammo.addLookupName("IS MML-3 SRM Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 33;
-        ammo.bv = 4;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
-    }
-
-    private static AmmoType createISMML5LRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 5 LRM Ammo";
-        ammo.shortName = "MML 5/LRM";
-        ammo.setInternalName("IS Ammo MML-5 LRM");
-        ammo.addLookupName("ISMML5 LRM Ammo");
-        ammo.addLookupName("IS MML-5 LRM Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 24;
-        ammo.bv = 6;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD).or(F_MML_LRM);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
+        return createISMMLSRMAmmo(3, 33, 4);
     }
 
     private static AmmoType createISMML5SRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 5 SRM Ammo";
-        ammo.shortName = "MML 5/SRM";
-        ammo.setInternalName("IS Ammo MML-5 SRM");
-        ammo.addLookupName("ISMML5 SRM Ammo");
-        ammo.addLookupName("IS MML-5 SRM Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 20;
-        ammo.bv = 6;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
-    }
-
-    private static AmmoType createISMML7LRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 7 LRM Ammo";
-        ammo.shortName = "MML 7/LRM";
-        ammo.setInternalName("IS Ammo MML-7 LRM");
-        ammo.addLookupName("ISMML7 LRM Ammo");
-        ammo.addLookupName("IS MML-7 LRM Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 7;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 17;
-        ammo.bv = 8;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD).or(F_MML_LRM);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
+        return createISMMLSRMAmmo(5, 20, 6);
     }
 
     private static AmmoType createISMML7SRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 7 SRM Ammo";
-        ammo.shortName = "MML 7/SRM";
-        ammo.setInternalName("IS Ammo MML-7 SRM");
-        ammo.addLookupName("ISMML7 SRM Ammo");
-        ammo.addLookupName("IS MML-7 SRM Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 7;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 14;
-        ammo.bv = 8;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
-    }
-
-    private static AmmoType createISMML9LRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 9 LRM Ammo";
-        ammo.shortName = "MML 9/LRM";
-        ammo.setInternalName("IS Ammo MML-9 LRM");
-        ammo.addLookupName("ISMML9 LRM Ammo");
-        ammo.addLookupName("IS MML-9 LRM Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 9;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 13;
-        ammo.bv = 11;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD).or(F_MML_LRM);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
+        return createISMMLSRMAmmo(7, 14, 8);
     }
 
     private static AmmoType createISMML9SRMAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "MML 9 SRM Ammo";
-        ammo.shortName = "MML 9/SRM";
-        ammo.setInternalName("IS Ammo MML-9 SRM");
-        ammo.addLookupName("ISMML9 SRM Ammo");
-        ammo.addLookupName("IS MML-9 SRM Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 9;
-        ammo.ammoType = AmmoType.T_MML;
-        ammo.shots = 11;
-        ammo.bv = 11;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_D)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3067, 3068, 3072, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_MERC)
-                .setProductionFactions(F_WB);
-        return ammo;
+        return createISMMLSRMAmmo(9, 11, 11);
     }
 
     //Rocket Launcher Ammo
-    private static AmmoType createISRL10Ammo() {
+    private static AmmoType createISRLAmmo(int rackSize, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "RL 10 Ammo";
-        ammo.setInternalName("IS Ammo RL-10");
+        ammo.name = "RL " + rackSize + " Ammo";
+        ammo.setInternalName("IS Ammo RL-" + rackSize);
+        ammo.addLookupName("CL Ammo RL-Prototype-" + rackSize);
         ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
         ammo.shots = 1;
         ammo.bv = 0;
-        ammo.cost = 1000;
+        ammo.cost = cost;
         ammo.rulesRefs = "229,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setIntroLevel(false)
@@ -8332,77 +7679,36 @@ public class AmmoType extends EquipmentType {
                 .setClanApproximate(false, false, false, false, false)
                 .setProductionFactions(F_MH);
         return ammo;
+    }
+
+    private static AmmoType createISRL10Ammo() {
+        return createISRLAmmo(10, 1000);
     }
 
     private static AmmoType createISRL15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 15 Ammo";
-        ammo.setInternalName("IS Ammo RL-15");
-        ammo.addLookupName("CL Ammo RL-Prototype-15");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.cost = 1500;
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_B, RATING_B, RATING_B, RATING_B)
-                .setISAdvancement(DATE_ES, 3064, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setClanAdvancement(DATE_ES, DATE_NONE, DATE_NONE, 2823, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setProductionFactions(F_MH);
-        return ammo;
+        return createISRLAmmo(15, 1500);
     }
 
     private static AmmoType createISRL20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "RL 20 Ammo";
-        ammo.setInternalName("IS Ammo RL-20");
-        ammo.addLookupName("CL Ammo RL-Prototype-20");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_ROCKET_LAUNCHER;
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.cost = 2000;
-        ammo.rulesRefs = "229,TM";
-        ammo.rulesRefs = "229,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_B, RATING_B, RATING_B, RATING_B)
-                .setISAdvancement(DATE_ES, 3064, 3067, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setClanAdvancement(DATE_ES, DATE_NONE, DATE_NONE, 2823, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setProductionFactions(F_MH);
-        return ammo;
+        return createISRLAmmo(20, 2000);
     }
 
     //Clan Standard Streak Launchers
-    private static AmmoType createCLStreakSRM2Ammo() {
+    private static AmmoType createCLStreakSRMAmmo(int rackSize, int shots, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Streak SRM 2 Ammo";
-        ammo.shortName = "Streak SRM 2";
-        ammo.setInternalName("Clan Streak SRM 2 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-2");
-        ammo.addLookupName("CLStreakSRM2 Ammo");
+        ammo.name = "Streak SRM " + rackSize + " Ammo";
+        ammo.shortName = "Streak SRM " + rackSize;
+        ammo.setInternalName("Clan Streak SRM " + rackSize + " Ammo");
+        ammo.addLookupName("Clan Ammo Streak-" + rackSize);
+        ammo.addLookupName("CLStreakSRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 50;
-        ammo.bv = 5;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 54000;
-        ammo.kgPerShot = 10;
+        ammo.kgPerShot = kgPerShot;
         ammo.rulesRefs = "230,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -8414,78 +7720,34 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CSA)
                 .setProductionFactions(F_CSA);
         return ammo;
+    }
+
+    private static AmmoType createCLStreakSRM2Ammo() {
+        return createCLStreakSRMAmmo(2, 50, 5, 10);
     }
 
     private static AmmoType createCLStreakSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak SRM 4 Ammo";
-        ammo.shortName = "Streak SRM 4";
-        ammo.setInternalName("Clan Streak SRM 4 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-4");
-        ammo.addLookupName("CLStreakSRM4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 25;
-        ammo.bv = 10;
-        ammo.cost = 54000;
-        ammo.kgPerShot = 40;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_D, RATING_D)
-                .setClanAdvancement(2819, 2822, 2830, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setPrototypeFactions(F_CSA)
-                .setProductionFactions(F_CSA);
-        return ammo;
+        return createCLStreakSRMAmmo(4, 25, 10, 40);
     }
 
     private static AmmoType createCLStreakSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak SRM 6 Ammo";
-        ammo.shortName = "Streak SRM 6";
-        ammo.setInternalName("Clan Streak SRM 6 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-6");
-        ammo.addLookupName("CLStreakSRM6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 15;
-        ammo.bv = 15;
-        ammo.cost = 54000;
-        ammo.kgPerShot = 60;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_D, RATING_D, RATING_D)
-                .setClanAdvancement(2819, 2822, 2830, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, true, false, false, false)
-                .setPrototypeFactions(F_CSA)
-                .setProductionFactions(F_CSA);
-        return ammo;
+        return createCLStreakSRMAmmo(6, 15, 15, 60);
     }
 
     //Clan ProtoMech Streak Launchers
-    private static AmmoType createCLStreakSRM1Ammo() {
+    private static AmmoType createCLStreakSRMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
-        ammo.name = "Streak SRM 1 Ammo";
-        ammo.shortName = "Streak SRM 1";
-        ammo.setInternalName("Clan Streak SRM 1 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-1");
-        ammo.addLookupName("CLStreakSRM1 Ammo");
+        ammo.name = "Streak SRM " + rackSize + " Ammo";
+        ammo.shortName = "Streak SRM " + rackSize;
+        ammo.setInternalName("Clan Streak SRM " + rackSize + " Ammo");
+        ammo.addLookupName("Clan Ammo Streak-" + rackSize);
+        ammo.addLookupName("CLStreakSRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_STREAK;
         ammo.shots = 100;
-        ammo.bv = 3;
-        ammo.kgPerShot = 10;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
         //But SRM Tech Base and Avail Ratings.
         ammo.rulesRefs = "230,TM";
@@ -8501,83 +7763,43 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
+    private static AmmoType createCLStreakSRM1Ammo() {
+        return createCLStreakSRMAmmo(1, 3, 10);
+    }
 
     private static AmmoType createCLStreakSRM3Ammo() {
-        AmmoType ammo = new AmmoType();
-        ammo.name = "Streak SRM 3 Ammo";
-        ammo.shortName = "Streak SRM 3";
-        ammo.setInternalName("Clan Streak SRM 3 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-3");
-        ammo.addLookupName("CLStreakSRM3 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 100;
-        ammo.bv = 7;
-        ammo.kgPerShot = 30;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But SRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, true, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
+        return createCLStreakSRMAmmo(3, 7, 30);
     }
 
     private static AmmoType createCLStreakSRM5Ammo() {
-        AmmoType ammo = new AmmoType();
-        ammo.name = "Streak SRM 5 Ammo";
-        ammo.shortName = "Streak SRM 5";
-        ammo.setInternalName("Clan Streak SRM 5 Ammo");
-        ammo.addLookupName("Clan Ammo Streak-5");
-        ammo.addLookupName("CLStreakSRM5 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 100;
-        ammo.bv = 13;
-        ammo.kgPerShot = 50;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But SRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, true, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
+        return createCLStreakSRMAmmo(5, 13, 50);
     }
 
     //IS Streak Launchers
-    private static AmmoType createISStreakSRM2Ammo() {
+    private static AmmoType createISStreakSRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Streak SRM 2 Ammo";
-        ammo.shortName = "Streak SRM 2";
-        ammo.setInternalName("IS Streak SRM 2 Ammo");
-        ammo.addLookupName("IS Ammo Streak-2");
-        ammo.addLookupName("ISStreakSRM2 Ammo");
+        ammo.name = "Streak SRM " + rackSize + " Ammo";
+        ammo.shortName = "Streak SRM " + rackSize;
+        ammo.setInternalName("IS Streak SRM " + rackSize + " Ammo");
+        ammo.addLookupName("IS Ammo Streak-" + rackSize);
+        ammo.addLookupName("ISStreakSRM" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 50;
-        ammo.bv = 4;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 54000;
         ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
+        ammo.techAdvancement.setIntroLevel(false)
                 .setUnofficial(false)
-                .setTechRating(RATING_E)
+                .setTechRating(RATING_E);
+        return ammo;
+    }
+
+    private static AmmoType createISStreakSRM2Ammo() {
+        AmmoType ammo = createISStreakSRMAmmo(2, 50, 4);
+        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
                 .setAvailability(RATING_E, RATING_E, RATING_D, RATING_D)
                 .setISAdvancement(2645, 2647, 2650, 2845, 3035)
                 .setISApproximate(false, false, true, false, false)
@@ -8589,24 +7811,8 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISStreakSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak SRM 4 Ammo";
-        ammo.shortName = "Streak SRM 4";
-        ammo.setInternalName("IS Streak SRM 4 Ammo");
-        ammo.addLookupName("IS Ammo Streak-4");
-        ammo.addLookupName("ISStreakSRM4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 25;
-        ammo.bv = 7;
-        ammo.cost = 54000;
-        ammo.rulesRefs = "230,TM";
+        AmmoType ammo = createISStreakSRMAmmo(4, 25, 7);
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
                 .setAvailability(RATING_X, RATING_E, RATING_D, RATING_D)
                 .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
                 .setISApproximate(false, false, true, false, false)
@@ -8616,24 +7822,8 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISStreakSRM6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak SRM 6 Ammo";
-        ammo.shortName = "Streak SRM 6";
-        ammo.setInternalName("IS Streak SRM 6 Ammo");
-        ammo.addLookupName("IS Ammo Streak-6");
-        ammo.addLookupName("ISStreakSRM6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_STREAK;
-        ammo.shots = 15;
-        ammo.bv = 11;
-        ammo.cost = 54000;
-        ammo.rulesRefs = "230,TM";
+        AmmoType ammo = createISStreakSRMAmmo(6, 15, 11);
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
                 .setAvailability(RATING_X, RATING_E, RATING_D, RATING_D)
                 .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
                 .setISApproximate(false, false, true, false, false)
@@ -8678,14 +7868,13 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISNarcExplosiveAmmo() {
+    private static AmmoType createNarcExplosiveAmmo(String type, Boolean unofficial) {
         AmmoType ammo = new AmmoType();
-
         ammo.name = "Narc Explosive Pods";
         ammo.shortName = "Narc Explosive";
         ammo.subMunitionBegin = 5;
         ammo.subMunitionLength = 9;
-        ammo.setInternalName("ISNarc ExplosivePods");
+        ammo.setInternalName(type + "Narc ExplosivePods");
         ammo.damagePerShot = 4;
         ammo.rackSize = 1;
         ammo.ammoType = AmmoType.T_NARC;
@@ -8697,7 +7886,7 @@ public class AmmoType extends EquipmentType {
         ammo.rulesRefs = "141, TW";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
-                .setUnofficial(false)
+                .setUnofficial(unofficial)
                 .setTechRating(RATING_E)
                 .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
                 .setISAdvancement(3054, 3060, 3064, DATE_NONE, DATE_NONE)
@@ -8707,33 +7896,12 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
+    private static AmmoType createISNarcExplosiveAmmo() {
+        return createNarcExplosiveAmmo("IS", false);
+    }
 
     private static AmmoType createCLNarcExplosiveAmmo() {
-        AmmoType ammo = new AmmoType();
-        ammo.name = "Narc Explosive Pods";
-        ammo.shortName = "Narc Explosive";
-        ammo.subMunitionBegin = 5;
-        ammo.subMunitionLength = 9;
-        ammo.setInternalName("CLNarc Explosive Pods");
-        ammo.damagePerShot = 4;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_NARC;
-        ammo.munitionType = AmmoType.M_NARC_EX;
-        ammo.shots = 6;
-        ammo.bv = 0;
-        ammo.cost = 1500;
-        ammo.kgPerShot = 150;
-        ammo.rulesRefs = "141, TW";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
-                .setClanAdvancement(3054, 3060, 3064, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_DC)
-                .setProductionFactions(F_DC);
-        return ammo;
+        return createNarcExplosiveAmmo("CL", true);
     }
 
     //TODO Shoot and Sit Narc Missiles - See IO pg 132
@@ -8885,29 +8053,35 @@ public class AmmoType extends EquipmentType {
     }
 
     //Torpedo Ammo (Damn the Torpedoes)
-    private static AmmoType createISLRT5Ammo() {
+    private static AmmoType createISLRTAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LRT 5 Ammo";
-        ammo.shortName = "LRT 5";
-        ammo.setInternalName("IS Ammo LRTorpedo-5");
-        ammo.addLookupName("ISLRTorpedo5 Ammo");
-        ammo.addLookupName("IS LRTorpedo 5 Ammo");
-        ammo.addLookupName("ISLRT5 Ammo");
+        ammo.name = "LRT " + rackSize + " Ammo";
+        ammo.shortName = "LRT " + rackSize;
+        ammo.setInternalName("IS Ammo LRTorpedo-" + rackSize);
+        ammo.addLookupName("ISLRTorpedo" + rackSize + " Ammo");
+        ammo.addLookupName("IS LRTorpedo " + rackSize + " Ammo");
+        ammo.addLookupName("ISLRT" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 24;
-        ammo.bv = 6;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 30000;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "230,TM";
+        ammo.rulesRefs = "229,TM";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
                 .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
+                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C);
+        return ammo;
+    }
+
+    private static AmmoType createISLRT5Ammo() {
+        AmmoType ammo = createISLRTAmmo(5, 24, 6);
+        ammo.rulesRefs = "230,TM";
+        ammo.techAdvancement.setIntroLevel(false)
+                .setUnofficial(false)
                 .setISAdvancement(2370, 2380, 2400, DATE_NONE, DATE_NONE)
                 .setISApproximate(false, false, false, false, false)
                 .setPrototypeFactions(F_TH)
@@ -8916,187 +8090,80 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISLRT10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 10 Ammo";
-        ammo.shortName = "LRT 10";
-        ammo.setInternalName("IS Ammo LRTorpedo-10");
-        ammo.addLookupName("ISLRTorpedo10 Ammo");
-        ammo.addLookupName("IS LRTorpedo 10 Ammo");
-        ammo.addLookupName("ISLRT10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 12;
-        ammo.bv = 11;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
+        AmmoType ammo = createISLRTAmmo(10, 12, 11);
         ammo.techAdvancement.setISAdvancement(2365, 2380, 2400);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_C, RATING_C, RATING_C, RATING_C});
         return ammo;
     }
 
     private static AmmoType createISLRT15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 15 Ammo";
-        ammo.shortName = "LRT 15";
-        ammo.setInternalName("IS Ammo LRTorpedo-15");
-        ammo.addLookupName("ISLRTorpedo15 Ammo");
-        ammo.addLookupName("IS LRv 15 Ammo");
-        ammo.addLookupName("ISLRT15 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 8;
-        ammo.bv = 17;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
+        AmmoType ammo = createISLRTAmmo(15, 8, 17);
         ammo.techAdvancement.setISAdvancement(2365, 2380, 2400);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_C, RATING_C, RATING_C, RATING_C});
         return ammo;
     }
 
     private static AmmoType createISLRT20Ammo() {
+        AmmoType ammo = createISLRTAmmo(20, 6, 23);
+        ammo.techAdvancement.setISAdvancement(2365, 2380, 2400);
+        return ammo;
+    }
+
+    private static AmmoType createISSRTAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LRT 20 Ammo";
-        ammo.shortName = "LRT 20";
-        ammo.setInternalName("IS Ammo LRTorpedo-20");
-        ammo.addLookupName("ISLRTorpedo20 Ammo");
-        ammo.addLookupName("IS LRTorpedo 20 Ammo");
-        ammo.addLookupName("ISLRT20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 6;
-        ammo.bv = 23;
-        ammo.cost = 30000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "229,TM";
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(2365, 2380, 2400);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_C, RATING_C, RATING_C, RATING_C});
+        ammo.name = "SRT " + rackSize + " Ammo";
+        ammo.shortName = "SRT " + rackSize;
+        ammo.setInternalName("IS Ammo SRTorpedo-" + rackSize);
+        ammo.addLookupName("ISSRTorpedo" + rackSize + " Ammo");
+        ammo.addLookupName("IS SRTorpedo " + rackSize + " Ammo");
+        ammo.addLookupName("ISSRT" + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 27000;
+        ammo.rulesRefs = "230,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
+                .setIntroLevel(false)
+                .setUnofficial(false)
+                .setTechRating(RATING_C)
+                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
+                .setISAdvancement(2370, 2380, 2400)
+                .setISApproximate(true, false, false, false, false)
+                .setPrototypeFactions(F_TH)
+                .setProductionFactions(F_TH)
+                .setReintroductionFactions(F_FW);
         return ammo;
     }
 
     private static AmmoType createISSRT2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 2 Ammo";
-        ammo.shortName = "SRT 2";
-        ammo.setInternalName("IS Ammo SRTorpedo-2");
-        ammo.addLookupName("ISSRTorpedo2 Ammo");
-        ammo.addLookupName("IS SRTorpedo 2 Ammo");
-        ammo.addLookupName("ISSRT2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 50;
-        ammo.bv = 3;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2370, 2380, 2400)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FW);
-        return ammo;
+        return createISSRTAmmo(2, 50, 3);
     }
 
     private static AmmoType createISSRT4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 4 Ammo";
-        ammo.shortName = "SRT 4";
-        ammo.setInternalName("IS Ammo SRTorpedo-4");
-        ammo.addLookupName("ISSRTorpedo4 Ammo");
-        ammo.addLookupName("IS SRTorpedo 4 Ammo");
-        ammo.addLookupName("ISSRT4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 25;
-        ammo.bv = 5;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2370, 2380, 2400)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FW);
-        return ammo;
+        return createISSRTAmmo(4, 25, 5);
     }
 
     private static AmmoType createISSRT6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 6 Ammo";
-        ammo.shortName = "SRT 6";
-        ammo.setInternalName("IS Ammo SRTorpedo-6");
-        ammo.addLookupName("ISSRTorpedo6 Ammo");
-        ammo.addLookupName("IS SRTorpedo 6 Ammo");
-        ammo.addLookupName("ISSRT6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 15;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_C)
-                .setISAdvancement(2370, 2380, 2400)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FW);
-        return ammo;
+        return createISSRTAmmo(6, 15, 7);
     }
 
     //Clan LRT
-
-    private static AmmoType createCLLRT1Ammo() {
+    private static AmmoType createCLLRTAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LRT 1 Ammo";
-        ammo.shortName = "LRT 1";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-1");
-        ammo.addLookupName("Clan Ammo LRTorpedo-1");
-        ammo.addLookupName("CLLRTorpedo1 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 1 Ammo");
+        ammo.name = "LRT " + rackSize + " Ammo";
+        ammo.shortName = "LRT " + rackSize;
+        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-" + rackSize);
+        ammo.addLookupName("Clan Ammo LRTorpedo-" + rackSize);
+        ammo.addLookupName("CLLRTorpedo" + rackSize + " Ammo");
+        ammo.addLookupName("Clan LRTorpedo " + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_LRM_TORPEDO;
         ammo.shots = 100;
-        ammo.bv = 2;
-        ammo.kgPerShot = 8.33;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
         //But LRM Tech Base and Avail Ratings.
         ammo.rulesRefs = "231,TM";
@@ -9110,606 +8177,103 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CSJ)
                 .setProductionFactions(F_CSJ);
         return ammo;
+    }
 
+    private static AmmoType createCLLRT1Ammo() {
+        return createCLLRTAmmo(1, 2, 8.33);
     }
 
     private static AmmoType createCLLRT2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 2 Ammo";
-        ammo.shortName = "LRT 2";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-2");
-        ammo.addLookupName("Clan Ammo LRTorpedo-2");
-        ammo.addLookupName("CLLRTorpedo2 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 2 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 3;
-        ammo.kgPerShot = 16.66;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(2, 3, 16.66);
     }
 
     private static AmmoType createCLLRT3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 3 Ammo";
-        ammo.shortName = "LRT 3";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-3");
-        ammo.addLookupName("Clan Ammo LRTorpedo-3");
-        ammo.addLookupName("CLLRTorpedo3 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 3 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 5;
-        ammo.kgPerShot = 24.99;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(3, 5, 24.99);
     }
 
     private static AmmoType createCLLRT4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 4 Ammo";
-        ammo.shortName = "LRT 4";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-4");
-        ammo.addLookupName("Clan Ammo LRTorpedo-4");
-        ammo.addLookupName("CLLRTorpedo4 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 4 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 6;
-        ammo.kgPerShot = 33.32;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(4, 6, 33.32);
     }
 
     private static AmmoType createCLLRT5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 5 Ammo";
-        ammo.shortName = "LRT 5";
-        ammo.setInternalName("Clan Ammo LRTorpedo-5");
-        ammo.addLookupName("CLLRTorpedo5 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 5 Ammo");
-        ammo.addLookupName("CLLRT5 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 24;
-        ammo.bv = 7;
-        ammo.cost = 30000;
-        ammo.kgPerShot = 41.65;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLLRTAmmo(5, 7, 41.65);
     }
 
     private static AmmoType createCLLRT6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 6 Ammo";
-        ammo.shortName = "LRT 6";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-6");
-        ammo.addLookupName("Clan Ammo LRTorpedo-6");
-        ammo.addLookupName("CLLRTorpedo6 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 6 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 9;
-        ammo.kgPerShot = 49.98;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(6, 9, 49.98);
     }
 
     private static AmmoType createCLLRT7Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 7 Ammo";
-        ammo.shortName = "LRT 7";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-7");
-        ammo.addLookupName("Clan Ammo LRTorpedo-7");
-        ammo.addLookupName("CLLRTorpedo7 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 7 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 7;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 10;
-        ammo.kgPerShot = 58.31;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(7, 10, 58.31);
     }
 
     private static AmmoType createCLLRT8Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 8 Ammo";
-        ammo.shortName = "LRT 8";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-8");
-        ammo.addLookupName("Clan Ammo LRTorpedo-8");
-        ammo.addLookupName("CLLRTorpedo8 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 8 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 11;
-        ammo.kgPerShot = 66.64;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(8, 11, 66.64);
     }
 
     private static AmmoType createCLLRT9Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 9 Ammo";
-        ammo.shortName = "LRT 9";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-9");
-        ammo.addLookupName("Clan Ammo LRTorpedo-9");
-        ammo.addLookupName("CLLRTorpedo9 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 9 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 9;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 12;
-        ammo.kgPerShot = 74.97;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(9, 12, 74.97);
     }
 
     private static AmmoType createCLLRT10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 10 Ammo";
-        ammo.shortName = "LRT 10";
-        ammo.setInternalName("Clan Ammo LRTorpedo-10");
-        ammo.addLookupName("CLLRTorpedo10 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 10 Ammo");
-        ammo.addLookupName("CLLRT10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 12;
-        ammo.bv = 14;
-        ammo.cost = 30000;
-        ammo.kgPerShot = 83.3;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLLRTAmmo(10, 14, 83.3);
     }
 
     private static AmmoType createCLLRT11Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 11 Ammo";
-        ammo.shortName = "LRT 11";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-11");
-        ammo.addLookupName("Clan Ammo LRTorpedo-11");
-        ammo.addLookupName("CLLRTorpedo11 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 11 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 11;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 18;
-        ammo.kgPerShot = 91.63;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(11, 18, 91.63);
     }
 
     private static AmmoType createCLLRT12Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 12 Ammo";
-        ammo.shortName = "LRT 12";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-12");
-        ammo.addLookupName("Clan Ammo LRTorpedo-12");
-        ammo.addLookupName("CLLRTorpedo12 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 12 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 12;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 18;
-        ammo.kgPerShot = 99.96;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(12, 18, 99.96);
     }
 
     private static AmmoType createCLLRT13Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 13 Ammo";
-        ammo.shortName = "LRT 13";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-13");
-        ammo.addLookupName("Clan Ammo LRTorpedo-13");
-        ammo.addLookupName("CLLRTorpedo13 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 13 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 13;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 20;
-        ammo.kgPerShot = 108.29;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(13, 20, 108.29);
     }
 
     private static AmmoType createCLLRT14Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 14 Ammo";
-        ammo.shortName = "LRT 14";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-14");
-        ammo.addLookupName("Clan Ammo LRTorpedo-14");
-        ammo.addLookupName("CLLRTorpedo14 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 14 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 14;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 21;
-        ammo.kgPerShot = 116.62;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(14, 21, 116.62);
     }
 
     private static AmmoType createCLLRT15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 15 Ammo";
-        ammo.shortName = "LRT 15";
-        ammo.setInternalName("Clan Ammo LRTorpedo-15");
-        ammo.addLookupName("CLLRTorpedo15 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 15 Ammo");
-        ammo.addLookupName("CLLRT15 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 8;
-        ammo.bv = 21;
-        ammo.cost = 30000;
-        ammo.kgPerShot = 124.95;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLLRTAmmo(15, 21, 124.95);
     }
 
     private static AmmoType createCLLRT16Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 16 Ammo";
-        ammo.shortName = "LRT 16";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-16");
-        ammo.addLookupName("Clan Ammo LRTorpedo-16");
-        ammo.addLookupName("CLLRTorpedo16 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 16 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 16;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 133.28;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(16, 27, 133.28);
     }
 
     private static AmmoType createCLLRT17Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 17 Ammo";
-        ammo.shortName = "LRT 17";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-17");
-        ammo.addLookupName("Clan Ammo LRTorpedo-17");
-        ammo.addLookupName("CLLRTorpedo17 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 17 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 17;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 141.61;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(17, 27, 141.61);
     }
 
     private static AmmoType createCLLRT18Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 18 Ammo";
-        ammo.shortName = "LRT 18";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-18");
-        ammo.addLookupName("Clan Ammo LRTorpedo-18");
-        ammo.addLookupName("CLLRTorpedo18 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 18 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 18;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 149.94;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(18, 27, 149.94);
     }
 
     private static AmmoType createCLLRT19Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 19 Ammo";
-        ammo.shortName = "LRT 19";
-        ammo.setInternalName("Clan Ammo Protomech LRTorpedo-19");
-        ammo.addLookupName("Clan Ammo LRTorpedo-19");
-        ammo.addLookupName("CLLRTorpedo19 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 19 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 19;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 27;
-        ammo.kgPerShot = 158.27;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But LRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
-
+        return createCLLRTAmmo(19, 27, 158.27);
     }
 
     private static AmmoType createCLLRT20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LRT 20 Ammo";
-        ammo.shortName = "LRT 20";
-        ammo.setInternalName("Clan Ammo LRTorpedo-20");
-        ammo.addLookupName("CLLRTorpedo20 Ammo");
-        ammo.addLookupName("Clan LRTorpedo 20 Ammo");
-        ammo.addLookupName("CLLRT20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_LRM_TORPEDO;
-        ammo.shots = 6;
-        ammo.bv = 27;
-        ammo.cost = 30000;
-        ammo.kgPerShot = 166.6;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_D, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLLRTAmmo(20, 27, 166.6);
     }
 
     //Clan SRTs
-
-    private static AmmoType createCLSRT1Ammo() {
+    private static AmmoType createCLSRT231TMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "SRT 1 Ammo";
-        ammo.shortName = "SRT 1";
-        ammo.setInternalName("Clan Ammo SRTorpedo-1");
-        ammo.addLookupName("CLSRTorpedo1 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 1 Ammo");
+        ammo.name = "SRT " + rackSize + " Ammo";
+        ammo.shortName = "SRT " + rackSize;
+        ammo.setInternalName("Clan Ammo SRTorpedo-" + rackSize);
+        ammo.addLookupName("CLSRTorpedo" + rackSize + " Ammo");
+        ammo.addLookupName("Clan SRTorpedo " + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_SRM_TORPEDO;
         ammo.shots = 100;
-        ammo.bv = 2;
-        ammo.kgPerShot = 10;
+        ammo.bv = bv;
+        ammo.kgPerShot = kgPerShot;
         // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
         //But SRM Tech Base and Avail Ratings.
         ammo.rulesRefs = "231,TM";
@@ -9723,171 +8287,77 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_CSJ)
                 .setProductionFactions(F_CSJ);
         return ammo;
+    }
+
+    private static AmmoType createCLSRT230TMAmmo(int rackSize, int shots, double bv, double kgPerShot) {
+        AmmoType ammo = new AmmoType();
+
+        ammo.name = "SRT " + rackSize + " Ammo";
+        ammo.shortName = "SRT " + rackSize;
+        ammo.setInternalName("Clan Ammo SRTorpedo-" + rackSize);
+        ammo.addLookupName("CLSRTorpedo" + rackSize + " Ammo");
+        ammo.addLookupName("Clan SRTorpedo " + rackSize + " Ammo");
+        ammo.addLookupName("CLSRT" + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 27000;
+        ammo.kgPerShot = kgPerShot;
+        ammo.rulesRefs = "230,TM";
+        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
+                .setIntroLevel(false)
+                .setUnofficial(false)
+                .setTechRating(RATING_C)
+                .setAvailability(RATING_X, RATING_C, RATING_C, RATING_C)
+                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
+                .setClanApproximate(true, false, false, false, false)
+                .setPrototypeFactions(F_CSF)
+                .setProductionFactions(F_CSF);
+        return ammo;
+    }
+
+    private static AmmoType createCLSRT1Ammo() {
+        return createCLSRT231TMAmmo(1, 2, 10);
     }
 
     private static AmmoType createCLSRT2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 2 Ammo";
-        ammo.shortName = "SRT 2";
-        ammo.setInternalName("Clan Ammo SRTorpedo-2");
-        ammo.addLookupName("CLSRTorpedo2 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 2 Ammo");
-        ammo.addLookupName("CLSRT2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 50;
-        ammo.bv = 3;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 20;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_C, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLSRT230TMAmmo(2, 50, 3, 20);
     }
 
     private static AmmoType createCLSRT3Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 3 Ammo";
-        ammo.shortName = "SRT 3";
-        ammo.setInternalName("Clan Ammo SRTorpedo-3");
-        ammo.addLookupName("CLSRTorpedo3 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 3 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 3;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 4;
-        ammo.kgPerShot = 30;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But SRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
+        return createCLSRT231TMAmmo(3, 4, 30);
     }
 
     private static AmmoType createCLSRT4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 4 Ammo";
-        ammo.shortName = "SRT 4";
-        ammo.setInternalName("Clan Ammo SRTorpedo-4");
-        ammo.addLookupName("CLSRTorpedo4 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 4 Ammo");
-        ammo.addLookupName("CLSRT4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 25;
-        ammo.bv = 5;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 40;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_C, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLSRT230TMAmmo(4, 25, 5, 40);
     }
 
     private static AmmoType createCLSRT5Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "SRT 5 Ammo";
-        ammo.shortName = "SRT 5";
-        ammo.setInternalName("Clan Ammo SRTorpedo-5");
-        ammo.addLookupName("CLSRTorpedo5 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 5 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 100;
-        ammo.bv = 6;
-        ammo.kgPerShot = 50;
-        // Per Herb all ProtoMech launcher use the ProtoMech Chassis progression.
-        //But SRM Tech Base and Avail Ratings.
-        ammo.rulesRefs = "231,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_C, RATING_C)
-                .setClanAdvancement(3055, 3060, 3061, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSJ)
-                .setProductionFactions(F_CSJ);
-        return ammo;
+        return createCLSRT231TMAmmo(5, 6, 50);
     }
 
     private static AmmoType createCLSRT6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.shortName = "SRT 6";
-        ammo.name = "SRT 6 Ammo";
-        ammo.setInternalName("Clan Ammo SRTorpedo-6");
-        ammo.addLookupName("CLSRTorpedo6 Ammo");
-        ammo.addLookupName("Clan SRTorpedo 6 Ammo");
-        ammo.addLookupName("CLSRT6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_SRM_TORPEDO;
-        ammo.shots = 15;
-        ammo.bv = 7;
-        ammo.cost = 27000;
-        ammo.kgPerShot = 60;
-        ammo.rulesRefs = "230,TM";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_X, RATING_C, RATING_C, RATING_C)
-                .setClanAdvancement(2820, 2824, 2825, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+        return createCLSRT230TMAmmo(6, 15, 7, 60);
     }
-
 
     //TODO Fusillade Ammo
 
     //MORTAR AMMOS - Most ammo's are mutators that are listed above.
-
-    private static AmmoType createISAPMortar1Ammo() {
+    private static AmmoType createISAPMortarAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Shaped Charge Mortar 1 Ammo";
-        ammo.shortName = "Mortar SC 1";
-        ammo.setInternalName("IS Ammo SC Mortar-1");
-        ammo.addLookupName("ISArmorPiercingMortarAmmo1");
-        ammo.addLookupName("ISSCMortarAmmo1");
+        ammo.name = "Shaped Charge Mortar " + rackSize + " Ammo";
+        ammo.shortName = "Mortar SC " + rackSize;
+        ammo.setInternalName("IS Ammo SC Mortar-" + rackSize);
+        ammo.addLookupName("ISArmorPiercingMortarAmmo" + rackSize);
+        ammo.addLookupName("ISSCMortarAmmo" + rackSize);
         ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 24;
-        ammo.bv = 1.2;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 28000;
         ammo.rulesRefs = "324,TO";
         ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
@@ -9903,204 +8373,65 @@ public class AmmoType extends EquipmentType {
                 .setProductionFactions(F_TH)
                 .setReintroductionFactions(F_FS, F_LC);
         return ammo;
+    }
+
+    private static AmmoType createISAPMortar1Ammo() {
+        return createISAPMortarAmmo(1, 24, 1.2);
     }
 
     private static AmmoType createISAPMortar2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 2 Ammo";
-        ammo.shortName = "Mortar SC 2";
-        ammo.setInternalName("IS Ammo SC Mortar-2");
-        ammo.addLookupName("ISArmorPiercingMortarAmmo2");
-        ammo.addLookupName("ISSCMortarAmmo2");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 12;
-        ammo.bv = 2.4;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_F, RATING_E)
-                .setISAdvancement(2526, 2531, 3052, 2819, 3043)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2526, 2531, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createISAPMortarAmmo(2, 12, 2.4);
     }
 
     private static AmmoType createISAPMortar4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 4 Ammo";
-        ammo.shortName = "Mortar SC 4";
-        ammo.setInternalName("IS Ammo SC Mortar-4");
-        ammo.addLookupName("ISArmorPiercingMortarAmmo4");
-        ammo.addLookupName("ISSCMortarAmmo4");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 6;
-        ammo.bv = 3.6;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_F, RATING_E)
-                .setISAdvancement(2526, 2531, 3052, 2819, 3043)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2526, 2531, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FS, F_LC);
-        return ammo;
+        return createISAPMortarAmmo(4, 6, 3.6);
     }
 
     private static AmmoType createISAPMortar8Ammo() {
+        return createISAPMortarAmmo(8, 4, 7.2);
+    }
+
+    private static AmmoType createCLAPMortarAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Shaped Charge Mortar 8 Ammo";
-        ammo.shortName = "Mortar SC 8";
-        ammo.setInternalName("IS Ammo SC Mortar-8");
-        ammo.addLookupName("ISArmorPiercingMortarAmmo8");
-        ammo.addLookupName("ISSCMortarAmmo8");
+        ammo.name = "Shaped Charge Mortar " + rackSize + " Ammo";
+        ammo.shortName = "Mortar SC " + rackSize;
+        ammo.setInternalName("Clan Ammo SC Mortar-" + rackSize);
+        ammo.addLookupName("CLArmorPiercingMortarAmmo" + rackSize);
+        ammo.addLookupName("CLSCMortarAmmo" + rackSize);
         ammo.damagePerShot = 2;
-        ammo.rackSize = 8;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 4;
-        ammo.bv = 7.2;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 28000;
         ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_ALL)
+        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
                 .setUnofficial(false)
                 .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_F, RATING_E)
-                .setISAdvancement(2526, 2531, 3052, 2819, 3043)
-                .setISApproximate(true, false, false, false, false)
-                .setClanAdvancement(2526, 2531, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_TH)
-                .setProductionFactions(F_TH)
-                .setReintroductionFactions(F_FS, F_LC);
+                .setAvailability(RATING_D, RATING_F, RATING_E, RATING_E)
+                .setClanAdvancement(2835, 2840, DATE_NONE, DATE_NONE, DATE_NONE)
+                .setClanApproximate(true, false, false, false, false)
+                .setPrototypeFactions(F_CBR)
+                .setProductionFactions(F_CBR);
         return ammo;
     }
 
     private static AmmoType createCLAPMortar1Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 1 Ammo";
-        ammo.shortName = "Mortar SC 1";
-        ammo.setInternalName("Clan Ammo SC Mortar-1");
-        ammo.addLookupName("CLArmorPiercingMortarAmmo1");
-        ammo.addLookupName("CLSCMortarAmmo1");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 24;
-        ammo.bv = 1.2;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_E, RATING_E)
-                .setClanAdvancement(2835, 2840, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CBR)
-                .setProductionFactions(F_CBR);
-        return ammo;
+        return createCLAPMortarAmmo(1, 24, 1.2);
     }
 
     private static AmmoType createCLAPMortar2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 2 Ammo";
-        ammo.shortName = "Mortar SC 2";
-        ammo.setInternalName("Clan Ammo SC Mortar-2");
-        ammo.addLookupName("CLArmorPiercingMortarAmmo2");
-        ammo.addLookupName("CLSCMortarAmmo2");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 12;
-        ammo.bv = 2.4;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_E, RATING_E)
-                .setClanAdvancement(2835, 2840, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CBR)
-                .setProductionFactions(F_CBR);
-        return ammo;
+        return createCLAPMortarAmmo(2, 12, 2.4);
     }
 
     private static AmmoType createCLAPMortar4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 4 Ammo";
-        ammo.shortName = "Mortar SC 4";
-        ammo.setInternalName("Clan Ammo SC Mortar-4");
-        ammo.addLookupName("CLArmorPiercingMortarAmmo4");
-        ammo.addLookupName("CLSCMortarAmmo4");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 6;
-        ammo.bv = 3.6;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_E, RATING_E)
-                .setClanAdvancement(2835, 2840, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CBR)
-                .setProductionFactions(F_CBR);
-        return ammo;
+        return createCLAPMortarAmmo(4, 6, 3.6);
     }
 
     private static AmmoType createCLAPMortar8Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Shaped Charge Mortar 8 Ammo";
-        ammo.shortName = "Mortar SC 8";
-        ammo.setInternalName("Clan Ammo SC Mortar-8");
-        ammo.addLookupName("CLArmorPiercingMortarAmmo8");
-        ammo.addLookupName("CLSCMortarAmmo8");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_MEK_MORTAR;
-        ammo.shots = 4;
-        ammo.bv = 7.2;
-        ammo.cost = 28000;
-        ammo.rulesRefs = "324,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_B)
-                .setAvailability(RATING_D, RATING_F, RATING_E, RATING_E)
-                .setClanAdvancement(2835, 2840, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setClanApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_CBR)
-                .setProductionFactions(F_CBR);
-        return ammo;
+        return createCLAPMortarAmmo(8, 4, 7.2);
     }
 
     //PLASMA WEAPONS
@@ -11180,50 +9511,50 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-        /*    private static AmmoType createCLNailRivetGunAmmo() {
-                AmmoType ammo = new AmmoType();
-
-                ammo.name = "Nail/Rivet Gun Ammo";
-                ammo.shortName = "Nail/Rivet Gun";
-                ammo.setInternalName("CL Ammo Nail/Rivet - Full");
-                ammo.addLookupName("CLNailRivetGun Ammo (300)");
-                ammo.damagePerShot = 1;
-                ammo.rackSize = 1;
-                ammo.ammoType = AmmoType.T_NAIL_RIVET_GUN;
-                ammo.shots = 300;
-                ammo.bv = 1;
-                ammo.cost = 300;
-                ammo.tonnage = 1f;
-                ammo.explosive = false;
-
-                ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-                ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 2820);
-                ammo.techAdvancement.setTechRating(RATING_A);
-                ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_A, RATING_A, RATING_X });
-                return ammo;
-            }
-
-            private static AmmoType createCLNailRivetGunAmmoHalf() {
-                AmmoType ammo = new AmmoType();
-
-                ammo.name = "Half Nail/Rivet Gun Ammo";
-                ammo.shortName = "Nail/Rivet Gun";
-                ammo.setInternalName("CL Ammo Nail/Rivet - Half");
-                ammo.damagePerShot = 1;
-                ammo.rackSize = 1;
-                ammo.ammoType = AmmoType.T_NAIL_RIVET_GUN;
-                ammo.shots = 150;
-                ammo.bv = 0.5f;
-                ammo.tonnage = 0.5f;
-                ammo.cost = 150;
-                ammo.explosive = false;
-
-                ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-                ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 2820);
-                ammo.techAdvancement.setTechRating(RATING_A);
-                ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_A, RATING_A, RATING_X });
-                return ammo;
-            }*/
+//    private static AmmoType createCLNailRivetGunAmmo() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Nail/Rivet Gun Ammo";
+//        ammo.shortName = "Nail/Rivet Gun";
+//        ammo.setInternalName("CL Ammo Nail/Rivet - Full");
+//        ammo.addLookupName("CLNailRivetGun Ammo (300)");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 1;
+//        ammo.ammoType = AmmoType.T_NAIL_RIVET_GUN;
+//        ammo.shots = 300;
+//        ammo.bv = 1;
+//        ammo.cost = 300;
+//        ammo.tonnage = 1f;
+//        ammo.explosive = false;
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 2820);
+//        ammo.techAdvancement.setTechRating(RATING_A);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_A, RATING_A, RATING_X);
+//        return ammo;
+//    }
+//
+//    private static AmmoType createCLNailRivetGunAmmoHalf() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Half Nail/Rivet Gun Ammo";
+//        ammo.shortName = "Nail/Rivet Gun";
+//        ammo.setInternalName("CL Ammo Nail/Rivet - Half");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 1;
+//        ammo.ammoType = AmmoType.T_NAIL_RIVET_GUN;
+//        ammo.shots = 150;
+//        ammo.bv = 0.5f;
+//        ammo.tonnage = 0.5f;
+//        ammo.cost = 150;
+//        ammo.explosive = false;
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 2820);
+//        ammo.techAdvancement.setTechRating(RATING_A);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_A, RATING_A, RATING_X);
+//        return ammo;
+//    }
 
     private static AmmoType createISC3RemoteSensorAmmo() {
         AmmoType ammo = new AmmoType();
@@ -11241,25 +9572,25 @@ public class AmmoType extends EquipmentType {
         ammo.techAdvancement.setTechBase(TECH_BASE_IS);
         ammo.techAdvancement.setISAdvancement(3072, DATE_NONE, DATE_NONE);
         ammo.techAdvancement.setTechRating(RATING_E);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_F, RATING_X});
+        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_F, RATING_X);
         return ammo;
     }
 
     //THUNDERBOLT LRMs
-    private static AmmoType createISThunderbolt5Ammo() {
+    private static AmmoType createISThunderboltAmmo(int damagePerShot, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Thunderbolt 5 Ammo";
-        ammo.shortName = "Thunderbolt 5";
-        ammo.setInternalName("IS Ammo Thunderbolt-5");
-        ammo.addLookupName("ISThunderbolt5 Ammo");
-        ammo.addLookupName("IS Thunderbolt 5 Ammo");
-        ammo.addLookupName("ISTBolt5 Ammo");
-        ammo.damagePerShot = 5;
+        ammo.name = "Thunderbolt " + damagePerShot + " Ammo";
+        ammo.shortName = "Thunderbolt " + damagePerShot;
+        ammo.setInternalName("IS Ammo Thunderbolt-" + damagePerShot);
+        ammo.addLookupName("ISThunderbolt" + damagePerShot + " Ammo");
+        ammo.addLookupName("IS Thunderbolt " + damagePerShot + " Ammo");
+        ammo.addLookupName("ISTBolt" + damagePerShot + " Ammo");
+        ammo.damagePerShot = damagePerShot;
         ammo.rackSize = 1;
         ammo.ammoType = AmmoType.T_TBOLT_5;
-        ammo.shots = 12;
-        ammo.bv = 8;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 50000;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
@@ -11274,116 +9605,41 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_FS)
                 .setProductionFactions(F_FS, F_LC);
         return ammo;
+    }
+
+    private static AmmoType createISThunderbolt5Ammo() {
+        return createISThunderboltAmmo(5, 12, 8);
     }
 
     private static AmmoType createISThunderbolt10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Thunderbolt 10 Ammo";
-        ammo.shortName = "Thunderbolt 10";
-        ammo.setInternalName("IS Ammo Thunderbolt-10");
-        ammo.addLookupName("ISThunderbolt10 Ammo");
-        ammo.addLookupName("IS Thunderbolt 10 Ammo");
-        ammo.addLookupName("ISTBolt10 Ammo");
-        ammo.damagePerShot = 10;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_TBOLT_10;
-        ammo.shots = 6;
-        ammo.bv = 16;
-        ammo.cost = 50000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "347,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3052, 3072, 3081, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createISThunderboltAmmo(10, 6, 16);
     }
 
     private static AmmoType createISThunderbolt15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Thunderbolt 15 Ammo";
-        ammo.shortName = "Thunderbolt 15";
-        ammo.setInternalName("IS Ammo Thunderbolt-15");
-        ammo.addLookupName("ISThunderbolt15 Ammo");
-        ammo.addLookupName("IS Thunderbolt 15 Ammo");
-        ammo.addLookupName("ISTBolt15 Ammo");
-        ammo.damagePerShot = 15;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_TBOLT_15;
-        ammo.shots = 4;
-        ammo.bv = 29;
-        ammo.cost = 50000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "347,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3052, 3072, 3081, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createISThunderboltAmmo(15, 4, 29);
     }
 
     private static AmmoType createISThunderbolt20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Thunderbolt 20 Ammo";
-        ammo.shortName = "Thunderbolt 20";
-        ammo.setInternalName("IS Ammo Thunderbolt-20");
-        ammo.addLookupName("ISThunderbolt20 Ammo");
-        ammo.addLookupName("IS Thunderbolt 20 Ammo");
-        ammo.addLookupName("ISTBolt20 Ammo");
-        ammo.damagePerShot = 20;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_TBOLT_20;
-        ammo.shots = 3;
-        ammo.bv = 38;
-        ammo.cost = 50000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-        ammo.rulesRefs = "347,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setISAdvancement(3052, 3072, 3081, DATE_NONE, DATE_NONE)
-                .setISApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS, F_LC);
-        return ammo;
+        return createISThunderboltAmmo(20, 3, 38);
     }
 
-
-//TODO PRIMITIVE and PROTOTYPE
+    //TODO PRIMITIVE and PROTOTYPE
 
     //PRIMITIVE AMMOs
-    private static AmmoType createISAC2pAmmo() {
+    private static AmmoType createISACpAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Primitive Prototype Autocannon/2 Ammo";
-        ammo.shortName = "AC/2p";
-        ammo.setInternalName("IS Ammo AC/2 Primitive");
-        ammo.addLookupName("ISAC2p Ammo");
-        ammo.addLookupName("IS Autocannon/2 Primitive Ammo");
+        ammo.name = "Primitive Prototype Autocannon/" + rackSize + " Ammo";
+        ammo.shortName = "AC/" + rackSize + "p";
+        ammo.setInternalName("IS Ammo AC/" + rackSize + " Primitive");
+        ammo.addLookupName("ISAC" + rackSize + "p Ammo");
+        ammo.addLookupName("IS Autocannon/" + rackSize + " Primitive Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_PRIMITIVE;
-        ammo.shots = 34;
-        ammo.bv = 5;
-        ammo.cost = 1000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
         //This to cover some of the back worlds in the Periphery.
         ammo.rulesRefs = "118, IO";
@@ -11392,97 +9648,33 @@ public class AmmoType extends EquipmentType {
                 .setUnofficial(false)
                 .setTechRating(RATING_C)
                 .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2290, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
                 .setISApproximate(true, false, false, false, false)
                 .setPrototypeFactions(F_TA)
                 .setProductionFactions(F_TA);
+        return ammo;
+    }
+
+    private static AmmoType createISAC2pAmmo() {
+        AmmoType ammo = createISACpAmmo(2, 34, 5, 1000);
+        ammo.techAdvancement.setISAdvancement(2290, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE);
         return ammo;
     }
 
     private static AmmoType createISAC5pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype Autocannon/5 Ammo";
-        ammo.shortName = "AC/5p";
-        ammo.setInternalName("IS Ammo AC/5 Primitive");
-        ammo.addLookupName("ISAC5p Ammo");
-        ammo.addLookupName("IS Autocannon/5 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_PRIMITIVE;
-        ammo.shots = 15;
-        ammo.bv = 9;
-        ammo.cost = 4500;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2240, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
+        AmmoType ammo = createISACpAmmo(5, 15, 9, 4500);
+        ammo.techAdvancement.setISAdvancement(2240, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE);
         return ammo;
     }
 
     private static AmmoType createISAC10pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype Autocannon/10 Ammo";
-        ammo.shortName = "AC/10p";
-        ammo.setInternalName("IS Ammo AC/10 Primitive");
-        ammo.addLookupName("ISAC10p Ammo");
-        ammo.addLookupName("IS Autocannon/10 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC_PRIMITIVE;
-        ammo.shots = 8;
-        ammo.bv = 12;
-        ammo.cost = 12000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2450, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
+        AmmoType ammo = createISACpAmmo(10, 8, 12, 12000);
+        ammo.techAdvancement.setISAdvancement(2450, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE);
         return ammo;
     }
 
     private static AmmoType createISAC20pAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Primitive Prototype Autocannon/20 Ammo";
-        ammo.shortName = "AC/20p";
-        ammo.setInternalName("IS Ammo AC/20 Primitive");
-        ammo.addLookupName("ISAC20p Ammo");
-        ammo.addLookupName("IS Autocannon/20 Primitive Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_PRIMITIVE;
-        ammo.shots = 4;
-        ammo.bv = 22;
-        ammo.cost = 10000;
-        //IO Doesn't strictly define when these weapons stop production. Checked with Herb and they would always be around
-        //This to cover some of the back worlds in the Periphery.
-        ammo.rulesRefs = "118, IO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(false)
-                .setTechRating(RATING_C)
-                .setAvailability(RATING_F, RATING_X, RATING_X, RATING_X)
-                .setISAdvancement(2488, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_TA)
-                .setProductionFactions(F_TA);
+        AmmoType ammo = createISACpAmmo(20, 4, 22, 10000);
+        ammo.techAdvancement.setISAdvancement(2488, DATE_NONE, DATE_NONE, DATE_NONE, DATE_NONE);
         return ammo;
     }
 
@@ -12191,7 +10383,7 @@ public class AmmoType extends EquipmentType {
     }
 
     //BA MRMs
-    private static AmmoType createISMRMAmmo(int rackSize, double bv, double kgPerShot) {
+    private static AmmoType createISMRM216TMAmmo(int rackSize, double bv, double kgPerShot) {
         AmmoType ammo = new AmmoType();
 
         ammo.name = "MRM " + rackSize + " Ammo";
@@ -12220,23 +10412,23 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISMRM1Ammo() {
-        return createISMRMAmmo(1, 1, 5);
+        return createISMRM216TMAmmo(1, 1, 5);
     }
 
     private static AmmoType createISMRM2Ammo() {
-        return createISMRMAmmo(2, 2, 10);
+        return createISMRM216TMAmmo(2, 2, 10);
     }
 
     private static AmmoType createISMRM3Ammo() {
-        return createISMRMAmmo(3, 2, 15);
+        return createISMRM216TMAmmo(3, 2, 15);
     }
 
     private static AmmoType createISMRM4Ammo() {
-        return createISMRMAmmo(4, 3, 20);
+        return createISMRM216TMAmmo(4, 3, 20);
     }
 
     private static AmmoType createISMRM5Ammo() {
-        return createISMRMAmmo(5, 4, 25);
+        return createISMRM216TMAmmo(5, 4, 25);
     }
 
     private static AmmoType createISBATaserAmmo() {
@@ -12346,30 +10538,30 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-/*    private static AmmoType createCLCoolantPod() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Coolant Pod";
-        ammo.shortName = "Coolant Pod";
-        ammo.setInternalName("Clan Coolant Pod");
-        ammo.damagePerShot = 10;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_COOLANT_POD;
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.cost = 50000;
-
-        // TODO: modes is a bodge because there is no proper end phase
-        String[] theModes = {"safe", "efficient", "off", "dump"};
-        ammo.setModes(theModes);
-        ammo.setInstantModeSwitch(true);
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-        ammo.techAdvancement.setClanAdvancement(3056, DATE_NONE, 3083);
-        ammo.techAdvancement.setTechRating(RATING_D);
-        ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_X, RATING_E, RATING_X });
-        return ammo;
-    }*/
+//    private static AmmoType createCLCoolantPod() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "Coolant Pod";
+//        ammo.shortName = "Coolant Pod";
+//        ammo.setInternalName("Clan Coolant Pod");
+//        ammo.damagePerShot = 10;
+//        ammo.rackSize = 1;
+//        ammo.ammoType = AmmoType.T_COOLANT_POD;
+//        ammo.shots = 1;
+//        ammo.bv = 0;
+//        ammo.cost = 50000;
+//
+//        // TODO: modes is a bodge because there is no proper end phase
+//        String[] theModes = {"safe", "efficient", "off", "dump"};
+//        ammo.setModes(theModes);
+//        ammo.setInstantModeSwitch(true);
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(3056, DATE_NONE, 3083);
+//        ammo.techAdvancement.setTechRating(RATING_D);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_X);
+//        return ammo;
+//    }
 
     private static AmmoType createISMPodAmmo() {
         AmmoType ammo = new AmmoType();
@@ -12455,25 +10647,25 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-/*    private static AmmoType createCLBPodAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "B Pod Ammo";
-        ammo.setInternalName("ClanBPodAmmo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 1;
-        ammo.ammoType = AmmoType.T_BPOD;
-        ammo.shots = 1;
-        ammo.bv = 0;
-        ammo.cost = 0;
-        ammo.tonnage = 0;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
-        ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 3068);
-        ammo.techAdvancement.setTechRating(RATING_E);
-        ammo.techAdvancement.setAvailability( new int[] { RATING_X, RATING_X, RATING_E, RATING_X });
-        return ammo;
-    }*/
+//    private static AmmoType createCLBPodAmmo() {
+//        AmmoType ammo = new AmmoType();
+//
+//        ammo.name = "B Pod Ammo";
+//        ammo.setInternalName("ClanBPodAmmo");
+//        ammo.damagePerShot = 1;
+//        ammo.rackSize = 1;
+//        ammo.ammoType = AmmoType.T_BPOD;
+//        ammo.shots = 1;
+//        ammo.bv = 0;
+//        ammo.cost = 0;
+//        ammo.tonnage = 0;
+//
+//        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN);
+//        ammo.techAdvancement.setClanAdvancement(DATE_NONE, DATE_NONE, 3068);
+//        ammo.techAdvancement.setTechRating(RATING_E);
+//        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_X);
+//        return ammo;
+//    }
 
 
     //UNOFFICIAL AMMOs
@@ -12493,21 +10685,21 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISTHBLB2XAmmo() {
+    private static AmmoType createISTHBLBXAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LB 2-X AC Ammo (THB)";
-        ammo.shortName = "LB 2-X";
-        ammo.setInternalName("IS LB 2-X AC Ammo (THB)");
-        ammo.addLookupName("IS Ammo 2-X (THB)");
-        ammo.addLookupName("ISLBXAC2 Ammo (THB)");
-        ammo.addLookupName("IS LB 2-X AC Ammo - Slug (THB)");
+        ammo.name = "LB " + rackSize + "-X AC Ammo (THB)";
+        ammo.shortName = "LB " + rackSize + "-X";
+        ammo.setInternalName("IS LB " + rackSize + "-X AC Ammo (THB)");
+        ammo.addLookupName("IS Ammo " + rackSize + "-X (THB)");
+        ammo.addLookupName("ISLBXAC" + rackSize + " Ammo (THB)");
+        ammo.addLookupName("IS LB " + rackSize + "-X AC Ammo - Slug (THB)");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.shots = 40;
-        ammo.bv = 5;
-        ammo.cost = 3000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "THB (Unoffical)";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -12519,51 +10711,40 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_FS)
                 .setProductionFactions(F_FS);
         return ammo;
+    }
+
+    private static AmmoType createISTHBLB2XAmmo() {
+        return createISTHBLBXAmmo(2, 40, 5, 3000);
     }
 
     private static AmmoType createISTHBLB5XAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 5-X AC Ammo (THB)";
-        ammo.shortName = "LB 5-X";
-        ammo.setInternalName("IS LB 5-X AC Ammo (THB)");
-        ammo.addLookupName("IS Ammo 5-X (THB)");
-        ammo.addLookupName("ISLBXAC5 Ammo (THB)");
-        ammo.addLookupName("IS LB 5-X AC Ammo - Slug (THB)");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.shots = 16;
-        ammo.bv = 11;
-        ammo.cost = 15000;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBLBXAmmo(5, 16, 11, 15000);
     }
 
     private static AmmoType createISTHBLB20XAmmo() {
+        return createISTHBLBXAmmo(20, 4, 26, 30000);
+    }
+
+    private static AmmoType createISTHBLBXClusterAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LB 20-X AC Ammo (THB)";
-        ammo.shortName = "LB 20-X";
-        ammo.setInternalName("IS LB 20-X AC Ammo (THB)");
-        ammo.addLookupName("IS Ammo 20-X (THB)");
-        ammo.addLookupName("ISLBXAC20 Ammo (THB)");
-        ammo.addLookupName("IS LB 20-X AC Ammo - Slug (THB)");
+        ammo.name = "LB " + rackSize + "-X Cluster Ammo (THB)";
+        ammo.setInternalName("IS LB " + rackSize + "-X Cluster Ammo (THB)");
+        ammo.addLookupName("IS Ammo " + rackSize + "-X (CL) (THB)");
+        // this isn't a true mtf code
+        ammo.addLookupName("ISLBXAC" + rackSize + " CL Ammo (THB)");
+        ammo.addLookupName("IS LB " + rackSize + "-X AC Ammo - Cluster (THB)");
+        ammo.shortName = "LB " + rackSize + "-X Cluster";
+        ammo.subMunitionBegin = 7;
+        ammo.subMunitionLength = 7;
         ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
+        ammo.toHitModifier = -1;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.shots = 4;
-        ammo.bv = 26;
-        ammo.cost = 30000;
+        ammo.munitionType = M_CLUSTER;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "THB (Unoffical)";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -12578,91 +10759,33 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISTHBLB2XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "LB 2-X Cluster Ammo (THB)";
-        ammo.setInternalName("IS LB 2-X Cluster Ammo (THB)");
-        ammo.addLookupName("IS Ammo 2-X (CL) (THB)");
-        ammo.shortName = "LB 2-X Cluster";
-        ammo.subMunitionBegin = 7;
-        ammo.subMunitionLength = 7;
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC2 CL Ammo (THB)");
-        ammo.addLookupName("IS LB 2-X AC Ammo - Cluster (THB)");
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 40;
-        ammo.bv = 5;
-        ammo.cost = 4950;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBLBXClusterAmmo(2, 40, 5, 4950);
     }
 
     private static AmmoType createISTHBLB5XClusterAmmo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.setInternalName("IS LB 5-X Cluster Ammo (THB)");
-        ammo.addLookupName("IS Ammo 5-X (CL) (THB)");
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC5 CL Ammo (THB)");
-        ammo.addLookupName("IS LB 5-X AC Ammo - Cluster (THB)");
-        ammo.name = "LB 5-X Cluster Ammo (THB)";
-        ammo.shortName = "LB 5-X Cluster";
-        ammo.subMunitionBegin = 7;
-        ammo.subMunitionLength = 7;
-        ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 5;
-        ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 16;
-        ammo.bv = 11;
-        ammo.cost = 25000;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBLBXClusterAmmo(5, 16, 11, 25000);
     }
 
     private static AmmoType createISTHBLB20XClusterAmmo() {
+        AmmoType ammo = createISTHBLBXClusterAmmo(20, 4, 26, 51000);
+        ammo.subMunitionBegin = 8;
+        return ammo;
+    }
+
+    private static AmmoType createISTHBUltraAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "LB 20-X Cluster Ammo (THB)";
-        ammo.shortName = "LB 20-X Cluster";
-        ammo.subMunitionBegin = 8;
-        ammo.subMunitionLength = 7;
-        ammo.setInternalName("IS LB 20-X Cluster Ammo (THB)");
-        ammo.addLookupName("IS Ammo 20-X (CL) (THB)");
-        // this isn't a true mtf code
-        ammo.addLookupName("ISLBXAC20 CL Ammo (THB)");
-        ammo.addLookupName("IS LB 20-X AC Ammo - Cluster (THB)");
+        ammo.name = "Ultra AC/" + rackSize + " Ammo (THB)";
+        ammo.shortName = "Ultra AC/" + rackSize;
+        ammo.setInternalName("IS Ultra AC/" + rackSize + " Ammo (THB)");
+        ammo.addLookupName("IS Ammo Ultra AC/" + rackSize + " (THB)");
+        ammo.addLookupName("ISUltraAC" + rackSize + " Ammo (THB)");
         ammo.damagePerShot = 1;
-        ammo.toHitModifier = -1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_LBX_THB;
-        ammo.munitionType = M_CLUSTER;
-        ammo.shots = 4;
-        ammo.bv = 26;
-        ammo.cost = 51000;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_AC_ULTRA_THB;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "THB (Unoffical)";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
                 .setIntroLevel(false)
@@ -12677,84 +10800,15 @@ public class AmmoType extends EquipmentType {
     }
 
     private static AmmoType createISTHBUltra2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Ultra AC/2 Ammo (THB)";
-        ammo.shortName = "Ultra AC/2";
-        ammo.setInternalName("IS Ultra AC/2 Ammo (THB)");
-        ammo.addLookupName("IS Ammo Ultra AC/2 (THB)");
-        ammo.addLookupName("ISUltraAC2 Ammo (THB)");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_AC_ULTRA_THB;
-        ammo.shots = 45;
-        ammo.bv = 8;
-        ammo.cost = 2000;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBUltraAmmo(2, 45, 8, 2000);
     }
 
     private static AmmoType createISTHBUltra10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Ultra AC/10 Ammo (THB)";
-        ammo.shortName = "Ultra AC/10";
-        ammo.setInternalName("IS Ultra AC/10 Ammo (THB)");
-        ammo.addLookupName("IS Ammo Ultra AC/10 (THB)");
-        ammo.addLookupName("ISUltraAC10 Ammo (THB)");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_AC_ULTRA_THB;
-        ammo.shots = 10;
-        ammo.bv = 31;
-        ammo.cost = 15000;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBUltraAmmo(10, 10, 31, 15000);
     }
 
     private static AmmoType createISTHBUltra20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Ultra AC/20 Ammo (THB)";
-        ammo.shortName = "Ultra AC/20";
-        ammo.setInternalName("IS Ultra AC/20 Ammo (THB)");
-        ammo.addLookupName("IS Ammo Ultra AC/20 (THB)");
-        ammo.addLookupName("ISUltraAC20 Ammo (THB)");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_ULTRA_THB;
-        ammo.shots = 5;
-        ammo.bv = 42;
-        ammo.cost = 30000;
-        ammo.rulesRefs = "THB (Unoffical)";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3055, 3058, 3060, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISTHBUltraAmmo(20, 5, 42, 30000);
     }
 
     private static AmmoType createISRotaryAmmo(int rackSize, int shots, double bv, double cost) {
@@ -12786,20 +10840,20 @@ public class AmmoType extends EquipmentType {
         return createISRotaryAmmo(20, 5, 59, 80000);
     }
 
-    private static AmmoType createCLRotary10Ammo() {
+    private static AmmoType createCLRotaryAmmo(int rackSize, int shots, double bv, double cost) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Rotary AC/10 Ammo";
-        ammo.shortName = "RAC/10";
-        ammo.setInternalName("CLRotaryAC10 Ammo");
-        ammo.addLookupName("CL Rotary AC/10 Ammo");
-        ammo.addLookupName("Rotary Assault Cannon/10 Ammo");
+        ammo.name = "Rotary AC/" + rackSize + " Ammo";
+        ammo.shortName = "RAC/" + rackSize;
+        ammo.setInternalName("CLRotaryAC" + rackSize + " Ammo");
+        ammo.addLookupName("CL Rotary AC/" + rackSize + " Ammo");
+        ammo.addLookupName("Rotary Assault Cannon/" + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC_ROTARY;
-        ammo.shots = 10;
-        ammo.bv = 74;
-        ammo.cost = 16000;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = cost;
         ammo.rulesRefs = "Unofficial";
         ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
                 .setIntroLevel(false)
@@ -12813,31 +10867,12 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createCLRotary20Ammo() {
-        AmmoType ammo = new AmmoType();
+    private static AmmoType createCLRotary10Ammo() {
+        return createCLRotaryAmmo(10, 10, 74, 16000);
+    }
 
-        ammo.name = "Rotary AC/20 Ammo";
-        ammo.shortName = "RAC/20";
-        ammo.setInternalName("CLRotaryAC20 Ammo");
-        ammo.addLookupName("CL Rotary AC/20 Ammo");
-        ammo.addLookupName("Rotary Assault Cannon/20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_AC_ROTARY;
-        ammo.shots = 5;
-        ammo.bv = 118;
-        ammo.cost = 24000;
-        ammo.rulesRefs = "Unofficial";
-        ammo.techAdvancement.setTechBase(TECH_BASE_CLAN)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_F)
-                .setAvailability(RATING_X, RATING_X, RATING_F, RATING_E)
-                .setClanAdvancement(3073, 3104, 3145, DATE_NONE, DATE_NONE)
-                .setClanApproximate(false, false, false, false, false)
-                .setPrototypeFactions(F_CSF)
-                .setProductionFactions(F_CSF);
-        return ammo;
+    private static AmmoType createCLRotary20Ammo() {
+        return createCLRotaryAmmo(20, 5, 118, 24000);
     }
 
     private static AmmoType createISRailGunAmmo() {
@@ -12866,243 +10901,126 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISPXLRM5Ammo() {
+    private static AmmoType createISPXLRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Phoenix LRM 5 Ammo";
-        ammo.shortName = "Phoenix LRM 5";
-        ammo.setInternalName("ISPhoenixLRM5 Ammo");
-        ammo.addLookupName("ISPhoenix LRM 5 Ammo");
+        ammo.name = "Phoenix LRM " + rackSize + " Ammo";
+        ammo.shortName = "Phoenix LRM " + rackSize;
+        ammo.setInternalName("ISPhoenixLRM" + rackSize + " Ammo");
+        ammo.addLookupName("ISPhoenix LRM " + rackSize + " Ammo");
         ammo.damagePerShot = 1;
-        ammo.rackSize = 5;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_PXLRM;
-        ammo.shots = 12;
-        ammo.bv = 7;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 60000;
         ammo.flags = ammo.flags.or(F_HOTLOAD);
         ammo.setModes(new String[]{"", "HotLoad"});
 
         ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3054);
-        ammo.techAdvancement.setTechRating(RATING_F);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_D, RATING_X});
+        return ammo;
+    }
+
+    private static AmmoType createISPXLRM5Ammo() {
+        AmmoType ammo = createISPXLRMAmmo(5, 12, 7);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3054)
+                .setTechRating(RATING_F)
+                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_X);
         return ammo;
     }
 
     private static AmmoType createISPXLRM10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Phoenix LRM 10 Ammo";
-        ammo.shortName = "Phoenix LRM 10";
-        ammo.setInternalName("ISPhoenixLRM10 Ammo");
-        ammo.addLookupName("ISPhoenix LRM 10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_PXLRM;
-        ammo.shots = 6;
-        ammo.bv = 14;
-        ammo.cost = 60000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3054);
-        ammo.techAdvancement.setTechRating(RATING_F);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_D, RATING_X});
+        AmmoType ammo = createISPXLRMAmmo(10, 6, 14);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3054)
+                .setTechRating(RATING_F)
+                .setAvailability(RATING_X, RATING_X, RATING_D, RATING_X);
         return ammo;
     }
 
     private static AmmoType createISPXLRM15Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Phoenix LRM 15 Ammo";
-        ammo.shortName = "Phoenix LRM 15";
-        ammo.setInternalName("ISPhoenixLRM15 Ammo");
-        ammo.addLookupName("ISPhoenix LRM 15 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 15;
-        ammo.ammoType = AmmoType.T_PXLRM;
-        ammo.shots = 4;
-        ammo.bv = 21;
-        ammo.cost = 60000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 2400);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_C, RATING_C, RATING_C, RATING_X});
+        AmmoType ammo = createISPXLRMAmmo(15, 4, 21);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 2400)
+                .setTechRating(RATING_C)
+                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_X);
         return ammo;
     }
 
     private static AmmoType createISPXLRM20Ammo() {
+        AmmoType ammo = createISPXLRMAmmo(20, 3, 28);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 2400)
+                .setTechRating(RATING_C)
+                .setAvailability(RATING_C, RATING_C, RATING_C, RATING_X);
+        return ammo;
+    }
+
+    private static AmmoType createISHawkSRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Phoenix LRM 20 Ammo";
-        ammo.shortName = "Phoenix LRM 20";
-        ammo.setInternalName("ISPhoenixLRM20 Ammo");
-        ammo.addLookupName("ISPhoenix LRM 20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_PXLRM;
-        ammo.shots = 3;
-        ammo.bv = 28;
-        ammo.cost = 60000;
-        ammo.flags = ammo.flags.or(F_HOTLOAD);
-        ammo.setModes(new String[]{"", "HotLoad"});
+        ammo.name = "Hawk SRM " + rackSize + " Ammo";
+        ammo.shortName = "Hawk SRM " + rackSize;
+        ammo.setInternalName("ISHawkSRM" + rackSize + " Ammo");
+        ammo.addLookupName("IS Hawk SRM " + rackSize + " Ammo");
+        ammo.damagePerShot = 2;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_HSRM;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 52000;
 
         ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 2400);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
         ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_C, RATING_C, RATING_C, RATING_X});
+        ammo.techAdvancement.setAvailability(RATING_E, RATING_E, RATING_E, RATING_E);
         return ammo;
     }
 
     private static AmmoType createISHawkSRM2Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Hawk SRM 2 Ammo";
-        ammo.shortName = "Hawk SRM 2";
-        ammo.setInternalName("ISHawkSRM2 Ammo");
-        ammo.addLookupName("IS Hawk SRM 2 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
-        ammo.ammoType = AmmoType.T_HSRM;
-        ammo.shots = 25;
-        ammo.bv = 4;
-        ammo.cost = 52000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_E, RATING_E, RATING_E, RATING_E});
-        return ammo;
+        return createISHawkSRMAmmo(2, 25, 4);
     }
 
     private static AmmoType createISHawkSRM4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Hawk SRM 4 Ammo";
-        ammo.shortName = "Hawk SRM 4";
-        ammo.setInternalName("ISHawkSRM4 Ammo");
-        ammo.addLookupName("IS Hawk SRM 4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_HSRM;
-        ammo.shots = 13;
-        ammo.bv = 6;
-        ammo.cost = 52000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_E, RATING_E, RATING_E, RATING_E});
-        return ammo;
+        return createISHawkSRMAmmo(4, 13, 6);
     }
 
     private static AmmoType createISHawkSRM6Ammo() {
+        return createISHawkSRMAmmo(6, 8, 10);
+    }
+
+    private static AmmoType createISStreakMRMAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "Hawk SRM 6 Ammo";
-        ammo.shortName = "Hawk SRM 6";
-        ammo.setInternalName("ISHawkSRM6 Ammo");
-        ammo.addLookupName("IS Hawk SRM 6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_HSRM;
-        ammo.shots = 8;
-        ammo.bv = 10;
-        ammo.cost = 52000;
+        ammo.name = "Streak MRM " + rackSize + " Ammo";
+        ammo.shortName = "Streak MRM " + rackSize;
+        ammo.setInternalName("IS Streak MRM " + rackSize + " Ammo");
+        ammo.addLookupName("ISStreakMRM" + rackSize + " Ammo");
+        ammo.damagePerShot = 1;
+        ammo.rackSize = rackSize;
+        ammo.ammoType = AmmoType.T_MRM_STREAK;
+        ammo.shots = shots;
+        ammo.bv = bv;
+        ammo.cost = 10000;
 
         ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3067);
+        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3058);
         ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_E, RATING_E, RATING_E, RATING_E});
+        ammo.techAdvancement.setAvailability(RATING_X, RATING_X, RATING_E, RATING_X);
         return ammo;
     }
 
     private static AmmoType createISStreakMRM10Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak MRM 10 Ammo";
-        ammo.shortName = "Streak MRM 10";
-        ammo.setInternalName("IS Streak MRM 10 Ammo");
-        ammo.addLookupName("ISStreakMRM10 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 10;
-        ammo.ammoType = AmmoType.T_MRM_STREAK;
-        ammo.shots = 24;
-        ammo.bv = 11;
-        ammo.cost = 10000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3058);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_E, RATING_X});
-        return ammo;
+        return createISStreakMRMAmmo(10, 24, 11);
     }
 
     private static AmmoType createISStreakMRM20Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak MRM 20 Ammo";
-        ammo.shortName = "Streak MRM 20";
-        ammo.setInternalName("IS Streak MRM 20 Ammo");
-        ammo.addLookupName("ISStreakMRM20 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 20;
-        ammo.ammoType = AmmoType.T_MRM_STREAK;
-        ammo.shots = 12;
-        ammo.bv = 22;
-        ammo.cost = 10000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3058);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_E, RATING_X});
-        return ammo;
+        return createISStreakMRMAmmo(20, 12, 22);
     }
 
     private static AmmoType createISStreakMRM30Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak MRM 30 Ammo";
-        ammo.shortName = "Streak MRM 30";
-        ammo.setInternalName("IS Streak MRM 30 Ammo");
-        ammo.addLookupName("ISStreakMRM30 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 30;
-        ammo.ammoType = AmmoType.T_MRM_STREAK;
-        ammo.shots = 8;
-        ammo.bv = 33;
-        ammo.cost = 10000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3058);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_E, RATING_X});
-        return ammo;
+        return createISStreakMRMAmmo(30, 8, 33);
     }
 
     private static AmmoType createISStreakMRM40Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "Streak MRM 40 Ammo";
-        ammo.shortName = "Streak MRM 40";
-        ammo.setInternalName("IS Streak MRM 40 Ammo");
-        ammo.addLookupName("ISStreakMRM40 Ammo");
-        ammo.damagePerShot = 1;
-        ammo.rackSize = 40;
-        ammo.ammoType = AmmoType.T_MRM_STREAK;
-        ammo.shots = 6;
-        ammo.bv = 44;
-        ammo.cost = 10000;
-
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS);
-        ammo.techAdvancement.setISAdvancement(DATE_NONE, DATE_NONE, 3058);
-        ammo.techAdvancement.setTechRating(RATING_C);
-        ammo.techAdvancement.setAvailability(new int[]{RATING_X, RATING_X, RATING_E, RATING_X});
-        return ammo;
+        return createISStreakMRMAmmo(40, 6, 44);
     }
 
     private static AmmoType createISAC10iAmmo() {
@@ -13133,19 +11051,19 @@ public class AmmoType extends EquipmentType {
         return ammo;
     }
 
-    private static AmmoType createISGAC2Ammo() {
+    private static AmmoType createISGACAmmo(int rackSize, int shots, double bv) {
         AmmoType ammo = new AmmoType();
 
-        ammo.name = "GAC/2 Ammo";
-        ammo.shortName = "GAC/2";
-        ammo.setInternalName("IS Ammo GAC/2");
-        ammo.addLookupName("ISGAC2 Ammo");
-        ammo.addLookupName("IS Gatling AC/2 Ammo");
+        ammo.name = "GAC/" + rackSize + " Ammo";
+        ammo.shortName = "GAC/" + rackSize;
+        ammo.setInternalName("IS Ammo GAC/" + rackSize);
+        ammo.addLookupName("ISGAC" + rackSize + " Ammo");
+        ammo.addLookupName("IS Gatling AC/" + rackSize + " Ammo");
         ammo.damagePerShot = 2;
-        ammo.rackSize = 2;
+        ammo.rackSize = rackSize;
         ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 22;
-        ammo.bv = 12;
+        ammo.shots = shots;
+        ammo.bv = bv;
         ammo.cost = 1000;
         ammo.rulesRefs = "207,TO";
         ammo.techAdvancement.setTechBase(TECH_BASE_IS)
@@ -13158,87 +11076,22 @@ public class AmmoType extends EquipmentType {
                 .setPrototypeFactions(F_FS)
                 .setProductionFactions(F_FS);
         return ammo;
+    }
+
+    private static AmmoType createISGAC2Ammo() {
+        return createISGACAmmo(2, 22, 12);
     }
 
     private static AmmoType createISGAC4Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "GAC/4 Ammo";
-        ammo.shortName = "GAC/4";
-        ammo.setInternalName("IS Ammo GAC/4");
-        ammo.addLookupName("ISGAC4 Ammo");
-        ammo.addLookupName("IS Gatling AC/4 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 4;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 11;
-        ammo.bv = 22;
-        ammo.cost = 1000;
-        ammo.rulesRefs = "207,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3060, 3062, 3071, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISGACAmmo(4, 11, 22);
     }
 
     private static AmmoType createISGAC6Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "GAC/6 Ammo";
-        ammo.shortName = "GAC/6";
-        ammo.setInternalName("IS Ammo GAC/6");
-        ammo.addLookupName("ISGAC6 Ammo");
-        ammo.addLookupName("IS Gatling AC/6 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 6;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 7;
-        ammo.bv = 40;
-        ammo.cost = 1000;
-        ammo.rulesRefs = "207,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3060, 3062, 3071, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISGACAmmo(6, 7, 40);
     }
 
     private static AmmoType createISGAC8Ammo() {
-        AmmoType ammo = new AmmoType();
-
-        ammo.name = "GAC/8 Ammo";
-        ammo.shortName = "GAC/8";
-        ammo.setInternalName("IS Ammo GAC/8");
-        ammo.addLookupName("ISGAC8 Ammo");
-        ammo.addLookupName("IS Gatling AC/8 Ammo");
-        ammo.damagePerShot = 2;
-        ammo.rackSize = 8;
-        ammo.ammoType = AmmoType.T_AC;
-        ammo.shots = 5;
-        ammo.bv = 53;
-        ammo.cost = 1000;
-        ammo.rulesRefs = "207,TO";
-        ammo.techAdvancement.setTechBase(TECH_BASE_IS)
-                .setIntroLevel(false)
-                .setUnofficial(true)
-                .setTechRating(RATING_E)
-                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)
-                .setISAdvancement(3060, 3062, 3071, DATE_NONE, DATE_NONE)
-                .setISApproximate(true, false, false, false, false)
-                .setPrototypeFactions(F_FS)
-                .setProductionFactions(F_FS);
-        return ammo;
+        return createISGACAmmo(8, 5, 53);
     }
 
 
@@ -13428,12 +11281,10 @@ public class AmmoType extends EquipmentType {
                 return true;
             }
             // Artillery
-            if (((at.getAmmoType() == T_ARROW_IV)
+            return ((at.getAmmoType() == T_ARROW_IV)
                     || (at.getAmmoType() == T_LONG_TOM)
                     || (at.getAmmoType() == T_SNIPER) || (at.getAmmoType() == T_THUMPER))
-                    && (at.getMunitionType() == M_STANDARD)) {
-                return true;
-            }
+                    && (at.getMunitionType() == M_STANDARD);
         }
         // TODO: mine clearance munitions
 
@@ -13442,7 +11293,7 @@ public class AmmoType extends EquipmentType {
 
     public static boolean canDeliverMinefield(AmmoType at) {
 
-        if ((at != null)
+        return (at != null)
                 && ((at.getAmmoType() == T_LRM)
                 || (at.getAmmoType() == AmmoType.T_LRM_IMP)
                 || (at.getAmmoType() == AmmoType.T_MML))
@@ -13450,11 +11301,7 @@ public class AmmoType extends EquipmentType {
                 || (at.getMunitionType() == M_THUNDER_INFERNO)
                 || (at.getMunitionType() == M_THUNDER_AUGMENTED)
                 || (at.getMunitionType() == M_THUNDER_VIBRABOMB)
-                || (at.getMunitionType() == M_THUNDER_ACTIVE))) {
-            return true;
-        }
-
-        return false;
+                || (at.getMunitionType() == M_THUNDER_ACTIVE));
     }
 
     private void addToEnd(AmmoType base, String modifier) {
