@@ -70,6 +70,8 @@ public final class Player extends TurnOrdered implements IPlayer {
     private Vector<Minefield> visibleMinefields = new Vector<>();
 
     private boolean admitsDefeat = false;
+
+    private int rating = 1000;
     
     /**
      * Boolean that keeps track of whether a player has accepted another 
@@ -290,6 +292,16 @@ public final class Player extends TurnOrdered implements IPlayer {
     @Override
     public void setStartingPos(int startingPos) {
         this.startingPos = startingPos;
+    }
+
+    @Override
+    public int getRating() {
+        return rating;
+    }
+
+    @Override
+    public void setRating(int newRating) {
+        rating = Math.max(0, newRating);
     }
 
     /**

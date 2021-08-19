@@ -75,6 +75,11 @@ public class PlayerTest {
         player.setNbrMFVibra(14);
         TestCase.assertEquals(14, player.getNbrMFVibra());
         TestCase.assertTrue(player.hasMinefields());
+        player.setRating(100);
+        TestCase.assertEquals(100, player.getRating());
+        player.setRating(-100);
+        TestCase.assertEquals(0, player.getRating());
+
     }
 
     @Test

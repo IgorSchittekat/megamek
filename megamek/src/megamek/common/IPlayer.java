@@ -112,6 +112,10 @@ public interface IPlayer extends ITurnOrdered {
 
     void setStartingPos(int startingPos);
 
+    int getRating();
+
+    void setRating(int newRating);
+
     /**
      * Set deployment zone to edge of board for reinforcements
      */
