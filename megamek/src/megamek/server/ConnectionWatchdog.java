@@ -16,7 +16,7 @@ package megamek.server;
 
 import java.util.TimerTask;
 
-class ConnectionWatchdog extends TimerTask {
+public class ConnectionWatchdog extends TimerTask {
 
     private Server server;
 
