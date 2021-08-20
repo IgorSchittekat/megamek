@@ -8,6 +8,7 @@ import megamek.common.options.OptionsConstants;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
@@ -168,5 +169,23 @@ public class PlayerTableModel extends AbstractTableModel {
                 }
             }
         };
+    }
+
+    public void setupColumnWidths(JTable playersTable) {
+        TableColumn column;
+        for (int i = 0; i < PlayerTableModel.N_COL; i++) {
+            column = playersTable.getColumnModel().getColumn(i);
+            if (i == PlayerTableModel.COL_PLAYER) {
+                column.setPreferredWidth(90);
+            } else if (i == PlayerTableModel.COL_TEAM) {
+                column.setPreferredWidth(5);
+            } else if ((i == PlayerTableModel.COL_COST)) {
+                column.setPreferredWidth(55);
+            } else if (i == PlayerTableModel.COL_START) {
+                column.setPreferredWidth(50);
+            } else {
+                column.setPreferredWidth(35);
+            }
+        }
     }
 }

@@ -406,21 +406,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
         tablePlayers.getSelectionModel().addListSelectionListener(this);
 
         tablePlayers.setModel(playerModel);
-        TableColumn column = null;
-        for (int i = 0; i < PlayerTableModel.N_COL; i++) {
-            column = tablePlayers.getColumnModel().getColumn(i);
-            if (i == PlayerTableModel.COL_PLAYER) {
-                column.setPreferredWidth(90);
-            } else if (i == PlayerTableModel.COL_TEAM) {
-                column.setPreferredWidth(5);
-            } else if ((i == PlayerTableModel.COL_COST)) {
-                column.setPreferredWidth(55);
-            } else if (i == PlayerTableModel.COL_START) {
-                column.setPreferredWidth(50);
-            } else {
-                column.setPreferredWidth(35);
-            }
-        }
+        playerModel.setupColumnWidths(tablePlayers);
 
         tablePlayers.addMouseListener(new PlayerTableMouseAdapter(this));
 
