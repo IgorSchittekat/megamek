@@ -252,6 +252,14 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
         return clientgui;
     }
 
+    public PlayerTableModel getPlayerModel() {
+        return playerModel;
+    }
+
+    public JTable getTablePlayers() {
+        return tablePlayers;
+    }
+
     /**
      * Sets up the entities table
      */
@@ -434,7 +442,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
             }
         }
 
-        tablePlayers.addMouseListener(new PlayerTableMouseAdapter());
+        tablePlayers.addMouseListener(new PlayerTableMouseAdapter(this));
 
         scrPlayers = new JScrollPane(tablePlayers);
         scrPlayers.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -1920,7 +1928,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
     /**
      * Refreshes the player info
      */
-    private void refreshPlayerInfo() {
+    public void refreshPlayerInfo() {
         playerModel.clearData();
         for (Enumeration<IPlayer> i = clientgui.getClient().getPlayers(); i.hasMoreElements();) {
             final IPlayer player = i.nextElement();
@@ -3089,88 +3097,6 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
         } else if (event.getSource().equals(lisBoardsAvailable)) {
             previewMapsheet();
         }
-    }
-
-    public class PlayerTableMouseAdapter extends MouseInputAdapter implements ActionListener {
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
-                int row = tablePlayers.rowAtPoint(e.getPoint());
-                IPlayer player = playerModel.getPlayerAt(row);
-                if (player != null) {
-                    boolean isOwner = player.equals(clientgui.getClient().getLocalPlayer());
-                    boolean isBot = clientgui.getBots().get(player.getName()) != null;
-                    if ((isOwner || isBot)) {
-                        customizePlayer();
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            maybeShowPopup(e);
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            maybeShowPopup(e);
-        }
-
-        private void maybeShowPopup(MouseEvent e) {
-            JPopupMenu popup = new JPopupMenu();
-            int row = tablePlayers.rowAtPoint(e.getPoint());
-            IPlayer player = playerModel.getPlayerAt(row);
-            boolean isOwner = player.equals(clientgui.getClient().getLocalPlayer());
-            boolean isBot = clientgui.getBots().get(player.getName()) != null;
-            if (e.isPopupTrigger()) {
-                JMenuItem menuItem = null;
-                menuItem = new JMenuItem("Configure ...");
-                menuItem.setActionCommand("CONFIGURE|" + row);
-                menuItem.addActionListener(this);
-                menuItem.setEnabled(isOwner || isBot);
-                popup.add(menuItem);
-                
-                if (isBot) {
-                    JMenuItem botConfig = new JMenuItem("Bot Settings ...");
-                    botConfig.setActionCommand("BOTCONFIG|" + row);
-                    botConfig.addActionListener(this);
-                    popup.add(botConfig);
-                }
-                
-                popup.show(e.getComponent(), e.getX(), e.getY());
-            }
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent action) {
-            StringTokenizer st = new StringTokenizer(action.getActionCommand(), "|");
-            String command = st.nextToken();
-            if (command.equalsIgnoreCase("CONFIGURE")) {
-                customizePlayer();
-            } else if (command.equalsIgnoreCase("BOTCONFIG")) {
-                int row = Integer.parseInt(st.nextToken());
-                IPlayer player = playerModel.getPlayerAt(row);
-                BotClient bot = (BotClient) clientgui.getBots().get(player.getName());
-                BotConfigDialog bcd = new BotConfigDialog(clientgui.frame, bot);
-                bcd.setVisible(true);
-
-                if (bcd.dialogAborted) {
-                    return; // user didn't click 'ok', add no bot
-                } else if (bot instanceof Princess) {
-                    ((Princess) bot).setBehaviorSettings(bcd.getBehaviorSettings());
-                    
-                    // bookkeeping:
-                    clientgui.getBots().remove(player.getName());
-                    bot.setName(bcd.getBotName());
-                    clientgui.getBots().put(bot.getName(), bot);
-                    player.setName(bcd.getBotName());
-                    clientgui.chatlounge.refreshPlayerInfo();
-                }
-            }
-        }
-
     }
 
     /**
