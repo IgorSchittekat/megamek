@@ -6,7 +6,9 @@ import megamek.common.IPlayer;
 import megamek.common.IStartingPositions;
 import megamek.common.options.OptionsConstants;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class PlayerTableModel extends AbstractTableModel {
@@ -133,5 +135,38 @@ public class PlayerTableModel extends AbstractTableModel {
 
     public IPlayer getPlayerAt(int row) {
         return players.get(row);
+    }
+
+    public JTable createPlayersTable() {
+        return new JTable(this) {
+            private static final long serialVersionUID = 6252953920509362407L;
+
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                java.awt.Point p = e.getPoint();
+                int rowIndex = rowAtPoint(p);
+                int colIndex = columnAtPoint(p);
+                int realColIndex = convertColumnIndexToModel(colIndex);
+                IPlayer player = getPlayerAt(rowIndex);
+                if (player == null) {
+                    return null;
+                }
+                int mines = player.getNbrMFConventional() + player.getNbrMFActive() + player.getNbrMFInferno()
+                        + player.getNbrMFVibra();
+                if (realColIndex == PlayerTableModel.COL_PLAYER) {
+                    return Messages.getString("ChatLounge.tipPlayer",
+                            getValueAt(rowIndex, colIndex), player.getConstantInitBonus(), mines);
+                } else if (realColIndex == PlayerTableModel.COL_TON) {
+                    return getValueAt(rowIndex, colIndex).toString();
+                } else if (realColIndex == PlayerTableModel.COL_COST) {
+                    return Messages.getString("ChatLounge.tipCost",
+                            getValueAt(rowIndex, colIndex));
+                } else if (realColIndex == PlayerTableModel.COL_START) {
+                    return (String) getValueAt(rowIndex, colIndex);
+                } else {
+                    return Integer.toString((Integer) getValueAt(rowIndex, colIndex));
+                }
+            }
+        };
     }
 }

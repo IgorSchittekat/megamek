@@ -401,36 +401,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
     private void setupPlayerInfo() {
 
         playerModel = new PlayerTableModel(this);
-        tablePlayers = new JTable(playerModel) {
-            private static final long serialVersionUID = 6252953920509362407L;
-
-            @Override
-            public String getToolTipText(MouseEvent e) {
-                java.awt.Point p = e.getPoint();
-                int rowIndex = rowAtPoint(p);
-                int colIndex = columnAtPoint(p);
-                int realColIndex = convertColumnIndexToModel(colIndex);
-                IPlayer player = playerModel.getPlayerAt(rowIndex);
-                if (player == null) {
-                    return null;
-                }
-                int mines = player.getNbrMFConventional() + player.getNbrMFActive() + player.getNbrMFInferno()
-                        + player.getNbrMFVibra();
-                if (realColIndex == PlayerTableModel.COL_PLAYER) {
-                    return Messages.getString("ChatLounge.tipPlayer",
-                            new Object[] { getValueAt(rowIndex, colIndex), player.getConstantInitBonus(), mines });
-                } else if (realColIndex == PlayerTableModel.COL_TON) {
-                    return ((Double) getValueAt(rowIndex, colIndex)).toString();
-                } else if (realColIndex == PlayerTableModel.COL_COST) {
-                    return Messages.getString("ChatLounge.tipCost",
-                            new Object[] { (Integer) getValueAt(rowIndex, colIndex) });
-                } else if (realColIndex == PlayerTableModel.COL_START) {
-                    return (String) getValueAt(rowIndex, colIndex);
-                } else {
-                    return Integer.toString((Integer) getValueAt(rowIndex, colIndex));
-                }
-            }
-        };
+        tablePlayers = playerModel.createPlayersTable();
         tablePlayers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablePlayers.getSelectionModel().addListSelectionListener(this);
 
