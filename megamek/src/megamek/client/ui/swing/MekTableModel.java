@@ -114,10 +114,6 @@ public class MekTableModel extends AbstractTableModel {
         return data.get(row);
     }
 
-    public MekTableModel.Renderer getRenderer() {
-        return new MekTableModel.Renderer();
-    }
-
     public String formatPilotCompact(Crew pilot, boolean blindDrop, boolean rpgSkills) {
         String value = "";
         if (blindDrop) {
@@ -340,110 +336,5 @@ public class MekTableModel extends AbstractTableModel {
             }
         }
         return value;
-    }
-
-    public class Renderer extends ChatLounge.MekInfo implements TableCellRenderer {
-        private static final String FILENAME_UNKNOWN_UNIT = "unknown_unit.gif";
-        private static final long serialVersionUID = -9154596036677641620L;
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                       boolean hasFocus, int row, int column) {
-            Component c = this;
-            setText(getValueAt(row, column).toString(), isSelected);
-            Entity entity = getEntityAt(row);
-            if (null == entity) {
-                return null;
-            }
-            boolean isOwner = entity.getOwner().equals(chatLounge.getClientGUI().getClient().getLocalPlayer());
-            boolean blindDrop = chatLounge.getClientGUI().getClient().getGame().getOptions()
-                    .booleanOption(OptionsConstants.BASE_BLIND_DROP);
-            boolean compact = chatLounge.getButCompact().isSelected();
-            if (!isOwner && blindDrop) {
-                if (column == COL_UNIT) {
-                    if (compact) {
-                        clearImage();
-                    } else {
-                        Image image = getToolkit().getImage(
-                                new MegaMekFile(Configuration.miscImagesDir(),
-                                        FILENAME_UNKNOWN_UNIT).toString());
-                        image = image.getScaledInstance(-1, 72,
-                                Image.SCALE_DEFAULT);
-                        setImage(image);
-                    }
-                } else if (column == COL_PILOT) {
-                    if (compact) {
-                        clearImage();
-                    } else {
-                        Image image = getToolkit().getImage(
-                                new MegaMekFile(Configuration.portraitImagesDir(),
-                                        Portrait.DEFAULT_PORTRAIT_FILENAME)
-                                        .toString());
-                        image = image.getScaledInstance(-1, 50,
-                                Image.SCALE_DEFAULT);
-                        setImage(image);
-                    }
-                }
-            } else {
-                if (column == COL_UNIT) {
-                    if (compact) {
-                        clearImage();
-                    } else {
-                        chatLounge.getClientGUI().loadPreviewImage(getLabel(), entity);
-                    }
-                    setToolTipText(ChatLounge.formatUnitTooltip(entity));
-                    setLoad(entity.getTransportId() != Entity.NONE);
-                } else if (column == COL_PILOT) {
-                    if (compact) {
-                        clearImage();
-                    } else {
-                        setImage(entity.getCrew().getPortrait(0).getImage(50));
-                    }
-                    setToolTipText(ChatLounge.formatPilotTooltip(entity.getCrew(),
-                            chatLounge.getClientGUI().getClient().getGame().getOptions()
-                                    .booleanOption(OptionsConstants.RPG_COMMAND_INIT),
-                            chatLounge.getClientGUI().getClient().getGame().getOptions()
-                                    .booleanOption(OptionsConstants.RPG_INDIVIDUAL_INITIATIVE),
-                            chatLounge.getClientGUI().getClient().getGame().getOptions()
-                                    .booleanOption(OptionsConstants.RPG_TOUGHNESS),
-                            chatLounge.getClientGUI().getClient().getGame().getOptions()
-                                    .booleanOption(OptionsConstants.RPG_RPG_GUNNERY)));
-                }
-            }
-
-            if (isSelected) {
-                c.setForeground(table.getSelectionForeground());
-                c.setBackground(table.getSelectionBackground());
-            } else {
-                Color background = table.getBackground();
-                if (row % 2 != 0) {
-                    Color alternateColor = UIManager.getColor("Table.alternateRowColor");
-                    if (alternateColor == null) {
-                        // If we don't have an alternate row color, use 'controlHighlight'
-                        // as it is pretty reasonable across the various themes.
-                        alternateColor = UIManager.getColor("controlHighlight");
-                    }
-                    if (alternateColor != null) {
-                        background = alternateColor;
-                    }
-                }
-                c.setForeground(table.getForeground());
-                c.setBackground(background);
-            }
-
-            if (hasFocus) {
-                if (!isSelected ) {
-                    Color col = UIManager.getColor("Table.focusCellForeground");
-                    if (col != null) {
-                        c.setForeground(col);
-                    }
-                    col = UIManager.getColor("Table.focusCellBackground");
-                    if (col != null) {
-                        c.setBackground(col);
-                    }
-                }
-            }
-            return c;
-        }
     }
 }
