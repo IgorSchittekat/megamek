@@ -264,6 +264,14 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
         return butCompact;
     }
 
+    public JTable getTableEntities() {
+        return tableEntities;
+    }
+
+    public MekTableModel getMekModel() {
+        return mekModel;
+    }
+
     /**
      * Sets up the entities table
      */
@@ -287,7 +295,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
             }
         }
         tableEntities.addMouseListener(new MekTableMouseAdapter());
-        tableEntities.addKeyListener(new MekTableKeyAdapter());
+        tableEntities.addKeyListener(new MekTableKeyAdapter(this));
         tableEntities.getSelectionModel().addListSelectionListener(this);
         scrEntities = new JScrollPane(tableEntities);
         scrEntities.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -1822,7 +1830,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
      *
      * @param entity
      */
-    private void delete(Entity entity) {
+    public void delete(Entity entity) {
         Client c = clientgui.getBots().get(entity.getOwner().getName());
         if (c == null) {
             c = clientgui.getClient();
@@ -2102,7 +2110,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
     /**
      * Pop up the view mech dialog
      */
-    private void mechReadout(Entity entity) {
+    public void mechReadout(Entity entity) {
         final JDialog dialog = new JDialog(clientgui.frame, Messages.getString("ChatLounge.quickView"), false); //$NON-NLS-1$
         dialog.addKeyListener(new KeyAdapter() {
             @Override
@@ -2716,7 +2724,7 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
      * @param entities
      * @return
      */
-    private boolean canConfigureAll(List<Entity> entities) {
+    public boolean canConfigureAll(List<Entity> entities) {
         if (entities.size() == 1) {
             return true;
         }
@@ -2767,38 +2775,6 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
             choTeam.setSelectedIndex(c.getLocalPlayer().getTeam());
         } else if (event.getSource().equals(lisBoardsAvailable)) {
             previewMapsheet();
-        }
-    }
-
-    public class MekTableKeyAdapter extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (tableEntities.getSelectedRowCount() == 0) {
-                return;
-            }
-            int[] rows = tableEntities.getSelectedRows();
-            Vector<Entity> entities = new Vector<>();
-            for (int row : rows) {
-                entities.add(mekModel.getEntityAt(row));
-            }
-            int code = e.getKeyCode();
-            if ((code == KeyEvent.VK_DELETE) || (code == KeyEvent.VK_BACK_SPACE)) {
-                e.consume();
-                for (Entity entity : entities) {
-                    delete(entity);
-                }
-            } else if (code == KeyEvent.VK_SPACE) {
-                e.consume();
-                mechReadout(entities.get(0));
-            } else if (code == KeyEvent.VK_ENTER) {
-                e.consume();
-                if (entities.size() == 1) {
-                    customizeMech(entities.get(0));
-                } else if (canConfigureAll(entities)) {
-                    customizeMechs(entities);
-                }
-            }
         }
     }
 
