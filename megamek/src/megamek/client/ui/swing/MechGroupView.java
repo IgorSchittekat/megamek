@@ -33,9 +33,10 @@ import javax.swing.event.ListSelectionListener;
 
 import megamek.client.Client;
 import megamek.client.ui.Messages;
-import megamek.common.Entity;
-import megamek.common.MechView;
+import megamek.common.*;
 import megamek.common.options.OptionsConstants;
+import megamek.common.options.PilotOptions;
+import megamek.common.options.Quirks;
 
 /**
  * This class displays a window that displays the forces currently selected in
@@ -76,11 +77,11 @@ public class MechGroupView extends JDialog implements ActionListener, ListSelect
             if (!entity.getOwner().equals(client.getLocalPlayer())
                     && client.getGame().getOptions().booleanOption(OptionsConstants.BASE_BLIND_DROP)
                     && !client.getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP)) {
-                entityStrings[index++] = ChatLounge.formatUnit(entity, true, rpgSkills);
+                entityStrings[index++] = formatUnit(entity, true, rpgSkills);
             } else if (entity.getOwner().equals(client.getLocalPlayer())
                     || (!client.getGame().getOptions().booleanOption(OptionsConstants.BASE_BLIND_DROP)
                             && !client.getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP))) {
-                entityStrings[index++] = ChatLounge.formatUnit(entity, false, rpgSkills);
+                entityStrings[index++] = formatUnit(entity, false, rpgSkills);
             }
         }
         entities = new JList<String>(entityStrings);
@@ -122,7 +123,6 @@ public class MechGroupView extends JDialog implements ActionListener, ListSelect
             int selected = entities.getSelectedIndex();
             if (selected == -1) {
                 ta.setText("");
-                return;
             } else if (!client.getGame().getEntity(entityArray[selected]).getOwner().equals(client.getLocalPlayer())) {
                 ta.setText("(enemy unit)");
             } else {
@@ -133,4 +133,96 @@ public class MechGroupView extends JDialog implements ActionListener, ListSelect
             }
         }
     }
+
+    public String formatUnit(Entity entity, boolean blindDrop, boolean rpgSkills) {
+        String value;
+
+        // Reset the tree strings.
+        String strTreeSet = ""; //$NON-NLS-1$
+        String strTreeView = ""; //$NON-NLS-1$
+
+        // Set the tree strings based on C3 settings for the unit.
+        if (entity.hasC3i() || entity.hasNavalC3()) {
+            if (entity.calculateFreeC3Nodes() == 5) {
+                strTreeSet = "**"; //$NON-NLS-1$
+            }
+            strTreeView = " (" + entity.getC3NetId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+        } else if (entity.hasC3()) {
+            if (entity.getC3Master() == null) {
+                if (entity.hasC3S()) {
+                    strTreeSet = "***"; //$NON-NLS-1$
+                } else {
+                    strTreeSet = "*"; //$NON-NLS-1$
+                }
+            } else if (!entity.C3MasterIs(entity)) {
+                strTreeSet = ">"; //$NON-NLS-1$
+                if ((entity.getC3Master().getC3Master() != null)
+                        && !entity.getC3Master().C3MasterIs(entity.getC3Master())) {
+                    strTreeSet = ">>"; //$NON-NLS-1$
+                }
+                strTreeView = " -> " + entity.getC3Master().getDisplayName(); //$NON-NLS-1$
+            }
+        }
+
+        int crewAdvCount = entity.getCrew().countOptions(PilotOptions.LVL3_ADVANTAGES);
+        boolean isManeiDomini = entity.getCrew().countOptions(PilotOptions.MD_ADVANTAGES) > 0;
+        int posQuirkCount = entity.countQuirks(Quirks.POS_QUIRKS);
+        int negQuirkCount = entity.countQuirks(Quirks.NEG_QUIRKS);
+
+        String gunnery = entity.getCrew().getSkillsAsString(false, rpgSkills);
+
+        if (blindDrop) {
+            String unitClass;
+            if (entity instanceof Infantry) {
+                unitClass = Messages.getString("ChatLounge.0"); //$NON-NLS-1$
+            } else if (entity instanceof Protomech) {
+                unitClass = Messages.getString("ChatLounge.1"); //$NON-NLS-1$
+            } else if (entity instanceof GunEmplacement) {
+                unitClass = Messages.getString("ChatLounge.2"); //$NON-NLS-1$
+            } else {
+                unitClass = entity.getWeightClassName();
+                if (entity instanceof Tank) {
+                    unitClass += Messages.getString("ChatLounge.6"); //$NON-NLS-1$
+                }
+            }
+            Integer piloting = entity.getCrew().getPiloting();
+            String advantages = (crewAdvCount > 0 ? " <" + crewAdvCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.advs") : ""); //$NON-NLS-1$
+            String maneiDomini = (isManeiDomini ? Messages.getString("ChatLounge.md") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String posQuirks = (posQuirkCount > 0 ? " <" + posQuirkCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.pquirk") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String negQuirks = (negQuirkCount > 0 ? " <" + negQuirkCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.nquirk") : ""); //$NON-NLS-1$
+            String hidden = ((entity.isHidden()) ? Messages.getString("ChatLounge.hidden") : ""); //$NON-NLS-1$
+            String offBoard = ((entity.isOffBoard()) ? Messages.getString("ChatLounge.deploysOffBoard") : ""); //$NON-NLS-1$
+            String deployRound = ((entity.getDeployRound() > 0) ? Messages.getString("ChatLounge.deploysAfterRound") //$NON-NLS-1$
+                    + entity.getDeployRound() : ""); //$NON-NLS-1$
+            value = Messages.getString("ChatLounge.EntityListEntry1", //$NON-NLS-1$
+                    entity.getOwner().getName(), gunnery, piloting, advantages, maneiDomini, unitClass,
+                    posQuirks, negQuirks, offBoard, deployRound, hidden);
+        } else {
+            Integer piloting = entity.getCrew().getPiloting();
+            String advantages = (crewAdvCount > 0 ? " <" + crewAdvCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.advs") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String maneiDomini = (isManeiDomini ? Messages.getString("ChatLounge.md") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String posQuirks = (posQuirkCount > 0 ? " <" + posQuirkCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.pquirk") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String negQuirks = (negQuirkCount > 0 ? " <" + negQuirkCount //$NON-NLS-1$
+                    + Messages.getString("ChatLounge.nquirk") : ""); //$NON-NLS-1$
+            Integer battleValue = entity.calculateBattleValue();
+            String hidden = ((entity.isHidden()) ? Messages.getString("ChatLounge.hidden") : ""); //$NON-NLS-1$
+            String offBoard = ((entity.isOffBoard()) ? Messages.getString("ChatLounge.deploysOffBoard") : ""); //$NON-NLS-1$ //$NON-NLS-2$
+            String deployRound = ((entity.getDeployRound() > 0) ? Messages.getString("ChatLounge.deploysAfterRound") //$NON-NLS-1$
+                    + entity.getDeployRound() : ""); //$NON-NLS-1$
+            String valid = (entity.isDesignValid() ? "" : Messages //$NON-NLS-1$
+                    .getString("ChatLounge.invalidDesign")); //$NON-NLS-1$
+            value = strTreeSet
+                    + Messages.getString("ChatLounge.EntityListEntry2", //$NON-NLS-1$
+                    entity.getDisplayName(), gunnery, piloting, advantages, maneiDomini,
+                    posQuirks, negQuirks, battleValue, strTreeView, offBoard, deployRound, hidden,
+                    valid);
+        }
+        return value;
+    }
+
 }
