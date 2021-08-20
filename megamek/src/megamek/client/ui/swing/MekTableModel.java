@@ -176,19 +176,7 @@ public class MekTableModel extends AbstractTableModel {
         String strTreeView = ""; //$NON-NLS-1$
 
         if (blindDrop) {
-            if (entity instanceof Infantry) {
-                value += Messages.getString("ChatLounge.0"); //$NON-NLS-1$
-            } else if (entity instanceof Protomech) {
-                value += Messages.getString("ChatLounge.1"); //$NON-NLS-1$
-            } else if (entity instanceof GunEmplacement) {
-                value += Messages.getString("ChatLounge.2"); //$NON-NLS-1$
-            } else {
-                value += entity.getWeightClassName();
-                if (entity instanceof Tank) {
-                    value += Messages.getString("ChatLounge.6"); //$NON-NLS-1$
-                }
-            }
-            return value;
+            return formatUtilBlindDrop(entity);
         }
 
         // Set the tree strings based on C3 settings for the unit.
@@ -243,18 +231,7 @@ public class MekTableModel extends AbstractTableModel {
     public String formatUnitHTML(Entity entity, boolean blindDrop) {
         String value = "";
         if (blindDrop) {
-            if (entity instanceof Infantry) {
-                value += Messages.getString("ChatLounge.0"); //$NON-NLS-1$
-            } else if (entity instanceof Protomech) {
-                value += Messages.getString("ChatLounge.1"); //$NON-NLS-1$
-            } else if (entity instanceof GunEmplacement) {
-                value += Messages.getString("ChatLounge.2"); //$NON-NLS-1$
-            } else {
-                value += entity.getWeightClassName();
-                if (entity instanceof Tank) {
-                    value += Messages.getString("ChatLounge.6"); //$NON-NLS-1$
-                }
-            }
+            value = formatUtilBlindDrop(entity);
             value += "<br>";
         } else {
             String c3network = "";
@@ -344,6 +321,23 @@ public class MekTableModel extends AbstractTableModel {
         }
         if (!entity.isDesignValid()) {
             value += Messages.getString("ChatLounge.invalidDesign");
+        }
+        return value;
+    }
+
+    private String formatUtilBlindDrop(Entity entity) {
+        String value = "";
+        if (entity instanceof Infantry) {
+            value += Messages.getString("ChatLounge.0"); //$NON-NLS-1$
+        } else if (entity instanceof Protomech) {
+            value += Messages.getString("ChatLounge.1"); //$NON-NLS-1$
+        } else if (entity instanceof GunEmplacement) {
+            value += Messages.getString("ChatLounge.2"); //$NON-NLS-1$
+        } else {
+            value += entity.getWeightClassName();
+            if (entity instanceof Tank) {
+                value += Messages.getString("ChatLounge.6"); //$NON-NLS-1$
+            }
         }
         return value;
     }
