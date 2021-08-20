@@ -15,13 +15,14 @@ import java.util.ArrayList;
 public class PlayerTableModel extends AbstractTableModel {
     private static final long serialVersionUID = -1372393680232901923L;
 
-    public static final int COL_PLAYER = 0;
-    public static final int COL_START = 1;
-    public static final int COL_TEAM = 2;
-    public static final int COL_BV = 3;
-    public static final int COL_TON = 4;
-    public static final int COL_COST = 5;
-    public static final int N_COL = 6;
+    private static final int COL_PLAYER = 0;
+    private static final int COL_RATING = 1;
+    private static final int COL_START = 2;
+    private static final int COL_TEAM = 3;
+    private static final int COL_BV = 4;
+    private static final int COL_TON = 5;
+    private static final int COL_COST = 6;
+    private static final int N_COL = 7;
 
     private final ChatLounge chatLounge;
     private ArrayList<IPlayer> players;
@@ -77,6 +78,8 @@ public class PlayerTableModel extends AbstractTableModel {
         switch (column) {
             case COL_PLAYER:
                 return Messages.getString("ChatLounge.colPlayer");
+            case COL_RATING:
+                return "Rating";
             case COL_START:
                 return "Start";
             case COL_TEAM:
@@ -115,6 +118,8 @@ public class PlayerTableModel extends AbstractTableModel {
             return bv;
         } else if (col == COL_PLAYER) {
             return player.getName();
+        } else if (col == COL_RATING) {
+            return player.getRating();
         } else if (col == COL_START) {
             return IStartingPositions.START_LOCATION_NAMES[player.getStartingPos()];
         } else if (col == COL_TON) {
@@ -154,15 +159,17 @@ public class PlayerTableModel extends AbstractTableModel {
                 }
                 int mines = player.getNbrMFConventional() + player.getNbrMFActive() + player.getNbrMFInferno()
                         + player.getNbrMFVibra();
-                if (realColIndex == PlayerTableModel.COL_PLAYER) {
+                if (realColIndex == COL_PLAYER) {
                     return Messages.getString("ChatLounge.tipPlayer",
                             getValueAt(rowIndex, colIndex), player.getConstantInitBonus(), mines);
-                } else if (realColIndex == PlayerTableModel.COL_TON) {
+                } else if (realColIndex == COL_RATING) {
                     return getValueAt(rowIndex, colIndex).toString();
-                } else if (realColIndex == PlayerTableModel.COL_COST) {
+                } else if (realColIndex == COL_TON) {
+                    return getValueAt(rowIndex, colIndex).toString();
+                } else if (realColIndex == COL_COST) {
                     return Messages.getString("ChatLounge.tipCost",
                             getValueAt(rowIndex, colIndex));
-                } else if (realColIndex == PlayerTableModel.COL_START) {
+                } else if (realColIndex == COL_START) {
                     return (String) getValueAt(rowIndex, colIndex);
                 } else {
                     return Integer.toString((Integer) getValueAt(rowIndex, colIndex));
@@ -173,15 +180,15 @@ public class PlayerTableModel extends AbstractTableModel {
 
     public void setupColumnWidths(JTable playersTable) {
         TableColumn column;
-        for (int i = 0; i < PlayerTableModel.N_COL; i++) {
+        for (int i = 0; i < N_COL; i++) {
             column = playersTable.getColumnModel().getColumn(i);
-            if (i == PlayerTableModel.COL_PLAYER) {
+            if (i == COL_PLAYER) {
                 column.setPreferredWidth(90);
-            } else if (i == PlayerTableModel.COL_TEAM) {
+            } else if (i == COL_TEAM) {
                 column.setPreferredWidth(5);
-            } else if ((i == PlayerTableModel.COL_COST)) {
+            } else if ((i == COL_COST)) {
                 column.setPreferredWidth(55);
-            } else if (i == PlayerTableModel.COL_START) {
+            } else if (i == COL_START) {
                 column.setPreferredWidth(50);
             } else {
                 column.setPreferredWidth(35);
