@@ -61,9 +61,7 @@ public class PlayerTableModel extends AbstractTableModel {
         int bv = 0;
         int cost = 0;
         double ton = 0;
-        ClientGUI gui = chatLounge.getClientgui();
-        Client c = gui.getClient();
-        for (Entity entity : c.getEntitiesVector()) {
+        for (Entity entity : chatLounge.getClientgui().getClient().getEntitiesVector()) {
             if (entity.getOwner().equals(player)) {
                 bv += entity.calculateBattleValue();
                 cost += entity.getCost(false);
