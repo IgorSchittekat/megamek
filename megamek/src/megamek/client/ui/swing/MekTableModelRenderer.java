@@ -90,8 +90,8 @@ public class MekTableModelRenderer extends JPanel implements TableCellRenderer {
         if (null == entity) {
             return null;
         }
-        boolean isOwner = entity.getOwner().equals(chatLounge.getClientGUI().getClient().getLocalPlayer());
-        boolean blindDrop = chatLounge.getClientGUI().getClient().getGame().getOptions()
+        boolean isOwner = entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer());
+        boolean blindDrop = chatLounge.getClientgui().getClient().getGame().getOptions()
                 .booleanOption(OptionsConstants.BASE_BLIND_DROP);
         boolean compact = chatLounge.getButCompact().isSelected();
         if (!isOwner && blindDrop) {
@@ -124,7 +124,7 @@ public class MekTableModelRenderer extends JPanel implements TableCellRenderer {
                 if (compact) {
                     clearImage();
                 } else {
-                    chatLounge.getClientGUI().loadPreviewImage(getLabel(), entity);
+                    chatLounge.getClientgui().loadPreviewImage(getLabel(), entity);
                 }
                 setToolTipText(ChatLounge.formatUnitTooltip(entity));
                 setLoad(entity.getTransportId() != Entity.NONE);
@@ -135,13 +135,13 @@ public class MekTableModelRenderer extends JPanel implements TableCellRenderer {
                     setImage(entity.getCrew().getPortrait(0).getImage(50));
                 }
                 setToolTipText(ChatLounge.formatPilotTooltip(entity.getCrew(),
-                        chatLounge.getClientGUI().getClient().getGame().getOptions()
+                        chatLounge.getClientgui().getClient().getGame().getOptions()
                                 .booleanOption(OptionsConstants.RPG_COMMAND_INIT),
-                        chatLounge.getClientGUI().getClient().getGame().getOptions()
+                        chatLounge.getClientgui().getClient().getGame().getOptions()
                                 .booleanOption(OptionsConstants.RPG_INDIVIDUAL_INITIATIVE),
-                        chatLounge.getClientGUI().getClient().getGame().getOptions()
+                        chatLounge.getClientgui().getClient().getGame().getOptions()
                                 .booleanOption(OptionsConstants.RPG_TOUGHNESS),
-                        chatLounge.getClientGUI().getClient().getGame().getOptions()
+                        chatLounge.getClientgui().getClient().getGame().getOptions()
                                 .booleanOption(OptionsConstants.RPG_RPG_GUNNERY)));
             }
         }

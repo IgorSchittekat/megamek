@@ -60,9 +60,9 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
         } else if (command.equalsIgnoreCase("CONFIGURE_ALL")) {
             chatLounge.customizeMechs(entities);
         } else if (command.equalsIgnoreCase("DELETE")) {
-            Client c = chatLounge.getClientGUI().getBots().get(entity.getOwner().getName());
+            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());
             if (c == null) {
-                c = chatLounge.getClientGUI().getClient();
+                c = chatLounge.getClientgui().getClient();
             }
             for (Entity e : entities) {
                 // first unload any units from this unit
@@ -77,7 +77,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                 // unload this unit from any other units it might be loaded
                 // onto
                 if (entity.getTransportId() != Entity.NONE) {
-                    Entity loader = chatLounge.getClientGUI().getClient().getGame().getEntity(entity.getTransportId());
+                    Entity loader = chatLounge.getClientgui().getClient().getGame().getEntity(entity.getTransportId());
                     if (null != loader) {
                         loader.unload(entity);
                         entity.setTransportId(Entity.NONE);
@@ -88,9 +88,9 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                 c.sendDeleteEntity(e.getId());
             }
         } else if (command.equalsIgnoreCase("SKILLS")) {
-            Client c = chatLounge.getClientGUI().getBots().get(entity.getOwner().getName());
+            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());
             if (c == null) {
-                c = chatLounge.getClientGUI().getClient();
+                c = chatLounge.getClientgui().getClient();
             }
             for (Entity e : entities) {
                 for (int i = 0; i < e.getCrew().getSlotCount(); i++) {
@@ -107,9 +107,9 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                 c.sendUpdateEntity(e);
             }
         } else if (command.equalsIgnoreCase(NAME_COMMAND)) {
-            Client c = chatLounge.getClientGUI().getBots().get(entity.getOwner().getName());
+            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());
             if (c == null) {
-                c = chatLounge.getClientGUI().getClient();
+                c = chatLounge.getClientgui().getClient();
             }
             for (Entity e : entities) {
                 for (int i = 0; i < e.getCrew().getSlotCount(); i++) {
@@ -120,9 +120,9 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                 c.sendUpdateEntity(e);
             }
         } else if (command.equals(CALLSIGN_COMMAND)) {
-            Client c = chatLounge.getClientGUI().getBots().get(entity.getOwner().getName());
+            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());
             if (c == null) {
-                c = chatLounge.getClientGUI().getClient();
+                c = chatLounge.getClientgui().getClient();
             }
             for (Entity e : entities) {
                 for (int i = 0; i < e.getCrew().getSlotCount(); i++) {
@@ -134,7 +134,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
             StringTokenizer stLoad = new StringTokenizer(st.nextToken(), ":");
             int id = Integer.parseInt(stLoad.nextToken());
             int bayNumber = Integer.parseInt(stLoad.nextToken());
-            Entity loadingEntity = chatLounge.getClientGUI().getClient().getEntity(id);
+            Entity loadingEntity = chatLounge.getClientgui().getClient().getEntity(id);
             boolean loadRear = false;
             if (stLoad.hasMoreTokens()) {
                 loadRear = Boolean.parseBoolean(stLoad.nextToken());
@@ -275,7 +275,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                     chatLounge.loader(e, id, bayNumber);
                 }
             } else {
-                JOptionPane.showMessageDialog(chatLounge.getClientGUI().frame, errorMessage, Messages.getString("LoadingBay.error"), // $NON-NLS-2$
+                JOptionPane.showMessageDialog(chatLounge.getClientgui().frame, errorMessage, Messages.getString("LoadingBay.error"), // $NON-NLS-2$
                         JOptionPane.ERROR_MESSAGE);
             }
         } else if (command.equalsIgnoreCase("UNLOAD")) {
@@ -297,13 +297,13 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
             for (Entity e : entities) {
                 fighters.add(e.getId());
             }
-            if ((!chatLounge.getClientGUI().getClient().getGame().getOptions()
+            if ((!chatLounge.getClientgui().getClient().getGame().getOptions()
                     .booleanOption(OptionsConstants.ADVAERORULES_ALLOW_LARGE_SQUADRONS)
                     && (fighters.size() > FighterSquadron.MAX_SIZE))
-                    || (chatLounge.getClientGUI().getClient().getGame().getOptions()
+                    || (chatLounge.getClientgui().getClient().getGame().getOptions()
                     .booleanOption(OptionsConstants.ADVAERORULES_ALLOW_LARGE_SQUADRONS)
                     && (fighters.size() > FighterSquadron.ALTERNATE_MAX_SIZE))) {
-                JOptionPane.showMessageDialog(chatLounge.getClientGUI().frame, Messages.getString("FighterSquadron.toomany"),
+                JOptionPane.showMessageDialog(chatLounge.getClientgui().frame, Messages.getString("FighterSquadron.toomany"),
                         Messages.getString("FighterSquadron.error"), JOptionPane.ERROR_MESSAGE); // $NON-NLS-1$
                 // //$NON-NLS-2$
             } else {
@@ -339,7 +339,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                     dirty = true;
                 }
                 if (dirty) {
-                    chatLounge.getClientGUI().getClient().sendUpdateEntity(e);
+                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);
                 }
             }
         } else if (command.equalsIgnoreCase("HOTLOAD_OFF") || command.equalsIgnoreCase("HOTLOAD_ON")) {
@@ -371,7 +371,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                     dirty = true;
                 }
                 if (dirty) {
-                    chatLounge.getClientGUI().getClient().sendUpdateEntity(e);
+                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);
                 }
             }
         } else if (command.equalsIgnoreCase("SEARCHLIGHT_OFF") || command.equalsIgnoreCase("SEARCHLIGHT_ON")) {
@@ -384,7 +384,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
                     dirty = true;
                 }
                 if (dirty) {
-                    chatLounge.getClientGUI().getClient().sendUpdateEntity(e);
+                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);
                 }
             }
         }
@@ -397,8 +397,8 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
             int row = chatLounge.getTableEntities().rowAtPoint(e.getPoint());
             Entity entity = chatLounge.getMekModel().getEntityAt(row);
             if (entity != null) {
-                boolean isOwner = entity.getOwner().equals(chatLounge.getClientGUI().getClient().getLocalPlayer());
-                boolean isBot = chatLounge.getClientGUI().getBots().get(entity.getOwner().getName()) != null;
+                boolean isOwner = entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer());
+                boolean isBot = chatLounge.getClientgui().getBots().get(entity.getOwner().getName()) != null;
                 if ((isOwner || isBot)) {
                     chatLounge.customizeMech(entity);
                 }
@@ -421,7 +421,7 @@ public class MekTableMouseAdapter extends MouseInputAdapter implements ActionLis
         JPopupMenu popup = new JPopupMenu();
         JTable tableEntities = chatLounge.getTableEntities();
         MekTableModel mekModel = chatLounge.getMekModel();
-        ClientGUI clientgui = chatLounge.getClientGUI();
+        ClientGUI clientgui = chatLounge.getClientgui();
         if (chatLounge.getTableEntities().getSelectedRowCount() == 0) {
             return;
         }

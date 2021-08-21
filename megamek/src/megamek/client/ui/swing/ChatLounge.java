@@ -245,10 +245,6 @@ public class ChatLounge extends AbstractPhaseDisplay implements ActionListener, 
         }
     }
 
-    public ClientGUI getClientGUI() {
-        return clientgui;
-    }
-
     public PlayerTableModel getPlayerModel() {
         return playerModel;
     }

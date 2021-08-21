@@ -80,8 +80,8 @@ public class MekTableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         boolean compact = chatLounge.getButCompact().isSelected();
         Entity entity = getEntityAt(row);
-        boolean blindDrop = !entity.getOwner().equals(chatLounge.getClientGUI().getClient().getLocalPlayer())
-                && chatLounge.getClientGUI().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_BLIND_DROP);
+        boolean blindDrop = !entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer())
+                && chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_BLIND_DROP);
         String value = "";
         if (col == COL_BV) {
             value += entity.calculateBattleValue();
@@ -90,10 +90,10 @@ public class MekTableModel extends AbstractTableModel {
                 value += entity.getOwner().getName();
             } else {
                 value += entity.getOwner().getName() + "<br>Team "
-                        + chatLounge.getClientGUI().getClient().getGame().getPlayer(entity.getOwnerId()).getTeam();
+                        + chatLounge.getClientgui().getClient().getGame().getPlayer(entity.getOwnerId()).getTeam();
             }
         } else if (col == COL_PILOT) {
-            final boolean rpgSkills = chatLounge.getClientGUI().getClient().getGame().getOptions().booleanOption(OptionsConstants.RPG_RPG_GUNNERY);
+            final boolean rpgSkills = chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.RPG_RPG_GUNNERY);
             if (compact) {
                 return formatPilotCompact(entity.getCrew(), blindDrop, rpgSkills);
             }

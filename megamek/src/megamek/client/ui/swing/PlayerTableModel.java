@@ -1,5 +1,6 @@
 package megamek.client.ui.swing;
 
+import megamek.client.Client;
 import megamek.client.ui.Messages;
 import megamek.common.Entity;
 import megamek.common.IPlayer;
@@ -15,14 +16,14 @@ import java.util.ArrayList;
 public class PlayerTableModel extends AbstractTableModel {
     private static final long serialVersionUID = -1372393680232901923L;
 
-    private static final int COL_PLAYER = 0;
-    private static final int COL_RATING = 1;
-    private static final int COL_START = 2;
-    private static final int COL_TEAM = 3;
-    private static final int COL_BV = 4;
-    private static final int COL_TON = 5;
-    private static final int COL_COST = 6;
-    private static final int N_COL = 7;
+    public static final int COL_PLAYER = 0;
+    public static final int COL_RATING = 1;
+    public static final int COL_START = 2;
+    public static final int COL_TEAM = 3;
+    public static final int COL_BV = 4;
+    public static final int COL_TON = 5;
+    public static final int COL_COST = 6;
+    public static final int N_COL = 7;
 
     private final ChatLounge chatLounge;
     private ArrayList<IPlayer> players;
@@ -60,7 +61,9 @@ public class PlayerTableModel extends AbstractTableModel {
         int bv = 0;
         int cost = 0;
         double ton = 0;
-        for (Entity entity : chatLounge.getClientGUI().getClient().getEntitiesVector()) {
+        ClientGUI gui = chatLounge.getClientgui();
+        Client c = gui.getClient();
+        for (Entity entity : c.getEntitiesVector()) {
             if (entity.getOwner().equals(player)) {
                 bv += entity.calculateBattleValue();
                 cost += entity.getCost(false);
@@ -108,8 +111,8 @@ public class PlayerTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int row, int col) {
         IPlayer player = getPlayerAt(row);
-        boolean blindDrop = !player.equals(chatLounge.getClientGUI().getClient().getLocalPlayer()) &&
-                chatLounge.getClientGUI().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP);
+        boolean blindDrop = !player.equals(chatLounge.getClientgui().getClient().getLocalPlayer()) &&
+                chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP);
         if (col == COL_BV) {
             int bv = bvs.get(row);
             if (blindDrop) {
@@ -141,6 +144,18 @@ public class PlayerTableModel extends AbstractTableModel {
 
     public IPlayer getPlayerAt(int row) {
         return players.get(row);
+    }
+
+    protected int getBvAt(int row) {
+        return bvs.get(row);
+    }
+
+    protected int getCostAt(int row) {
+        return costs.get(row);
+    }
+
+    protected Double getTonAt(int row) {
+        return tons.get(row);
     }
 
     public JTable createPlayersTable() {

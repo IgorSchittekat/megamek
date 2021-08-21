@@ -24,8 +24,8 @@ public class PlayerTableMouseAdapter extends MouseInputAdapter implements Action
             int row = chatLounge.getTablePlayers().rowAtPoint(e.getPoint());
             IPlayer player = chatLounge.getPlayerModel().getPlayerAt(row);
             if (player != null) {
-                boolean isOwner = player.equals(chatLounge.getClientGUI().getClient().getLocalPlayer());
-                boolean isBot = chatLounge.getClientGUI().getBots().get(player.getName()) != null;
+                boolean isOwner = player.equals(chatLounge.getClientgui().getClient().getLocalPlayer());
+                boolean isBot = chatLounge.getClientgui().getBots().get(player.getName()) != null;
                 if ((isOwner || isBot)) {
                     chatLounge.customizePlayer();
                 }
@@ -47,8 +47,8 @@ public class PlayerTableMouseAdapter extends MouseInputAdapter implements Action
         JPopupMenu popup = new JPopupMenu();
         int row = chatLounge.getTablePlayers().rowAtPoint(e.getPoint());
         IPlayer player = chatLounge.getPlayerModel().getPlayerAt(row);
-        boolean isOwner = player.equals(chatLounge.getClientGUI().getClient().getLocalPlayer());
-        boolean isBot = chatLounge.getClientGUI().getBots().get(player.getName()) != null;
+        boolean isOwner = player.equals(chatLounge.getClientgui().getClient().getLocalPlayer());
+        boolean isBot = chatLounge.getClientgui().getBots().get(player.getName()) != null;
         if (e.isPopupTrigger()) {
             JMenuItem menuItem = null;
             menuItem = new JMenuItem("Configure ...");
@@ -77,19 +77,19 @@ public class PlayerTableMouseAdapter extends MouseInputAdapter implements Action
         } else if (command.equalsIgnoreCase("BOTCONFIG")) {
             int row = Integer.parseInt(st.nextToken());
             IPlayer player = chatLounge.getPlayerModel().getPlayerAt(row);
-            BotClient bot = (BotClient) chatLounge.getClientGUI().getBots().get(player.getName());
-            BotConfigDialog bcd = new BotConfigDialog(chatLounge.getClientGUI().frame, bot);
+            BotClient bot = (BotClient) chatLounge.getClientgui().getBots().get(player.getName());
+            BotConfigDialog bcd = new BotConfigDialog(chatLounge.getClientgui().frame, bot);
             bcd.setVisible(true);
 
             if (!bcd.dialogAborted && bot instanceof Princess) {
                 ((Princess) bot).setBehaviorSettings(bcd.getBehaviorSettings());
 
                 // bookkeeping:
-                chatLounge.getClientGUI().getBots().remove(player.getName());
+                chatLounge.getClientgui().getBots().remove(player.getName());
                 bot.setName(bcd.getBotName());
-                chatLounge.getClientGUI().getBots().put(bot.getName(), bot);
+                chatLounge.getClientgui().getBots().put(bot.getName(), bot);
                 player.setName(bcd.getBotName());
-                chatLounge.getClientGUI().chatlounge.refreshPlayerInfo();
+                chatLounge.getClientgui().chatlounge.refreshPlayerInfo();
             }
         }
     }
