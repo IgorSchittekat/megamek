@@ -446,8 +446,12 @@ public abstract class BotClient extends Client {
                     break;
                 case PHASE_VICTORY:
                     runEndGame();
+                    /*
+                    The next lines are removed, in order to keep the rating system for bots over several games
                     sendChat(Messages.getString("BotClient.Bye")); //$NON-NLS-1$
                     die();
+                     */
+                    sendDone(true);
                     break;
                 default:
                     break;
