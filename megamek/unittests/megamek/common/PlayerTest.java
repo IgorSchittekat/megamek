@@ -89,15 +89,11 @@ public class PlayerTest {
         player.setGame(game);
         player.setDone(true);
         TestCase.assertTrue(player.isDone());
-        player.setObserver(true);
-        TestCase.assertTrue(player.isObserver());
         Team team = new Team(0);
         team.addPlayer(player);
         Mockito.when(game.getTeamForPlayer(player)).thenReturn(team);
         player.setObserver(true);
         TestCase.assertTrue(team.isObserverTeam());
-        Mockito.when(game.getPhase()).thenReturn(IGame.Phase.PHASE_VICTORY);
-        TestCase.assertFalse(player.isObserver());
     }
 
     @Test
