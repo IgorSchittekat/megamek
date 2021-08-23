@@ -239,9 +239,6 @@ public final class Player extends TurnOrdered implements IPlayer {
 
     @Override
     public boolean isObserver() {
-        if ((game != null) && (game.getPhase() == IGame.Phase.PHASE_VICTORY)) {
-            return false;
-        }
         return observer;
     }
 

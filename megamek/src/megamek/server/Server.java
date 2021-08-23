@@ -2448,6 +2448,7 @@ public class Server implements Runnable {
                 clearReports();
                 prepareVictoryReport();
                 game.addReports(vPhaseReport);
+                RatingSystem.calculate(game);
                 // Before we send the full entities packet we need to loop
                 // through the fighters in squadrons and damage them.
                 for (Iterator<Entity> ents = game.getEntities(); ents.hasNext(); ) {
