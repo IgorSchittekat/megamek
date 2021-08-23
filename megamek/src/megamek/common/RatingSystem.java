@@ -7,6 +7,10 @@ import megamek.common.event.GamePlayerChangeEvent;
 import java.util.Enumeration;
 
 public class RatingSystem {
+    private RatingSystem() {
+
+    }
+
     public static void calculate(IGame game) {
         // Example rating calculation
         // To be Implemented with a correct rating calculation
