@@ -243,8 +243,8 @@ public final class Player extends TurnOrdered implements IPlayer {
     }
 
     @Override
-    public void setSeeAll(boolean see_all) {
-        seeEntireBoard = see_all;
+    public void setSeeAll(boolean seeAll) {
+        seeEntireBoard = seeAll;
     }
 
     // This simply returns the value, without checking the observer flag
@@ -253,7 +253,7 @@ public final class Player extends TurnOrdered implements IPlayer {
         return seeEntireBoard;
     }
 
-    // If observer is false, see_entire_board does nothing
+    // If observer is false, seeEntireBoard does nothing
     @Override
     public boolean canSeeAll() {
         return (observer && seeEntireBoard);
