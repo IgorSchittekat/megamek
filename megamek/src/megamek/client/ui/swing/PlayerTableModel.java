@@ -1,10 +1,8 @@
 package megamek.client.ui.swing;
 
-import megamek.client.Client;
 import megamek.client.ui.Messages;
 import megamek.common.Entity;
 import megamek.common.IPlayer;
-import megamek.common.IStartingPositions;
 import megamek.common.options.OptionsConstants;
 
 import javax.swing.*;
@@ -111,32 +109,33 @@ public class PlayerTableModel extends AbstractTableModel {
         IPlayer player = getPlayerAt(row);
         boolean blindDrop = !player.equals(chatLounge.getClientgui().getClient().getLocalPlayer()) &&
                 chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP);
-        if (col == COL_BV) {
-            int bv = bvs.get(row);
-            if (blindDrop) {
-                bv = bv > 0 ? 9999 : 0;
-            }
-            return bv;
-        } else if (col == COL_PLAYER) {
-            return player.getName();
-        } else if (col == COL_RATING) {
-            return player.getRating();
-        } else if (col == COL_START) {
-            return IStartingPositions.START_LOCATION_NAMES[player.getStartingPos()];
-        } else if (col == COL_TON) {
-            double ton = tons.get(row);
-            if (blindDrop) {
-                ton = ton > 0 ? 9999 : 0;
-            }
-            return ton;
-        } else if (col == COL_COST) {
-            int cost = costs.get(row);
-            if (blindDrop) {
-                cost = cost > 0 ? 9999 : 0;
-            }
-            return cost;
-        } else {
-            return player.getTeam();
+        switch (col) {
+            case COL_PLAYER:
+                return player.getName();
+            case COL_RATING:
+                return player.getRating();
+            case COL_TEAM:
+                return player.getTeam();
+            case COL_BV:
+                int bv = bvs.get(row);
+                if (blindDrop) {
+                    bv = bv > 0 ? 9999 : 0;
+                }
+                return bv;
+            case COL_TON:
+                double ton = tons.get(row);
+                if (blindDrop) {
+                    ton = ton > 0 ? 9999 : 0;
+                }
+                return ton;
+            case COL_COST:
+                int cost = costs.get(row);
+                if (blindDrop) {
+                    cost = cost > 0 ? 9999 : 0;
+                }
+                return cost;
+            default:
+                throw new IndexOutOfBoundsException();
         }
     }
 
