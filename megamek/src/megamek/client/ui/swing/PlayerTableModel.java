@@ -198,12 +198,14 @@ public class PlayerTableModel extends AbstractTableModel {
         for (int i = 0; i < N_COL; i++) {
             column = playersTable.getColumnModel().getColumn(i);
             if (i == COL_PLAYER) {
-                column.setPreferredWidth(90);
+                column.setPreferredWidth(75);
             } else if (i == COL_TEAM) {
-                column.setPreferredWidth(5);
+                column.setPreferredWidth(35);
             } else if ((i == COL_COST)) {
                 column.setPreferredWidth(55);
             } else if (i == COL_START) {
+                column.setPreferredWidth(50);
+            } else if (i == COL_RATING) {
                 column.setPreferredWidth(50);
             } else {
                 column.setPreferredWidth(35);
