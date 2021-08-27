@@ -3,6 +3,7 @@ package megamek.client.ui.swing;
 import megamek.client.ui.Messages;
 import megamek.common.Entity;
 import megamek.common.IPlayer;
+import megamek.common.IStartingPositions;
 import megamek.common.options.OptionsConstants;
 
 import javax.swing.*;
@@ -114,6 +115,8 @@ public class PlayerTableModel extends AbstractTableModel {
                 return player.getName();
             case COL_RATING:
                 return player.getRating();
+            case COL_START:
+                return IStartingPositions.START_LOCATION_NAMES[player.getStartingPos()];
             case COL_TEAM:
                 return player.getTeam();
             case COL_BV:
