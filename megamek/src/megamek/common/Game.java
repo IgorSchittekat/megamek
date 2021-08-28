@@ -936,7 +936,7 @@ public class Game implements Serializable, IGame {
     /**
      * Returns the actual vector for the entities
      */
-    public List<Entity> getEntitiesVector() {
+    public synchronized List<Entity> getEntitiesVector() {
         return Collections.unmodifiableList(entities);
     }
 
