@@ -475,13 +475,13 @@ public class Game implements Serializable, IGame {
         if (IPlayer.PLAYER_NONE == id) {
             return null;
         }
-        return playerIds.get(Integer.valueOf(id));
+        return playerIds.get(id);
     }
 
     public void addPlayer(int id, IPlayer player) {
         player.setGame(this);
         players.addElement(player);
-        playerIds.put(Integer.valueOf(id), player);
+        playerIds.put(id, player);
         setupTeams();
         updatePlayer(player);
     }
@@ -490,7 +490,7 @@ public class Game implements Serializable, IGame {
         final IPlayer oldPlayer = getPlayer(id);
         player.setGame(this);
         players.setElementAt(player, players.indexOf(oldPlayer));
-        playerIds.put(Integer.valueOf(id), player);
+        playerIds.put(id, player);
         setupTeams();
         updatePlayer(player);
     }
@@ -502,7 +502,7 @@ public class Game implements Serializable, IGame {
     public void removePlayer(int id) {
         IPlayer playerToRemove = getPlayer(id);
         players.removeElement(playerToRemove);
-        playerIds.remove(Integer.valueOf(id));
+        playerIds.remove(id);
         setupTeams();
         processGameEvent(new GamePlayerChangeEvent(this, playerToRemove));
     }
