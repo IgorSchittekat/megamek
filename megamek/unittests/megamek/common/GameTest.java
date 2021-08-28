@@ -48,4 +48,16 @@ public class GameTest {
         players.remove(p1);
         TestCase.assertEquals(players, game.getPlayersVector());
     }
+
+    @Test
+    public void testEntities() {
+        Game game = new Game();
+        Entity e1 = Mockito.mock(Entity.class);
+        Entity e2 = Mockito.mock(Entity.class);
+        Vector<Entity> entities = new Vector<>();
+        entities.add(e1);
+        entities.add(e2);
+        game.setEntitiesVector(entities);
+        TestCase.assertEquals(entities, game.getEntitiesVector());
+    }
 }
