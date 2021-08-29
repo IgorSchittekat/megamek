@@ -2045,39 +2045,34 @@ public class Game implements Serializable, IGame {
     }
 
     /**
-     * Returns the number of remaining selectable infantry owned by a player.
+     * Returns the number of remaining selectable entities of type cls owned by a player.
      */
-    public int getInfantryLeft(int playerId) {
+    private int getEntitiesLeft(int playerId, Class<?> cls) {
         IPlayer player = getPlayer(playerId);
         int remaining = 0;
 
         for (Entity entity : entities) {
             if (player.equals(entity.getOwner())
-                && entity.isSelectableThisTurn()
-                && (entity instanceof Infantry)) {
+                    && entity.isSelectableThisTurn()
+                    && (cls.isInstance(entity))) {
                 remaining++;
             }
         }
-
         return remaining;
+    }
+
+    /**
+     * Returns the number of remaining selectable infantry owned by a player.
+     */
+    public int getInfantryLeft(int playerId) {
+        return getEntitiesLeft(playerId, Infantry.class);
     }
 
     /**
      * Returns the number of remaining selectable Protomechs owned by a player.
      */
     public int getProtomechsLeft(int playerId) {
-        IPlayer player = getPlayer(playerId);
-        int remaining = 0;
-
-        for (Entity entity : entities) {
-            if (player.equals(entity.getOwner())
-                && entity.isSelectableThisTurn()
-                && (entity instanceof Protomech)) {
-                remaining++;
-            }
-        }
-
-        return remaining;
+        return getEntitiesLeft(playerId, Protomech.class);
     }
 
     /**
@@ -2089,18 +2084,7 @@ public class Game implements Serializable, IGame {
      * turn
      */
     public int getVehiclesLeft(int playerId) {
-        IPlayer player = getPlayer(playerId);
-        int remaining = 0;
-
-        for (Entity entity : entities) {
-            if (player.equals(entity.getOwner())
-                && entity.isSelectableThisTurn()
-                && (entity instanceof Tank)) {
-                remaining++;
-            }
-        }
-
-        return remaining;
+        return getEntitiesLeft(playerId, Tank.class);
     }
 
     /**
@@ -2112,18 +2096,7 @@ public class Game implements Serializable, IGame {
      * turn
      */
     public int getMechsLeft(int playerId) {
-        IPlayer player = getPlayer(playerId);
-        int remaining = 0;
-
-        for (Entity entity : entities) {
-            if (player.equals(entity.getOwner())
-                && entity.isSelectableThisTurn()
-                && (entity instanceof Mech)) {
-                remaining++;
-            }
-        }
-
-        return remaining;
+        return getEntitiesLeft(playerId, Mech.class);
     }
 
     /**
