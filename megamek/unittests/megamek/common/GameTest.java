@@ -191,5 +191,19 @@ public class GameTest {
         game.setTurnVector(turnVector);
         game.removeTurnFor(e4);
         TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_INF_MOVE_MULTI)).thenReturn(false);
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_INF_MOVE_LATER)).thenReturn(true);
+        Mockito.when(turn.isValidEntity(e1, game, false)).thenReturn(true);
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e1);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_PROTOS_MOVE_MULTI)).thenReturn(false);
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_PROTOS_MOVE_LATER)).thenReturn(true);
+        Mockito.when(turn.isValidEntity(e2, game, false)).thenReturn(true);
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e2);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
     }
 }
