@@ -306,11 +306,8 @@ public final class Player extends TurnOrdered implements IPlayer {
      */
     @Override
     public void adjustStartingPosForReinforcements() {
-        if (startingPos > 10) {
+        if (startingPos >= 10) {
             startingPos -= 10; // deep deploy change to standard
-        }
-        if (startingPos == Board.START_CENTER) {
-            startingPos = Board.START_ANY; // center changes to any
         }
     }
 
