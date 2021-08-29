@@ -143,4 +143,53 @@ public class GameTest {
         TestCase.assertEquals(1, game.getVehiclesLeft(0));
         TestCase.assertEquals(3, game.getMechsLeft(0));
     }
+
+    @Test
+    public void testRemoveTurnFor() {
+        Game game = new Game();
+        game.resetTurnIndex();
+        Player player = new Player(0, "Test");
+        game.addPlayer(0, player);
+        GameTurn.EntityClassTurn turn = Mockito.mock(GameTurn.EntityClassTurn.class);
+        Vector<GameTurn> turnVector = new Vector<>();
+        turnVector.add(turn);
+        GameOptions options = Mockito.mock(GameOptions.class);
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_INF_MOVE_MULTI)).thenReturn(true);
+        Mockito.when(options.booleanOption(OptionsConstants.INIT_PROTOS_MOVE_MULTI)).thenReturn(true);
+        Mockito.when(options.booleanOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT)).thenReturn(true);
+        Mockito.when(options.booleanOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT)).thenReturn(true);
+        Mockito.when(options.intOption(OptionsConstants.INIT_INF_PROTO_MOVE_MULTI)).thenReturn(1);
+        Mockito.when(options.intOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT_NUMBER)).thenReturn(1);
+        Mockito.when(options.intOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT_NUMBER)).thenReturn(1);
+        game.setOptions(options);
+        Infantry e1 = Mockito.mock(Infantry.class);
+        Protomech e2 = Mockito.mock(Protomech.class);
+        Tank e3 = Mockito.mock(Tank.class);
+        Mech e4 = Mockito.mock(Mech.class);
+        Mockito.when(e1.getOwnerId()).thenReturn(0);
+        Mockito.when(e2.getOwnerId()).thenReturn(0);
+        Mockito.when(e3.getOwnerId()).thenReturn(0);
+        Mockito.when(e4.getOwnerId()).thenReturn(0);
+        game.setPhase(IGame.Phase.PHASE_MOVEMENT);
+        Mockito.when(turn.isValidClass(GameTurn.CLASS_INFANTRY)).thenReturn(true);
+        Mockito.when(turn.isValidClass(~GameTurn.CLASS_INFANTRY)).thenReturn(false);
+        Mockito.when(turn.isValidClass(GameTurn.CLASS_PROTOMECH)).thenReturn(true);
+        Mockito.when(turn.isValidClass(~GameTurn.CLASS_PROTOMECH)).thenReturn(false);
+        Mockito.when(turn.isValidClass(GameTurn.CLASS_TANK)).thenReturn(true);
+        Mockito.when(turn.isValidClass(~GameTurn.CLASS_TANK)).thenReturn(false);
+        Mockito.when(turn.isValidClass(GameTurn.CLASS_MECH)).thenReturn(true);
+        Mockito.when(turn.isValidClass(~GameTurn.CLASS_MECH)).thenReturn(false);
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e1);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e2);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e3);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+        game.setTurnVector(turnVector);
+        game.removeTurnFor(e4);
+        TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+    }
 }
