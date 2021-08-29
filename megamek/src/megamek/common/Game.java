@@ -3313,26 +3313,24 @@ public class Game implements Serializable, IGame {
      * A set of checks for aero units to make sure that the movement order is
      * maintained
      */
-    public boolean checkForValidSpaceStations(int playerId) {
-        Iterator<Entity> iter = getPlayerEntities(getPlayer(playerId), false)
-                .iterator();
-        while (iter.hasNext()) {
-            Entity entity = iter.next();
-            if ((entity instanceof SpaceStation)
-                && getTurn().isValidEntity(entity, this)) {
+    private boolean checkForValidAero(int playerId, Class<?> cls) {
+        for (Entity entity : getPlayerEntities(getPlayer(playerId), false)) {
+            if ((cls.isInstance(entity))
+                    && getTurn().isValidEntity(entity, this)) {
                 return true;
             }
         }
         return false;
     }
 
+    public boolean checkForValidSpaceStations(int playerId) {
+        return checkForValidAero(playerId, SpaceStation.class);
+    }
+
     public boolean checkForValidJumpships(int playerId) {
-        Iterator<Entity> iter = getPlayerEntities(getPlayer(playerId), false)
-                .iterator();
-        while (iter.hasNext()) {
-            Entity entity = iter.next();
+        for (Entity entity : getPlayerEntities(getPlayer(playerId), false)) {
             if ((entity instanceof Jumpship) && !(entity instanceof Warship)
-                && getTurn().isValidEntity(entity, this)) {
+                    && getTurn().isValidEntity(entity, this)) {
                 return true;
             }
         }
@@ -3340,29 +3338,11 @@ public class Game implements Serializable, IGame {
     }
 
     public boolean checkForValidWarships(int playerId) {
-        Iterator<Entity> iter = getPlayerEntities(getPlayer(playerId), false)
-                .iterator();
-        while (iter.hasNext()) {
-            Entity entity = iter.next();
-            if ((entity instanceof Warship)
-                && getTurn().isValidEntity(entity, this)) {
-                return true;
-            }
-        }
-        return false;
+        return checkForValidAero(playerId, Warship.class);
     }
 
     public boolean checkForValidDropships(int playerId) {
-        Iterator<Entity> iter = getPlayerEntities(getPlayer(playerId), false)
-                .iterator();
-        while (iter.hasNext()) {
-            Entity entity = iter.next();
-            if ((entity instanceof Dropship)
-                && getTurn().isValidEntity(entity, this)) {
-                return true;
-            }
-        }
-        return false;
+        return checkForValidAero(playerId, Dropship.class);
     }
 
     @Override
