@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.*;
 
+import megamek.common.icons.Camouflage;
 import megamek.common.options.GameOptions;
 import megamek.common.options.OptionsConstants;
 import org.junit.Test;
@@ -94,6 +95,23 @@ public class PlayerTest {
         Mockito.when(game.getTeamForPlayer(player)).thenReturn(team);
         player.setObserver(true);
         TestCase.assertTrue(team.isObserverTeam());
+        Camouflage camouflage = new Camouflage(Camouflage.NO_CAMOUFLAGE, PlayerColour.GREEN.name());
+        player.setCamouflage(camouflage);
+        TestCase.assertEquals(camouflage, player.getCamouflage());
+        Coords coords1 = new Coords(10, 12);
+        Coords coords2 = new Coords(15, 5);
+        Vector<Coords> coordsVector = new Vector<>();
+        coordsVector.add(coords1);
+        coordsVector.add(coords2);
+        player.setArtyAutoHitHexes(coordsVector);
+        TestCase.assertEquals(coordsVector, player.getArtyAutoHitHexes());
+        Coords coords3 = new Coords(22, 7);
+        player.addArtyAutoHitHex(coords3);
+        coordsVector.add(coords3);
+        TestCase.assertEquals(coordsVector, player.getArtyAutoHitHexes());
+        player.removeArtyAutoHitHexes();
+        TestCase.assertEquals(new Vector<>(), player.getArtyAutoHitHexes());
+
     }
 
     @Test
@@ -176,6 +194,9 @@ public class PlayerTest {
         Player player3 = new Player(0, "Test");
         TestCase.assertTrue(player.equals(player3));
         TestCase.assertFalse(player.equals(player2));
+        TestCase.assertFalse(player.equals(null));
+        Game game = new Game();
+        TestCase.assertFalse(player.equals(game));
     }
 
     @Test
@@ -206,5 +227,19 @@ public class PlayerTest {
         entityVector.add(entity);
         Mockito.when(game.getEntitiesVector()).thenReturn(entityVector);
         TestCase.assertEquals(units, player.getAirborneVTOL());
+    }
+
+    @Test
+    public void testAdjustStartingPosForReinforcements() {
+        Player player = new Player(0, "Test");
+        player.setStartingPos(5);
+        player.adjustStartingPosForReinforcements();
+        TestCase.assertEquals(5, player.getStartingPos());
+        player.setStartingPos(12);
+        player.adjustStartingPosForReinforcements();
+        TestCase.assertEquals(2, player.getStartingPos());
+        player.setStartingPos(Board.START_CENTER);
+        player.adjustStartingPosForReinforcements();
+        TestCase.assertEquals(Board.START_ANY, player.getStartingPos());
     }
 }
