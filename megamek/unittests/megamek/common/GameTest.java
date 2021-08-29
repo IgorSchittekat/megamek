@@ -243,4 +243,45 @@ public class GameTest {
         game.resetControlRolls(entity);
         TestCase.assertFalse(game.getControlRolls().hasMoreElements());
     }
+
+    @Test
+    public void testCheckForValidAero() {
+        Game game = new Game();
+        Player player = new Player(0, "Test");
+        game.addPlayer(0, player);
+        SpaceStation e1 = Mockito.mock(SpaceStation.class);
+        Jumpship e2 = Mockito.mock(Jumpship.class);
+        Warship e3 = Mockito.mock(Warship.class);
+        Dropship e4 = Mockito.mock(Dropship.class);
+        Mockito.when(e1.getOwner()).thenReturn(player);
+        Mockito.when(e2.getOwner()).thenReturn(player);
+        Mockito.when(e3.getOwner()).thenReturn(player);
+        Mockito.when(e4.getOwner()).thenReturn(player);
+        Vector<Entity> entityVector = new Vector<>();
+        entityVector.add(e1);
+        entityVector.add(e2);
+        entityVector.add(e3);
+        entityVector.add(e4);
+        game.setEntitiesVector(entityVector);
+        GameTurn turn = Mockito.mock(GameTurn.class);
+        Vector<GameTurn> turnVector = new Vector<>();
+        turnVector.add(turn);
+        game.setTurnVector(turnVector);
+        Mockito.when(turn.isValidEntity(e1, game)).thenReturn(false);
+        Mockito.when(turn.isValidEntity(e2, game)).thenReturn(false);
+        Mockito.when(turn.isValidEntity(e3, game)).thenReturn(false);
+        Mockito.when(turn.isValidEntity(e4, game)).thenReturn(false);
+        TestCase.assertFalse(game.checkForValidSpaceStations(0));
+        TestCase.assertFalse(game.checkForValidJumpships(0));
+        TestCase.assertFalse(game.checkForValidWarships(0));
+        TestCase.assertFalse(game.checkForValidDropships(0));
+        Mockito.when(turn.isValidEntity(e1, game)).thenReturn(true);
+        Mockito.when(turn.isValidEntity(e2, game)).thenReturn(true);
+        Mockito.when(turn.isValidEntity(e3, game)).thenReturn(true);
+        Mockito.when(turn.isValidEntity(e4, game)).thenReturn(true);
+        TestCase.assertTrue(game.checkForValidSpaceStations(0));
+        TestCase.assertTrue(game.checkForValidJumpships(0));
+        TestCase.assertTrue(game.checkForValidWarships(0));
+        TestCase.assertTrue(game.checkForValidDropships(0));
+    }
 }
