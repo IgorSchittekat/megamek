@@ -38,8 +38,8 @@ public class QuadMech extends Mech {
 <span class="fc" id="L38">    }</span>
 
     public QuadMech() {
-<span class="fc" id="L41">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
-<span class="fc" id="L42">    }</span>
+<span class="nc" id="L41">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
+<span class="nc" id="L42">    }</span>
 
     public QuadMech(int inGyroType, int inCockpitType) {
 <span class="fc" id="L45">        super(inGyroType, inCockpitType);</span>
@@ -63,20 +63,20 @@ public class QuadMech extends Mech {
      */
     @Override
     public boolean cannotStandUpFromHullDown() {
-<span class="fc" id="L66">        int i = 0;</span>
-<span class="pc bpc" id="L67" title="1 of 2 branches missed.">        if (isLocationBad(LOC_LARM)) {</span>
+<span class="nc" id="L66">        int i = 0;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (isLocationBad(LOC_LARM)) {</span>
 <span class="nc" id="L68">            i++;</span>
         }
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (isLocationBad(LOC_RARM)) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (isLocationBad(LOC_RARM)) {</span>
 <span class="nc" id="L71">            i++;</span>
         }
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (isLocationBad(LOC_LLEG)) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (isLocationBad(LOC_LLEG)) {</span>
 <span class="nc" id="L74">            i++;</span>
         }
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (isLocationBad(LOC_RLEG)) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (isLocationBad(LOC_RLEG)) {</span>
 <span class="nc" id="L77">            i++;</span>
         }
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        return i &gt;= 3;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        return i &gt;= 3;</span>
     }
 
     @Override
@@ -123,7 +123,7 @@ public class QuadMech extends Mech {
 <span class="nc" id="L123">                    wmp = 0;</span>
                 }
             }        
-<span class="fc bfc" id="L126" title="All 2 branches covered.">            if (wmp &gt; 0) {</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">            if (wmp &gt; 0) {</span>
 <span class="pc bpc" id="L127" title="1 of 2 branches missed.">                if (hipHits &gt; 0) {</span>
 <span class="nc bnc" id="L128" title="All 4 branches missed.">                    if ((game != null) &amp;&amp; game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_LEG_DAMAGE)) {</span>
 <span class="nc" id="L129">                        wmp = wmp - (2 * hipHits);</span>
@@ -137,11 +137,11 @@ public class QuadMech extends Mech {
             }
         }
 
-<span class="pc bpc" id="L140" title="1 of 4 branches missed.">        if (!ignoremodulararmor &amp;&amp; hasModularArmor() ) {</span>
+<span class="pc bpc" id="L140" title="2 of 4 branches missed.">        if (!ignoremodulararmor &amp;&amp; hasModularArmor() ) {</span>
 <span class="nc" id="L141">            wmp--;</span>
         }
 
-<span class="fc bfc" id="L144" title="All 2 branches covered.">        if (!ignoreheat) {</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (!ignoreheat) {</span>
             // factor in heat
 <span class="pc bpc" id="L146" title="3 of 4 branches missed.">            if ((game != null) &amp;&amp; game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_HEAT)) {</span>
 <span class="nc bnc" id="L147" title="All 2 branches missed.">                if (heat &lt; 30) {</span>
@@ -201,26 +201,26 @@ public class QuadMech extends Mech {
      */
     @Override
     public int getRunMPwithoutMASC(boolean gravity, boolean ignoreheat, boolean ignoremodulararmor) {
-<span class="pc bpc" id="L204" title="3 of 4 branches missed.">        if (countBadLegs() &lt;= 1</span>
+<span class="nc bnc" id="L204" title="All 4 branches missed.">        if (countBadLegs() &lt;= 1</span>
 <span class="nc bnc" id="L205" title="All 4 branches missed.">                || (this instanceof QuadVee &amp;&amp; getConversionMode() == QuadVee.CONV_MODE_VEHICLE</span>
                 &amp;&amp; !convertingNow)) {
-<span class="fc" id="L207">            return super.getRunMPwithoutMASC(gravity, ignoreheat, ignoremodulararmor);</span>
+<span class="nc" id="L207">            return super.getRunMPwithoutMASC(gravity, ignoreheat, ignoremodulararmor);</span>
         }
 <span class="nc" id="L209">        return getWalkMP(gravity, ignoreheat);</span>
     }
 
     @Override
     public boolean canChangeSecondaryFacing() {
-<span class="pc bpc" id="L214" title="3 of 4 branches missed.">    	return hasQuirk(OptionsConstants.QUIRK_POS_EXT_TWIST) &amp;&amp; !isProne();</span>
+<span class="nc bnc" id="L214" title="All 4 branches missed.">    	return hasQuirk(OptionsConstants.QUIRK_POS_EXT_TWIST) &amp;&amp; !isProne();</span>
     }
     
 	@Override
 	public boolean isValidSecondaryFacing(int dir) {
-<span class="fc" id="L219">		int rotate = dir - getFacing();</span>
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">		if (canChangeSecondaryFacing()) {</span>
+<span class="nc" id="L219">		int rotate = dir - getFacing();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">		if (canChangeSecondaryFacing()) {</span>
 <span class="nc bnc" id="L221" title="All 4 branches missed.">			return (rotate &lt;= 1) || (rotate == 5);</span>
 		} else
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">			return rotate == 0;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">			return rotate == 0;</span>
 	}	 
 
     /**
@@ -236,23 +236,23 @@ public class QuadMech extends Mech {
      */
     @Override
     public int getWeaponArc(int wn) {
-<span class="fc" id="L239">        final Mounted mounted = getEquipment(wn);</span>
+<span class="nc" id="L239">        final Mounted mounted = getEquipment(wn);</span>
 
         // B-Pods need to be special-cased, the have 360 firing arc
-<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        if ((mounted.getType() instanceof WeaponType) &amp;&amp;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if ((mounted.getType() instanceof WeaponType) &amp;&amp;</span>
 <span class="nc bnc" id="L243" title="All 2 branches missed.">                mounted.getType().hasFlag(WeaponType.F_B_POD)) {</span>
 <span class="nc" id="L244">            return Compute.ARC_360;</span>
         }
         // VGLs base arc on their facing
-<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        if (mounted.getType().hasFlag(WeaponType.F_VGL)) {</span>
+<span class="nc bnc" id="L247" title="All 2 branches missed.">        if (mounted.getType().hasFlag(WeaponType.F_VGL)) {</span>
 <span class="nc" id="L248">            return Compute.firingArcFromVGLFacing(mounted.getFacing());</span>
         }
         // rear mounted?
-<span class="fc bfc" id="L251" title="All 2 branches covered.">        if (mounted.isRearMounted()) {</span>
-<span class="fc" id="L252">            return Compute.ARC_REAR;</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (mounted.isRearMounted()) {</span>
+<span class="nc" id="L252">            return Compute.ARC_REAR;</span>
         }
         // front mounted
-<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        switch (mounted.getLocation()) {</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        switch (mounted.getLocation()) {</span>
         case LOC_HEAD:
         case LOC_CT:
         case LOC_RT:
@@ -261,7 +261,7 @@ public class QuadMech extends Mech {
         case LOC_LLEG:
         case LOC_LARM:
         case LOC_RARM:
-<span class="fc" id="L264">            return Compute.ARC_FORWARD;</span>
+<span class="nc" id="L264">            return Compute.ARC_FORWARD;</span>
         default:
 <span class="nc" id="L266">            return Compute.ARC_360;</span>
         }
@@ -298,8 +298,8 @@ public class QuadMech extends Mech {
      */
     @Override
     public boolean needsRollToStand() {
-<span class="pc bpc" id="L301" title="1 of 2 branches missed.">        if (countBadLegs() == 0) {</span>
-<span class="fc" id="L302">            return false;</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (countBadLegs() == 0) {</span>
+<span class="nc" id="L302">            return false;</span>
         }
 <span class="nc" id="L304">        return true;</span>
     }
@@ -402,25 +402,25 @@ public class QuadMech extends Mech {
     }
 
     public static int restrictScore(int location) {
-<span class="fc bfc" id="L405" title="All 3 branches covered.">        switch (location) {</span>
+<span class="nc bnc" id="L405" title="All 3 branches missed.">        switch (location) {</span>
         case Mech.LOC_RT:
         case Mech.LOC_LT:
-<span class="fc" id="L408">            return 1;</span>
+<span class="nc" id="L408">            return 1;</span>
         case Mech.LOC_CT:
-<span class="fc" id="L410">            return 2;</span>
+<span class="nc" id="L410">            return 2;</span>
         default:
-<span class="fc" id="L412">            return 3;</span>
+<span class="nc" id="L412">            return 3;</span>
         }
     }
 
     @Override
     protected double getArmActuatorCost() {
-<span class="fc" id="L418">        return 0;</span>
+<span class="nc" id="L418">        return 0;</span>
     }
 
     @Override
     protected double getLegActuatorCost() {
-<span class="fc" id="L423">        return (weight * 150 * 4) + (weight * 80 * 4) + (weight * 120 * 4);</span>
+<span class="nc" id="L423">        return (weight * 150 * 4) + (weight * 80 * 4) + (weight * 120 * 4);</span>
     }
 
     @Override
@@ -813,7 +813,7 @@ public class QuadMech extends Mech {
         
         // Handle upper cover specially, as treating it as a bitmask will lead
         //  to every location being covered
-<span class="pc bpc" id="L816" title="1 of 2 branches missed.">        if (cover  == LosEffects.COVER_UPPER) {</span>
+<span class="nc bnc" id="L816" title="All 2 branches missed.">        if (cover  == LosEffects.COVER_UPPER) {</span>
 <span class="nc bnc" id="L817" title="All 8 branches missed.">            if ((location == LOC_LLEG) || (location == LOC_RLEG)</span>
                     || (location == LOC_LARM) || (location == LOC_RARM)) {
 <span class="nc" id="L819">                return false;</span>
@@ -824,7 +824,7 @@ public class QuadMech extends Mech {
         
         // left and right cover are from attacker's POV.
         // if hitting front arc, need to swap them
-<span class="pc bpc" id="L827" title="1 of 2 branches missed.">        if (side == ToHitData.SIDE_FRONT) {</span>
+<span class="nc bnc" id="L827" title="All 2 branches missed.">        if (side == ToHitData.SIDE_FRONT) {</span>
 <span class="nc bnc" id="L828" title="All 6 branches missed.">            if (((cover &amp; LosEffects.COVER_LOWRIGHT) != 0) &amp;&amp;</span>
                     ((location == Mech.LOC_LARM) ||
                      (location == Mech.LOC_LLEG))) {
@@ -848,30 +848,30 @@ public class QuadMech extends Mech {
 <span class="nc" id="L848">                return true;</span>
             }
         } else {
-<span class="pc bpc" id="L851" title="3 of 6 branches missed.">            if (((cover &amp; LosEffects.COVER_LOWLEFT) != 0) &amp;&amp;</span>
+<span class="nc bnc" id="L851" title="All 6 branches missed.">            if (((cover &amp; LosEffects.COVER_LOWLEFT) != 0) &amp;&amp;</span>
                     ((location == Mech.LOC_LARM) ||
                      (location == Mech.LOC_LLEG))) {
 <span class="nc" id="L854">                return true;</span>
             }
-<span class="pc bpc" id="L856" title="5 of 6 branches missed.">            if (((cover &amp; LosEffects.COVER_LOWRIGHT) != 0) &amp;&amp;</span>
+<span class="nc bnc" id="L856" title="All 6 branches missed.">            if (((cover &amp; LosEffects.COVER_LOWRIGHT) != 0) &amp;&amp;</span>
                     ((location == Mech.LOC_RARM) ||
                      (location == Mech.LOC_RLEG))) {
 <span class="nc" id="L859">                return true;</span>
             }
-<span class="pc bpc" id="L861" title="7 of 8 branches missed.">            if (((cover &amp; LosEffects.COVER_LEFT) != 0) &amp;&amp;</span>
+<span class="nc bnc" id="L861" title="All 8 branches missed.">            if (((cover &amp; LosEffects.COVER_LEFT) != 0) &amp;&amp;</span>
                     ((location == Mech.LOC_LARM) ||
                      (location == Mech.LOC_LT) ||
                      (location == Mech.LOC_LLEG))) {
 <span class="nc" id="L865">                return true;</span>
             }
-<span class="pc bpc" id="L867" title="7 of 8 branches missed.">            if (((cover &amp; LosEffects.COVER_RIGHT) != 0) &amp;&amp;</span>
+<span class="nc bnc" id="L867" title="All 8 branches missed.">            if (((cover &amp; LosEffects.COVER_RIGHT) != 0) &amp;&amp;</span>
                     ((location == Mech.LOC_RARM) ||
                      (location == Mech.LOC_RT) ||
                      (location == Mech.LOC_RLEG))) {
 <span class="nc" id="L871">                return true;</span>
             }
         }
-<span class="fc" id="L874">        return false;</span>
+<span class="nc" id="L874">        return false;</span>
     }
 
     /**
@@ -879,12 +879,12 @@ public class QuadMech extends Mech {
      */
     @Override
     public boolean hasFunctionalLegAES() {
-<span class="fc" id="L882">        boolean frontRightLeg = false;</span>
-<span class="fc" id="L883">        boolean frontLeftLeg = false;</span>
-<span class="fc" id="L884">        boolean rearRightLeg = false;</span>
-<span class="fc" id="L885">        boolean rearLeftLeg = false;</span>
+<span class="nc" id="L882">        boolean frontRightLeg = false;</span>
+<span class="nc" id="L883">        boolean frontLeftLeg = false;</span>
+<span class="nc" id="L884">        boolean rearRightLeg = false;</span>
+<span class="nc" id="L885">        boolean rearLeftLeg = false;</span>
 
-<span class="pc bpc" id="L887" title="1 of 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L887" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
 <span class="nc bnc" id="L888" title="All 8 branches missed.">            if ((mounted.getLocation() == Mech.LOC_LLEG) || (mounted.getLocation() == Mech.LOC_RLEG) || (mounted.getLocation() == Mech.LOC_LARM) || (mounted.getLocation() == Mech.LOC_RARM)) {</span>
 <span class="nc bnc" id="L889" title="All 8 branches missed.">                if (((MiscType) mounted.getType()).hasFlag(MiscType.F_ACTUATOR_ENHANCEMENT_SYSTEM) &amp;&amp; !mounted.isDestroyed() &amp;&amp; !mounted.isBreached() &amp;&amp; !mounted.isMissing()) {</span>
 <span class="nc bnc" id="L890" title="All 2 branches missed.">                    if (mounted.getLocation() == Mech.LOC_LLEG) {</span>
@@ -904,15 +904,15 @@ public class QuadMech extends Mech {
             }
 <span class="nc" id="L905">        }</span>
 
-<span class="pc bpc" id="L907" title="7 of 8 branches missed.">        return frontLeftLeg &amp;&amp; frontRightLeg &amp;&amp; rearRightLeg &amp;&amp; rearLeftLeg;</span>
+<span class="nc bnc" id="L907" title="All 8 branches missed.">        return frontLeftLeg &amp;&amp; frontRightLeg &amp;&amp; rearRightLeg &amp;&amp; rearLeftLeg;</span>
     }
 
     @Override
     public boolean canGoHullDown() {
         // check the option
-<span class="fc" id="L913">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
-<span class="pc bpc" id="L914" title="1 of 2 branches missed.">        if (!retVal) {</span>
-<span class="fc" id="L915">            return false;</span>
+<span class="nc" id="L913">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
+<span class="nc bnc" id="L914" title="All 2 branches missed.">        if (!retVal) {</span>
+<span class="nc" id="L915">            return false;</span>
         }
         //check the locations
 <span class="nc" id="L918">        int locations[] = {Mech.LOC_RARM, Mech.LOC_LARM, Mech.LOC_LLEG, Mech.LOC_RLEG};</span>

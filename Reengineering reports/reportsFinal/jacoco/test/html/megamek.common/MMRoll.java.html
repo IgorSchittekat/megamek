@@ -66,10 +66,10 @@ public class MMRoll extends Roll {
      *            all rolls; all rolls will be in the value set [0, max).
      */
     public MMRoll(MMRandom rng, int max) {
-<span class="fc" id="L69">        super(max, 0);</span>
-<span class="fc" id="L70">        this.total = rng.randomInt(this.faces) + this.min;</span>
-<span class="fc" id="L71">        all.addElement(this.total);</span>
-<span class="fc" id="L72">    }</span>
+<span class="nc" id="L69">        super(max, 0);</span>
+<span class="nc" id="L70">        this.total = rng.randomInt(this.faces) + this.min;</span>
+<span class="nc" id="L71">        all.addElement(this.total);</span>
+<span class="nc" id="L72">    }</span>
 
     /**
      * Create a set of virtual dice with the given number of faces that start

@@ -85,7 +85,7 @@ public class CriticalSlot implements Serializable {
 <span class="nc" id="L85">    }</span>
 
     public boolean isHit() {
-<span class="fc" id="L88">        return hit;</span>
+<span class="nc" id="L88">        return hit;</span>
     }
 
     /**
@@ -117,7 +117,7 @@ public class CriticalSlot implements Serializable {
 <span class="nc" id="L117">    }</span>
 
     public boolean isMissing() {
-<span class="fc" id="L120">        return missing;</span>
+<span class="nc" id="L120">        return missing;</span>
     }
 
     public void setMissing(boolean missing) {
@@ -136,7 +136,7 @@ public class CriticalSlot implements Serializable {
      * Has this slot been damaged?
      */
     public boolean isDamaged() {
-<span class="pc bpc" id="L139" title="2 of 4 branches missed.">        return hit || destroyed;</span>
+<span class="nc bnc" id="L139" title="All 4 branches missed.">        return hit || destroyed;</span>
     }
 
     /**

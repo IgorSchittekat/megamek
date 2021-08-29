@@ -28,25 +28,25 @@ public class ArmlessMech extends BipedMech {
 <span class="nc" id="L28">    }</span>
 
     public ArmlessMech() {
-<span class="fc" id="L31">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
-<span class="fc" id="L32">    }</span>
+<span class="nc" id="L31">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
+<span class="nc" id="L32">    }</span>
 
     public ArmlessMech(int inGyroType, int inCockpitType) {
-<span class="fc" id="L35">        super(inGyroType, inCockpitType);</span>
+<span class="nc" id="L35">        super(inGyroType, inCockpitType);</span>
 
-<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        for (int i = 0; i &lt; 4; i++) {</span>
             // remove arm actuators
-<span class="fc" id="L39">            setCritical(LOC_RARM, i, null);</span>
-<span class="fc" id="L40">            setCritical(LOC_LARM, i, null);</span>
+<span class="nc" id="L39">            setCritical(LOC_RARM, i, null);</span>
+<span class="nc" id="L40">            setCritical(LOC_LARM, i, null);</span>
         }
-<span class="fc" id="L42">    }</span>
+<span class="nc" id="L42">    }</span>
 
     /**
      * Returns true if the entity can flip its arms
      */
     @Override
     public boolean canFlipArms() {
-<span class="fc" id="L49">        return false;</span>
+<span class="nc" id="L49">        return false;</span>
     }
 
     /**
@@ -60,19 +60,19 @@ public class ArmlessMech extends BipedMech {
      */
     @Override
     public void setInternal(int head, int ct, int t, int arm, int leg) {
-<span class="fc" id="L63">        initializeInternal(head, LOC_HEAD);</span>
-<span class="fc" id="L64">        initializeInternal(ct, LOC_CT);</span>
-<span class="fc" id="L65">        initializeInternal(t, LOC_RT);</span>
-<span class="fc" id="L66">        initializeInternal(t, LOC_LT);</span>
-<span class="fc" id="L67">        initializeInternal(0, LOC_RARM);</span>
-<span class="fc" id="L68">        initializeInternal(0, LOC_LARM);</span>
-<span class="fc" id="L69">        initializeInternal(leg, LOC_RLEG);</span>
-<span class="fc" id="L70">        initializeInternal(leg, LOC_LLEG);</span>
-<span class="fc" id="L71">    }</span>
+<span class="nc" id="L63">        initializeInternal(head, LOC_HEAD);</span>
+<span class="nc" id="L64">        initializeInternal(ct, LOC_CT);</span>
+<span class="nc" id="L65">        initializeInternal(t, LOC_RT);</span>
+<span class="nc" id="L66">        initializeInternal(t, LOC_LT);</span>
+<span class="nc" id="L67">        initializeInternal(0, LOC_RARM);</span>
+<span class="nc" id="L68">        initializeInternal(0, LOC_LARM);</span>
+<span class="nc" id="L69">        initializeInternal(leg, LOC_RLEG);</span>
+<span class="nc" id="L70">        initializeInternal(leg, LOC_LLEG);</span>
+<span class="nc" id="L71">    }</span>
 
     @Override
     protected double getArmActuatorCost() {
-<span class="fc" id="L75">        return 0.0;</span>
+<span class="nc" id="L75">        return 0.0;</span>
     }
 
     /**
@@ -98,7 +98,7 @@ public class ArmlessMech extends BipedMech {
     }
     
     public long getEntityType(){
-<span class="fc" id="L101">        return Entity.ETYPE_MECH | Entity.ETYPE_ARMLESS_MECH;</span>
+<span class="nc" id="L101">        return Entity.ETYPE_MECH | Entity.ETYPE_ARMLESS_MECH;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

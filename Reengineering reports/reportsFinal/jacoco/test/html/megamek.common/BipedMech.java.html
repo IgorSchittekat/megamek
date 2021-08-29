@@ -63,10 +63,10 @@ public class BipedMech extends Mech {
      */
     @Override
     public boolean canFlipArms() {
-<span class="fc" id="L66">        boolean canFlip = true;</span>
+<span class="nc" id="L66">        boolean canFlip = true;</span>
 
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
-<span class="fc" id="L69">            canFlip = false;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
+<span class="nc" id="L69">            canFlip = false;</span>
 <span class="nc bnc" id="L70" title="All 2 branches missed.">        } else if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_LARM)) {</span>
 <span class="nc" id="L71">            canFlip = false;</span>
 <span class="nc bnc" id="L72" title="All 2 branches missed.">        } else if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_RARM)) {</span>
@@ -75,15 +75,15 @@ public class BipedMech extends Mech {
 <span class="nc" id="L75">            canFlip = false;</span>
         }
 
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_POS_HYPER_ACTUATOR)) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_POS_HYPER_ACTUATOR)) {</span>
 <span class="nc" id="L79">            canFlip = true;</span>
         }
 
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (isProne()) {</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (isProne()) {</span>
 <span class="nc" id="L83">            canFlip = false;</span>
         }
 
-<span class="fc" id="L86">        return canFlip;</span>
+<span class="nc" id="L86">        return canFlip;</span>
     }
     
     @Override
@@ -750,9 +750,9 @@ public class BipedMech extends Mech {
     @Override
     public boolean canGoHullDown() {
         // check the option
-<span class="fc" id="L753">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
-<span class="pc bpc" id="L754" title="1 of 2 branches missed.">        if (!retVal) {</span>
-<span class="fc" id="L755">            return false;</span>
+<span class="nc" id="L753">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
+<span class="nc bnc" id="L754" title="All 2 branches missed.">        if (!retVal) {</span>
+<span class="nc" id="L755">            return false;</span>
         }
         // check the locations
 <span class="nc bnc" id="L758" title="All 6 branches missed.">        retVal = (!isLocationBad(Mech.LOC_LLEG) &amp;&amp; !isLocationBad(Mech.LOC_RLEG) &amp;&amp; !isLocationDoomed(Mech.LOC_LLEG)</span>

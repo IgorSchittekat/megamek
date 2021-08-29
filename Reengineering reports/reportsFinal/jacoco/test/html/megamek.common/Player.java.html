@@ -34,26 +34,26 @@ public final class Player extends TurnOrdered implements IPlayer {
     private String name;
     private int id;
 
-<span class="nc" id="L37">    private int team = TEAM_NONE;</span>
+<span class="fc" id="L37">    private int team = TEAM_NONE;</span>
 
-<span class="nc" id="L39">    private boolean done = false; // done with phase</span>
-<span class="nc" id="L40">    private boolean ghost = false; // disconnected player</span>
-<span class="nc" id="L41">    private boolean observer = false;</span>
+<span class="fc" id="L39">    private boolean done = false; // done with phase</span>
+<span class="fc" id="L40">    private boolean ghost = false; // disconnected player</span>
+<span class="fc" id="L41">    private boolean observer = false;</span>
 
-<span class="nc" id="L43">    private boolean see_entire_board = false; // Player can observe double blind games</span>
+<span class="fc" id="L43">    private boolean seeEntireBoard = false; // Player can observe double blind games</span>
 
     // these are game-specific, and maybe should be separate from the player object
-<span class="nc" id="L46">    private int startingPos = Board.START_ANY;</span>
+<span class="fc" id="L46">    private int startingPos = Board.START_ANY;</span>
 
     // number of minefields
-<span class="nc" id="L49">    private int num_mf_conv = 0;</span>
-<span class="nc" id="L50">    private int num_mf_cmd = 0;</span>
-<span class="nc" id="L51">    private int num_mf_vibra = 0;</span>
-<span class="nc" id="L52">    private int num_mf_active = 0;</span>
-<span class="nc" id="L53">    private int num_mf_inferno = 0;</span>
+<span class="fc" id="L49">    private int numMfConv = 0;</span>
+<span class="fc" id="L50">    private int numMfCmd = 0;</span>
+<span class="fc" id="L51">    private int numMfVibra = 0;</span>
+<span class="fc" id="L52">    private int numMfActive = 0;</span>
+<span class="fc" id="L53">    private int numMfInferno = 0;</span>
 
     // hexes that are automatically hit by artillery
-<span class="nc" id="L56">    private Vector&lt;Coords&gt; artyAutoHitHexes = new Vector&lt;&gt;();</span>
+<span class="fc" id="L56">    private Vector&lt;Coords&gt; artyAutoHitHexes = new Vector&lt;&gt;();</span>
 
     private int initialEntityCount;
     private int initialBV;
@@ -61,257 +61,263 @@ public final class Player extends TurnOrdered implements IPlayer {
     // initiative bonuses go here because we don't know if teams are rolling
     // initiative collectively
     // if they are then we pick the best non-zero bonuses
-<span class="nc" id="L64">    private int constantInitBonus = 0;</span>
-<span class="nc" id="L65">    private int streakCompensationBonus = 0;</span>
+<span class="fc" id="L64">    private int constantInitBonus = 0;</span>
+<span class="fc" id="L65">    private int streakCompensationBonus = 0;</span>
 
-<span class="nc" id="L67">    private Camouflage camouflage = new Camouflage(Camouflage.COLOUR_CAMOUFLAGE, PlayerColour.BLUE.name());</span>
-<span class="nc" id="L68">    private PlayerColour colour = PlayerColour.BLUE;</span>
+<span class="fc" id="L67">    private Camouflage camouflage = new Camouflage(Camouflage.COLOUR_CAMOUFLAGE, PlayerColour.BLUE.name());</span>
+<span class="fc" id="L68">    private PlayerColour colour = PlayerColour.BLUE;</span>
 
-<span class="nc" id="L70">    private Vector&lt;Minefield&gt; visibleMinefields = new Vector&lt;&gt;();</span>
+<span class="fc" id="L70">    private Vector&lt;Minefield&gt; visibleMinefields = new Vector&lt;&gt;();</span>
 
-<span class="nc" id="L72">    private boolean admitsDefeat = false;</span>
+<span class="fc" id="L72">    private boolean admitsDefeat = false;</span>
+
+<span class="fc" id="L74">    private int rating = 1000;</span>
     
     /**
      * Boolean that keeps track of whether a player has accepted another 
      * player's request to change teams.
      */
-<span class="nc" id="L78">    private boolean allowingTeamChange = false;</span>
+<span class="fc" id="L80">    private boolean allowingTeamChange = false;</span>
 
     @Override
     public Vector&lt;Minefield&gt; getMinefields() {
-<span class="nc" id="L82">        return visibleMinefields;</span>
+<span class="fc" id="L84">        return visibleMinefields;</span>
     }
 
     @Override
     public void addMinefield(Minefield mf) {
-<span class="nc" id="L87">        visibleMinefields.addElement(mf);</span>
-<span class="nc" id="L88">    }</span>
+<span class="fc" id="L89">        visibleMinefields.addElement(mf);</span>
+<span class="fc" id="L90">    }</span>
 
     @Override
     public void addMinefields(Vector&lt;Minefield&gt; minefields) {
-<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (int i = 0; i &lt; minefields.size(); i++) {</span>
-<span class="nc" id="L93">            visibleMinefields.addElement(minefields.elementAt(i));</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (int i = 0; i &lt; minefields.size(); i++) {</span>
+<span class="fc" id="L95">            visibleMinefields.addElement(minefields.elementAt(i));</span>
         }
-<span class="nc" id="L95">    }</span>
+<span class="fc" id="L97">    }</span>
 
     @Override
     public void removeMinefield(Minefield mf) {
-<span class="nc" id="L99">        visibleMinefields.removeElement(mf);</span>
-<span class="nc" id="L100">    }</span>
+<span class="fc" id="L101">        visibleMinefields.removeElement(mf);</span>
+<span class="fc" id="L102">    }</span>
 
     @Override
     public void removeMinefields() {
-<span class="nc" id="L104">        visibleMinefields.removeAllElements();</span>
-<span class="nc" id="L105">    }</span>
+<span class="fc" id="L106">        visibleMinefields.removeAllElements();</span>
+<span class="fc" id="L107">    }</span>
 
     @Override
     public void removeArtyAutoHitHexes() {
-<span class="nc" id="L109">        artyAutoHitHexes.removeAllElements();</span>
-<span class="nc" id="L110">    }</span>
+<span class="fc" id="L111">        artyAutoHitHexes.removeAllElements();</span>
+<span class="fc" id="L112">    }</span>
 
     @Override
     public boolean containsMinefield(Minefield mf) {
-<span class="nc" id="L114">        return visibleMinefields.contains(mf);</span>
+<span class="fc" id="L116">        return visibleMinefields.contains(mf);</span>
     }
 
     @Override
     public boolean hasMinefields() {
-<span class="nc bnc" id="L119" title="All 10 branches missed.">        return (num_mf_cmd &gt; 0) || (num_mf_conv &gt; 0) || (num_mf_vibra &gt; 0) || (num_mf_active &gt; 0) || (num_mf_inferno &gt; 0);</span>
+<span class="pc bpc" id="L121" title="9 of 10 branches missed.">        return (numMfCmd &gt; 0) || (numMfConv &gt; 0) || (numMfVibra &gt; 0) || (numMfActive &gt; 0) || (numMfInferno &gt; 0);</span>
     }
 
     @Override
     public void setNbrMFConventional(int nbrMF) {
-<span class="nc" id="L124">        num_mf_conv = nbrMF;</span>
-<span class="nc" id="L125">    }</span>
+<span class="fc" id="L126">        numMfConv = nbrMF;</span>
+<span class="fc" id="L127">    }</span>
 
     @Override
     public void setNbrMFCommand(int nbrMF) {
-<span class="nc" id="L129">        num_mf_cmd = nbrMF;</span>
-<span class="nc" id="L130">    }</span>
+<span class="fc" id="L131">        numMfCmd = nbrMF;</span>
+<span class="fc" id="L132">    }</span>
 
     @Override
     public void setNbrMFVibra(int nbrMF) {
-<span class="nc" id="L134">        num_mf_vibra = nbrMF;</span>
-<span class="nc" id="L135">    }</span>
+<span class="fc" id="L136">        numMfVibra = nbrMF;</span>
+<span class="fc" id="L137">    }</span>
 
     @Override
     public void setNbrMFActive(int nbrMF) {
-<span class="nc" id="L139">        num_mf_active = nbrMF;</span>
-<span class="nc" id="L140">    }</span>
+<span class="fc" id="L141">        numMfActive = nbrMF;</span>
+<span class="fc" id="L142">    }</span>
 
     @Override
     public void setNbrMFInferno(int nbrMF) {
-<span class="nc" id="L144">        num_mf_inferno = nbrMF;</span>
-<span class="nc" id="L145">    }</span>
+<span class="fc" id="L146">        numMfInferno = nbrMF;</span>
+<span class="fc" id="L147">    }</span>
 
     @Override
     public int getNbrMFConventional() {
-<span class="nc" id="L149">        return num_mf_conv;</span>
+<span class="fc" id="L151">        return numMfConv;</span>
     }
 
     @Override
     public int getNbrMFCommand() {
-<span class="nc" id="L154">        return num_mf_cmd;</span>
+<span class="fc" id="L156">        return numMfCmd;</span>
     }
 
     @Override
     public int getNbrMFVibra() {
-<span class="nc" id="L159">        return num_mf_vibra;</span>
+<span class="fc" id="L161">        return numMfVibra;</span>
     }
 
     @Override
     public int getNbrMFActive() {
-<span class="nc" id="L164">        return num_mf_active;</span>
+<span class="fc" id="L166">        return numMfActive;</span>
     }
 
     @Override
     public int getNbrMFInferno() {
-<span class="nc" id="L169">        return num_mf_inferno;</span>
+<span class="fc" id="L171">        return numMfInferno;</span>
     }
 
     @Override
     public Camouflage getCamouflage() {
-<span class="nc" id="L174">        return camouflage;</span>
+<span class="fc" id="L176">        return camouflage;</span>
     }
 
     @Override
     public void setCamouflage(Camouflage camouflage) {
-<span class="nc" id="L179">        this.camouflage = camouflage;</span>
-<span class="nc" id="L180">    }</span>
+<span class="fc" id="L181">        this.camouflage = camouflage;</span>
+<span class="fc" id="L182">    }</span>
 
-<span class="nc" id="L182">    public Player(int id, String name) {</span>
-<span class="nc" id="L183">        this.name = name;</span>
-<span class="nc" id="L184">        this.id = id;</span>
-<span class="nc" id="L185">    }</span>
+<span class="fc" id="L184">    public Player(int id, String name) {</span>
+<span class="fc" id="L185">        this.name = name;</span>
+<span class="fc" id="L186">        this.id = id;</span>
+<span class="fc" id="L187">    }</span>
 
     @Override
     public void setGame(IGame game) {
-<span class="nc" id="L189">        this.game = game;</span>
-<span class="nc" id="L190">    }</span>
+<span class="fc" id="L191">        this.game = game;</span>
+<span class="fc" id="L192">    }</span>
 
     @Override
     public String getName() {
-<span class="nc" id="L194">        return name;</span>
+<span class="fc" id="L196">        return name;</span>
     }
 
     @Override
     public void setName(String name) {
-<span class="nc" id="L199">        this.name = name;</span>
-<span class="nc" id="L200">    }</span>
+<span class="fc" id="L201">        this.name = name;</span>
+<span class="fc" id="L202">    }</span>
 
     @Override
     public int getId() {
-<span class="nc" id="L204">        return id;</span>
+<span class="fc" id="L206">        return id;</span>
     }
 
     @Override
     public int getTeam() {
-<span class="nc" id="L209">        return team;</span>
+<span class="fc" id="L211">        return team;</span>
     }
 
     @Override
     public void setTeam(int team) {
-<span class="nc" id="L214">        this.team = team;</span>
-<span class="nc" id="L215">    }</span>
+<span class="fc" id="L216">        this.team = team;</span>
+<span class="fc" id="L217">    }</span>
 
     @Override
     public boolean isDone() {
-<span class="nc" id="L219">        return done;</span>
+<span class="fc" id="L221">        return done;</span>
     }
 
     @Override
     public void setDone(boolean done) {
-<span class="nc" id="L224">        this.done = done;</span>
-<span class="nc" id="L225">        game.processGameEvent(new GamePlayerChangeEvent(this, this));</span>
-<span class="nc" id="L226">    }</span>
+<span class="fc" id="L226">        this.done = done;</span>
+<span class="fc" id="L227">        game.processGameEvent(new GamePlayerChangeEvent(this, this));</span>
+<span class="fc" id="L228">    }</span>
 
     @Override
     public boolean isGhost() {
-<span class="nc" id="L230">        return ghost;</span>
+<span class="fc" id="L232">        return ghost;</span>
     }
 
     @Override
     public void setGhost(boolean ghost) {
-<span class="nc" id="L235">        this.ghost = ghost;</span>
-<span class="nc" id="L236">    }</span>
+<span class="fc" id="L237">        this.ghost = ghost;</span>
+<span class="fc" id="L238">    }</span>
 
     @Override
     public boolean isObserver() {
-<span class="nc bnc" id="L240" title="All 4 branches missed.">        if ((game != null) &amp;&amp; (game.getPhase() == IGame.Phase.PHASE_VICTORY)) {</span>
-<span class="nc" id="L241">            return false;</span>
-        }
-<span class="nc" id="L243">        return observer;</span>
+<span class="fc" id="L242">        return observer;</span>
     }
 
     @Override
-    public void setSeeAll(boolean see_all) {
-<span class="nc" id="L248">        see_entire_board = see_all;</span>
-<span class="nc" id="L249">    }</span>
+    public void setSeeAll(boolean seeAll) {
+<span class="fc" id="L247">        seeEntireBoard = seeAll;</span>
+<span class="fc" id="L248">    }</span>
 
     // This simply returns the value, without checking the observer flag
     @Override
     public boolean getSeeAll() {
-<span class="nc" id="L254">        return see_entire_board;</span>
+<span class="fc" id="L253">        return seeEntireBoard;</span>
     }
 
-    // If observer is false, see_entire_board does nothing
+    // If observer is false, seeEntireBoard does nothing
     @Override
     public boolean canSeeAll() {
-<span class="nc bnc" id="L260" title="All 4 branches missed.">        return (observer &amp;&amp; see_entire_board);</span>
+<span class="fc bfc" id="L259" title="All 4 branches covered.">        return (observer &amp;&amp; seeEntireBoard);</span>
     }
 
     @Override
     public void setObserver(boolean observer) {
-<span class="nc" id="L265">        this.observer = observer;</span>
+<span class="fc" id="L264">        this.observer = observer;</span>
         // If not an observer, clear the set see all flag
-<span class="nc bnc" id="L267" title="All 2 branches missed.">        if (!observer) {</span>
-<span class="nc" id="L268">            setSeeAll(false);</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        if (!observer) {</span>
+<span class="fc" id="L267">            setSeeAll(false);</span>
         }
-<span class="nc bnc" id="L270" title="All 4 branches missed.">        if (game != null &amp;&amp; game.getTeamForPlayer(this) != null) {</span>
-<span class="nc" id="L271">            game.getTeamForPlayer(this).cacheObversverStatus();</span>
+<span class="pc bpc" id="L269" title="1 of 4 branches missed.">        if (game != null &amp;&amp; game.getTeamForPlayer(this) != null) {</span>
+<span class="fc" id="L270">            game.getTeamForPlayer(this).cacheObversverStatus();</span>
         }
-<span class="nc" id="L273">    }</span>
+<span class="fc" id="L272">    }</span>
 
     @Override
     public PlayerColour getColour() {
-<span class="nc" id="L277">        return colour;</span>
+<span class="fc" id="L276">        return colour;</span>
     }
 
     @Override
     public void setColour(PlayerColour colour) {
-<span class="nc" id="L282">        this.colour = Objects.requireNonNull(colour, &quot;Colour cannot be set to null&quot;);</span>
-<span class="nc" id="L283">    }</span>
+<span class="fc" id="L281">        this.colour = Objects.requireNonNull(colour, &quot;Colour cannot be set to null&quot;);</span>
+<span class="fc" id="L282">    }</span>
 
     @Override
     public int getStartingPos() {
-<span class="nc" id="L287">        return startingPos;</span>
+<span class="fc" id="L286">        return startingPos;</span>
     }
 
     @Override
     public void setStartingPos(int startingPos) {
-<span class="nc" id="L292">        this.startingPos = startingPos;</span>
-<span class="nc" id="L293">    }</span>
+<span class="fc" id="L291">        this.startingPos = startingPos;</span>
+<span class="fc" id="L292">    }</span>
+
+    @Override
+    public int getRating() {
+<span class="fc" id="L296">        return rating;</span>
+    }
+
+    @Override
+    public void setRating(int newRating) {
+<span class="fc" id="L301">        rating = Math.max(0, newRating);</span>
+<span class="fc" id="L302">    }</span>
 
     /**
      * Set deployment zone to edge of board for reinforcements
      */
     @Override
     public void adjustStartingPosForReinforcements() {
-<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (startingPos &gt; 10) {</span>
-<span class="nc" id="L301">            startingPos -= 10; // deep deploy change to standard</span>
+<span class="fc bfc" id="L309" title="All 2 branches covered.">        if (startingPos &gt;= 10) {</span>
+<span class="fc" id="L310">            startingPos -= 10; // deep deploy change to standard</span>
         }
-<span class="nc bnc" id="L303" title="All 2 branches missed.">        if (startingPos == Board.START_CENTER) {</span>
-<span class="nc" id="L304">            startingPos = Board.START_ANY; // center changes to any</span>
-        }
-<span class="nc" id="L306">    }</span>
+<span class="fc" id="L312">    }</span>
 
     @Override
     public boolean isEnemyOf(IPlayer other) {
-<span class="nc bnc" id="L310" title="All 2 branches missed.">        if(null == other) {</span>
-<span class="nc" id="L311">            return true;</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">        if(null == other) {</span>
+<span class="fc" id="L317">            return true;</span>
         }
-<span class="nc bnc" id="L313" title="All 6 branches missed.">        return (id != other.getId()) </span>
-<span class="nc bnc" id="L314" title="All 2 branches missed.">            &amp;&amp; ((team == TEAM_NONE) || (team == TEAM_UNASSIGNED) || (team != other.getTeam()));</span>
+<span class="pc bpc" id="L319" title="3 of 6 branches missed.">        return (id != other.getId()) </span>
+<span class="pc bnc" id="L320" title="All 2 branches missed.">            &amp;&amp; ((team == TEAM_NONE) || (team == TEAM_UNASSIGNED) || (team != other.getTeam()));</span>
     }
 
     /**
@@ -319,110 +325,107 @@ public final class Player extends TurnOrdered implements IPlayer {
      */
     @Override
     public boolean equals(Object object) {
-<span class="nc bnc" id="L322" title="All 2 branches missed.">        if(this == object) {</span>
-<span class="nc" id="L323">            return true;</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">        if(this == object) {</span>
+<span class="fc" id="L329">            return true;</span>
         }
-<span class="nc bnc" id="L325" title="All 4 branches missed.">        if((null == object) || (getClass() != object.getClass())) {</span>
-<span class="nc" id="L326">            return false;</span>
+<span class="fc bfc" id="L331" title="All 4 branches covered.">        if((null == object) || (getClass() != object.getClass())) {</span>
+<span class="fc" id="L332">            return false;</span>
         }
-<span class="nc" id="L328">        final Player other = (Player) object;</span>
-<span class="nc bnc" id="L329" title="All 2 branches missed.">        return other.id == id;</span>
+<span class="fc" id="L334">        final Player other = (Player) object;</span>
+<span class="fc bfc" id="L335" title="All 2 branches covered.">        return other.id == id;</span>
     }
 
     @Override
     public int hashCode() {
-<span class="nc" id="L334">        return id;</span>
+<span class="fc" id="L340">        return id;</span>
     }
 
     @Override
     public void setAdmitsDefeat(boolean admitsDefeat) {
-<span class="nc" id="L339">        this.admitsDefeat = admitsDefeat;</span>
-<span class="nc" id="L340">    }</span>
+<span class="fc" id="L345">        this.admitsDefeat = admitsDefeat;</span>
+<span class="fc" id="L346">    }</span>
 
     @Override
     public boolean admitsDefeat() {
-<span class="nc" id="L344">        return admitsDefeat;</span>
+<span class="fc" id="L350">        return admitsDefeat;</span>
     }
     
     @Override
     public void setAllowTeamChange(boolean allowChange){
-<span class="nc" id="L349">        allowingTeamChange = allowChange;</span>
-<span class="nc" id="L350">    }</span>
+<span class="fc" id="L355">        allowingTeamChange = allowChange;</span>
+<span class="fc" id="L356">    }</span>
     
     @Override
     public boolean isAllowingTeamChange(){
-<span class="nc" id="L354">        return allowingTeamChange;</span>
+<span class="fc" id="L360">        return allowingTeamChange;</span>
     }
 
     @Override
     public void setArtyAutoHitHexes(Vector&lt;Coords&gt; artyAutoHitHexes) {
-<span class="nc" id="L359">        this.artyAutoHitHexes = artyAutoHitHexes;</span>
-<span class="nc" id="L360">    }</span>
+<span class="fc" id="L365">        this.artyAutoHitHexes = artyAutoHitHexes;</span>
+<span class="fc" id="L366">    }</span>
 
     @Override
     public Vector&lt;Coords&gt; getArtyAutoHitHexes() {
-<span class="nc" id="L364">        return artyAutoHitHexes;</span>
+<span class="fc" id="L370">        return artyAutoHitHexes;</span>
     }
 
     @Override
     public void addArtyAutoHitHex(Coords c) {
-<span class="nc" id="L369">        artyAutoHitHexes.add(c);</span>
-<span class="nc" id="L370">    }</span>
+<span class="fc" id="L375">        artyAutoHitHexes.add(c);</span>
+<span class="fc" id="L376">    }</span>
 
     @Override
     public boolean hasTAG() {
-<span class="nc" id="L374">        for (Iterator&lt;Entity&gt; e = game.getSelectedEntities(new EntitySelector() {</span>
-<span class="nc" id="L375">                    private final int ownerId = getId();</span>
+<span class="nc" id="L380">        for (Iterator&lt;Entity&gt; e = game.getSelectedEntities(new EntitySelector() {</span>
+<span class="nc" id="L381">                    private final int ownerId = getId();</span>
 
                     @Override
                     public boolean accept(Entity entity) {
-<span class="nc bnc" id="L379" title="All 2 branches missed.">                        if (entity.getOwner() == null) {</span>
-<span class="nc" id="L380">                            return false;</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">                        if (entity.getOwner() == null) {</span>
+<span class="nc" id="L386">                            return false;</span>
                         }
-<span class="nc bnc" id="L382" title="All 2 branches missed.">                        if (ownerId == entity.getOwner().getId()) {</span>
-<span class="nc" id="L383">                            return true;</span>
-                        }
-<span class="nc" id="L385">                        return false;</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">                        return ownerId == entity.getOwner().getId();</span>
                     }
-<span class="nc bnc" id="L387" title="All 2 branches missed.">                }); e.hasNext(); ) {</span>
-<span class="nc" id="L388">            Entity m = e.next();</span>
-<span class="nc bnc" id="L389" title="All 2 branches missed.">            if (m.hasTAG()) {</span>
-<span class="nc" id="L390">                return true;</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">                }); e.hasNext(); ) {</span>
+<span class="nc" id="L391">            Entity m = e.next();</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">            if (m.hasTAG()) {</span>
+<span class="nc" id="L393">                return true;</span>
             }
             // A player can't be on two teams.
-<span class="nc" id="L393">        }</span>
-<span class="nc" id="L394">        return false;</span>
+<span class="nc" id="L396">        }</span>
+<span class="nc" id="L397">        return false;</span>
     }
 
     @Override
     public int getEntityCount() {
-<span class="nc" id="L399">        return Math.toIntExact(game.getPlayerEntities(this, false).stream()</span>
-<span class="nc bnc" id="L400" title="All 4 branches missed.">                .filter(entity -&gt; !entity.isDestroyed() &amp;&amp; !entity.isTrapped()).count());</span>
+<span class="nc" id="L402">        return Math.toIntExact(game.getPlayerEntities(this, false).stream()</span>
+<span class="nc bnc" id="L403" title="All 4 branches missed.">                .filter(entity -&gt; !entity.isDestroyed() &amp;&amp; !entity.isTrapped()).count());</span>
     }
 
     @Override
     public int getInitialEntityCount() {
-<span class="nc" id="L405">        return initialEntityCount;</span>
+<span class="fc" id="L408">        return initialEntityCount;</span>
     }
 
     @Override
     public void setInitialEntityCount(final int initialEntityCount) {
-<span class="nc" id="L410">        this.initialEntityCount = initialEntityCount;</span>
-<span class="nc" id="L411">    }</span>
+<span class="fc" id="L413">        this.initialEntityCount = initialEntityCount;</span>
+<span class="fc" id="L414">    }</span>
 
     @Override
     public void changeInitialEntityCount(final int initialEntityCountChange) {
-<span class="nc" id="L415">        this.initialEntityCount += initialEntityCountChange;</span>
-<span class="nc" id="L416">    }</span>
+<span class="fc" id="L418">        this.initialEntityCount += initialEntityCountChange;</span>
+<span class="fc" id="L419">    }</span>
 
     /**
      * @return The combined Battle Value of all the player's current assets.
      */
     @Override
     public int getBV() {
-<span class="nc" id="L423">        return game.getPlayerEntities(this, false).stream()</span>
-<span class="nc bnc" id="L424" title="All 4 branches missed.">                .filter(entity -&gt; !entity.isDestroyed() &amp;&amp; !entity.isTrapped())</span>
-<span class="nc" id="L425">                .mapToInt(Entity::calculateBattleValue).sum();</span>
+<span class="nc" id="L426">        return game.getPlayerEntities(this, false).stream()</span>
+<span class="nc bnc" id="L427" title="All 4 branches missed.">                .filter(entity -&gt; !entity.isDestroyed() &amp;&amp; !entity.isTrapped())</span>
+<span class="nc" id="L428">                .mapToInt(Entity::calculateBattleValue).sum();</span>
     }
 
     /**
@@ -433,50 +436,50 @@ public final class Player extends TurnOrdered implements IPlayer {
      */
     @Override
     public int getFledBV() {
-<span class="nc" id="L436">        Enumeration&lt;Entity&gt; fledUnits = game.getRetreatedEntities();</span>
-<span class="nc" id="L437">        int bv = 0;</span>
-<span class="nc bnc" id="L438" title="All 2 branches missed.">        while (fledUnits.hasMoreElements()) {</span>
-<span class="nc" id="L439">            Entity entity = fledUnits.nextElement();</span>
-<span class="nc bnc" id="L440" title="All 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
-<span class="nc" id="L441">                bv += entity.calculateBattleValue();</span>
+<span class="nc" id="L439">        Enumeration&lt;Entity&gt; fledUnits = game.getRetreatedEntities();</span>
+<span class="nc" id="L440">        int bv = 0;</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">        while (fledUnits.hasMoreElements()) {</span>
+<span class="nc" id="L442">            Entity entity = fledUnits.nextElement();</span>
+<span class="nc bnc" id="L443" title="All 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
+<span class="nc" id="L444">                bv += entity.calculateBattleValue();</span>
             }
-<span class="nc" id="L443">        }</span>
-<span class="nc" id="L444">        return bv;</span>
+<span class="nc" id="L446">        }</span>
+<span class="nc" id="L447">        return bv;</span>
     }
 
     @Override
     public int getInitialBV() {
-<span class="nc" id="L449">        return initialBV;</span>
+<span class="fc" id="L452">        return initialBV;</span>
     }
 
     @Override
     public void setInitialBV(final int initialBV) {
-<span class="nc" id="L454">        this.initialBV = initialBV;</span>
-<span class="nc" id="L455">    }</span>
+<span class="fc" id="L457">        this.initialBV = initialBV;</span>
+<span class="fc" id="L458">    }</span>
 
     @Override
     public void changeInitialBV(final int initialBVChange) {
-<span class="nc" id="L459">        this.initialBV += initialBVChange;</span>
-<span class="nc" id="L460">    }</span>
+<span class="fc" id="L462">        this.initialBV += initialBVChange;</span>
+<span class="fc" id="L463">    }</span>
 
     @Override
     public void setInitCompensationBonus(int newBonus) {
-<span class="nc" id="L464">        streakCompensationBonus = newBonus;</span>
-<span class="nc" id="L465">    }</span>
+<span class="fc" id="L467">        streakCompensationBonus = newBonus;</span>
+<span class="fc" id="L468">    }</span>
 
     @Override
     public int getInitCompensationBonus() {
-<span class="nc" id="L469">        return streakCompensationBonus;</span>
+<span class="fc" id="L472">        return streakCompensationBonus;</span>
     }
 
     @Override
     public void setConstantInitBonus(int b) {
-<span class="nc" id="L474">        constantInitBonus = b;</span>
-<span class="nc" id="L475">    }</span>
+<span class="fc" id="L477">        constantInitBonus = b;</span>
+<span class="fc" id="L478">    }</span>
 
     @Override
     public int getConstantInitBonus() {
-<span class="nc" id="L479">        return constantInitBonus;</span>
+<span class="fc" id="L482">        return constantInitBonus;</span>
     }
 
     /**
@@ -484,20 +487,20 @@ public final class Player extends TurnOrdered implements IPlayer {
      */
     @Override
     public int getTurnInitBonus() {
-<span class="nc" id="L487">        int bonusHQ = 0;</span>
-<span class="nc" id="L488">        int bonusMD = 0;</span>
-<span class="nc" id="L489">        int bonusQ = 0;</span>
-<span class="nc bnc" id="L490" title="All 2 branches missed.">        if (game == null) {</span>
-<span class="nc" id="L491">            return 0;</span>
+<span class="fc" id="L490">        int bonusHQ = 0;</span>
+<span class="fc" id="L491">        int bonusMD = 0;</span>
+<span class="fc" id="L492">        int bonusQ = 0;</span>
+<span class="fc bfc" id="L493" title="All 2 branches covered.">        if (game == null) {</span>
+<span class="fc" id="L494">            return 0;</span>
         }
-<span class="nc bnc" id="L493" title="All 2 branches missed.">        if (game.getEntitiesVector() == null) {</span>
-<span class="nc" id="L494">            return 0;</span>
+<span class="fc bfc" id="L496" title="All 2 branches covered.">        if (game.getEntitiesVector() == null) {</span>
+<span class="fc" id="L497">            return 0;</span>
         }
-<span class="nc bnc" id="L496" title="All 2 branches missed.">        for (Entity entity : game.getEntitiesVector()) {</span>
-<span class="nc bnc" id="L497" title="All 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
-<span class="nc bnc" id="L498" title="All 4 branches missed.">                if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_MOBILE_HQS)</span>
-<span class="nc bnc" id="L499" title="All 2 branches missed.">                    &amp;&amp; (bonusHQ == 0) &amp;&amp; (entity.getHQIniBonus() &gt; 0)) {</span>
-<span class="nc" id="L500">                    bonusHQ = entity.getHQIniBonus();</span>
+<span class="fc bfc" id="L499" title="All 2 branches covered.">        for (Entity entity : game.getEntitiesVector()) {</span>
+<span class="pc bpc" id="L500" title="1 of 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
+<span class="pc bpc" id="L501" title="2 of 4 branches missed.">                if (game.getOptions().booleanOption(OptionsConstants.ADVANCED_TACOPS_MOBILE_HQS)</span>
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">                    &amp;&amp; (bonusHQ == 0) &amp;&amp; (entity.getHQIniBonus() &gt; 0)) {</span>
+<span class="fc" id="L503">                    bonusHQ = entity.getHQIniBonus();</span>
                 }
                 
 				/*
@@ -507,15 +510,15 @@ public final class Player extends TurnOrdered implements IPlayer {
 				 * (entity.getMDIniBonus() &gt; 0)) { bonusMD =
 				 * entity.getMDIniBonus(); }
 				 */
-<span class="nc bnc" id="L510" title="All 2 branches missed.">                if (entity.getQuirkIniBonus() &gt; bonusQ) {</span>
+<span class="pc bpc" id="L513" title="1 of 2 branches missed.">                if (entity.getQuirkIniBonus() &gt; bonusQ) {</span>
                     //TODO: I am assuming that the quirk initiative bonuses go to the highest,
                     //rather than being cumulative
                     //http://www.classicbattletech.com/forums/index.php/topic,52903.new.html#new
-<span class="nc" id="L514">                    bonusQ = entity.getQuirkIniBonus();</span>
+<span class="fc" id="L517">                    bonusQ = entity.getQuirkIniBonus();</span>
                 }
             }
-<span class="nc" id="L517">        }</span>
-<span class="nc" id="L518">        return bonusHQ + bonusMD + bonusQ;</span>
+<span class="fc" id="L520">        }</span>
+<span class="fc" id="L521">        return bonusHQ + bonusMD + bonusQ;</span>
     }
 
     /**
@@ -524,39 +527,39 @@ public final class Player extends TurnOrdered implements IPlayer {
      */
     @Override
     public int getCommandBonus() {
-<span class="nc" id="L527">        int commandb = 0;</span>
+<span class="fc" id="L530">        int commandb = 0;</span>
         
-<span class="nc bnc" id="L529" title="All 2 branches missed.">        if (game == null) {</span>
-<span class="nc" id="L530">            return 0;</span>
+<span class="fc bfc" id="L532" title="All 2 branches covered.">        if (game == null) {</span>
+<span class="fc" id="L533">            return 0;</span>
         }
         
-<span class="nc bnc" id="L533" title="All 2 branches missed.">        for (Entity entity : game.getEntitiesVector()) {</span>
-<span class="nc bnc" id="L534" title="All 2 branches missed.">            if ((null != entity.getOwner())</span>
-<span class="nc bnc" id="L535" title="All 2 branches missed.">                    &amp;&amp; entity.getOwner().equals(this)</span>
-<span class="nc bnc" id="L536" title="All 2 branches missed.">                    &amp;&amp; !entity.isDestroyed()</span>
-<span class="nc bnc" id="L537" title="All 2 branches missed.">                    &amp;&amp; entity.isDeployed()</span>
-<span class="nc bnc" id="L538" title="All 2 branches missed.">                    &amp;&amp; !entity.isOffBoard()</span>
-<span class="nc bnc" id="L539" title="All 2 branches missed.">                    &amp;&amp; entity.getCrew().isActive()</span>
-<span class="nc bnc" id="L540" title="All 4 branches missed.">                    &amp;&amp; !entity.isCaptured()</span>
+<span class="fc bfc" id="L536" title="All 2 branches covered.">        for (Entity entity : game.getEntitiesVector()) {</span>
+<span class="pc bpc" id="L537" title="1 of 2 branches missed.">            if ((null != entity.getOwner())</span>
+<span class="pc bpc" id="L538" title="1 of 2 branches missed.">                    &amp;&amp; entity.getOwner().equals(this)</span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">                    &amp;&amp; !entity.isDestroyed()</span>
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">                    &amp;&amp; entity.isDeployed()</span>
+<span class="pc bpc" id="L541" title="1 of 2 branches missed.">                    &amp;&amp; !entity.isOffBoard()</span>
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">                    &amp;&amp; entity.getCrew().isActive()</span>
+<span class="pc bpc" id="L543" title="2 of 4 branches missed.">                    &amp;&amp; !entity.isCaptured()</span>
                     &amp;&amp; !(entity instanceof MechWarrior)) {
-<span class="nc" id="L542">                int bonus = 0;</span>
-<span class="nc bnc" id="L543" title="All 2 branches missed.">                if (game.getOptions().booleanOption(OptionsConstants.RPG_COMMAND_INIT)) {</span>
-<span class="nc" id="L544">                    bonus = entity.getCrew().getCommandBonus();</span>
+<span class="fc" id="L545">                int bonus = 0;</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">                if (game.getOptions().booleanOption(OptionsConstants.RPG_COMMAND_INIT)) {</span>
+<span class="fc" id="L547">                    bonus = entity.getCrew().getCommandBonus();</span>
                 }
                 //Even if the RPG option is not enabled, we still get the command bonus provided by special equipment.
                 //Since we are not designating a single force commander at this point, we assume a superheavy tripod
                 //is the force commander if that gives the highest bonus.
-<span class="nc bnc" id="L549" title="All 4 branches missed.">                if (entity.hasCommandConsoleBonus() || entity.getCrew().hasActiveTechOfficer()) {</span>
-<span class="nc" id="L550">                    bonus += 2;</span>
+<span class="pc bpc" id="L552" title="3 of 4 branches missed.">                if (entity.hasCommandConsoleBonus() || entity.getCrew().hasActiveTechOfficer()) {</span>
+<span class="fc" id="L553">                    bonus += 2;</span>
                 }
                 //Once we've gotten the status of the command console (if any), reset the flag that tracks
                 //the previous turn's action.
-<span class="nc bnc" id="L554" title="All 2 branches missed.">                if (bonus &gt; commandb) {</span>
-<span class="nc" id="L555">                    commandb = bonus;</span>
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">                if (bonus &gt; commandb) {</span>
+<span class="fc" id="L558">                    commandb = bonus;</span>
                 }
             }
-<span class="nc" id="L558">        }</span>
-<span class="nc" id="L559">        return commandb;</span>
+<span class="fc" id="L561">        }</span>
+<span class="fc" id="L562">        return commandb;</span>
     }
 
     /**
@@ -567,23 +570,23 @@ public final class Player extends TurnOrdered implements IPlayer {
     @Override
     public Vector&lt;Integer&gt; getAirborneVTOL() {
         //a vector of unit ids
-<span class="nc" id="L570">        Vector&lt;Integer&gt; units = new Vector&lt;&gt;();</span>
-<span class="nc bnc" id="L571" title="All 2 branches missed.">        for (Entity entity : game.getEntitiesVector()) {</span>
-<span class="nc bnc" id="L572" title="All 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
-<span class="nc bnc" id="L573" title="All 2 branches missed.">                if (((entity instanceof VTOL)</span>
-<span class="nc bnc" id="L574" title="All 2 branches missed.">                     || (entity.getMovementMode() == EntityMovementMode.WIGE)) &amp;&amp;</span>
-<span class="nc bnc" id="L575" title="All 2 branches missed.">                    (!entity.isDestroyed()) &amp;&amp;</span>
-<span class="nc bnc" id="L576" title="All 2 branches missed.">                    (entity.getElevation() &gt; 0)) {</span>
-<span class="nc" id="L577">                    units.add(entity.getId());</span>
+<span class="fc" id="L573">        Vector&lt;Integer&gt; units = new Vector&lt;&gt;();</span>
+<span class="fc bfc" id="L574" title="All 2 branches covered.">        for (Entity entity : game.getEntitiesVector()) {</span>
+<span class="pc bpc" id="L575" title="1 of 2 branches missed.">            if (entity.getOwner().equals(this)) {</span>
+<span class="pc bpc" id="L576" title="1 of 2 branches missed.">                if (((entity instanceof VTOL)</span>
+<span class="pc bpc" id="L577" title="1 of 2 branches missed.">                     || (entity.getMovementMode() == EntityMovementMode.WIGE)) &amp;&amp;</span>
+<span class="pc bpc" id="L578" title="1 of 2 branches missed.">                    (!entity.isDestroyed()) &amp;&amp;</span>
+<span class="pc bpc" id="L579" title="1 of 2 branches missed.">                    (entity.getElevation() &gt; 0)) {</span>
+<span class="fc" id="L580">                    units.add(entity.getId());</span>
                 }
             }
-<span class="nc" id="L580">        }</span>
-<span class="nc" id="L581">        return units;</span>
+<span class="fc" id="L583">        }</span>
+<span class="fc" id="L584">        return units;</span>
     }
     
     @Override
     public String toString() {
-<span class="nc" id="L586">        return &quot;Player &quot; + getId() + &quot; (&quot; + getName() + &quot;)&quot;;</span>
+<span class="fc" id="L589">        return &quot;Player &quot; + getId() + &quot; (&quot; + getName() + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

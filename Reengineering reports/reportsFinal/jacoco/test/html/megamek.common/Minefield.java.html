@@ -49,31 +49,31 @@ public class Minefield implements Serializable, Cloneable {
 
     public static final String FILENAME_IMAGE = &quot;minefieldsign.gif&quot;;
 
-<span class="nc" id="L52">    private static String[] names = { &quot;Conventional&quot;, &quot;Command-detonated&quot;,</span>
+<span class="fc" id="L52">    private static String[] names = { &quot;Conventional&quot;, &quot;Command-detonated&quot;,</span>
             &quot;Vibrabomb&quot;, &quot;Active&quot;, &quot;EMP&quot;, &quot;Inferno&quot;};
             //&quot;Thunder&quot;, &quot;Thunder-Inferno&quot;, &quot;Thunder-Active&quot;,
             //&quot;Thunder-Vibrabomb&quot; };
     
-<span class="nc" id="L57">    public static int TYPE_SIZE = names.length;</span>
+<span class="fc" id="L57">    public static int TYPE_SIZE = names.length;</span>
 
-<span class="nc" id="L59">    private Coords coords = null;</span>
-<span class="nc" id="L60">    private int playerId = IPlayer.PLAYER_NONE;</span>
+<span class="fc" id="L59">    private Coords coords = null;</span>
+<span class="fc" id="L60">    private int playerId = IPlayer.PLAYER_NONE;</span>
     //private int damage = 0;
     //private int secondaryDamage = 0;
-<span class="nc" id="L63">    private int density = 5;</span>
-<span class="nc" id="L64">    private int type = -1;</span>
-<span class="nc" id="L65">    private int setting = 0;</span>
-<span class="nc" id="L66">    private boolean oneUse = false;</span>
-<span class="nc" id="L67">    private boolean sea = false;</span>
-<span class="nc" id="L68">    private int depth = 0;</span>
-<span class="nc" id="L69">    private boolean detonated = false;</span>
+<span class="fc" id="L63">    private int density = 5;</span>
+<span class="fc" id="L64">    private int type = -1;</span>
+<span class="fc" id="L65">    private int setting = 0;</span>
+<span class="fc" id="L66">    private boolean oneUse = false;</span>
+<span class="fc" id="L67">    private boolean sea = false;</span>
+<span class="fc" id="L68">    private int depth = 0;</span>
+<span class="fc" id="L69">    private boolean detonated = false;</span>
 
-<span class="nc" id="L71">    private Minefield() {</span>
+<span class="fc" id="L71">    private Minefield() {</span>
         //Creates a minefield
-<span class="nc" id="L73">    }</span>
+<span class="fc" id="L73">    }</span>
     
     public static Minefield createMinefield(Coords coords, int playerId, int type, int density) {
-<span class="nc" id="L76">        return createMinefield(coords, playerId, type, density, 0);</span>
+<span class="fc" id="L76">        return createMinefield(coords, playerId, type, density, 0);</span>
     }
     
     public static Minefield createMinefield(Coords coords, int playerId, int type, int density, boolean sea, int depth) {
@@ -81,20 +81,20 @@ public class Minefield implements Serializable, Cloneable {
     }
     
     public static Minefield createMinefield(Coords coords, int playerId, int type, int density, int setting) {
-<span class="nc" id="L84">        return createMinefield(coords, playerId, type, density, setting, false, 0);</span>
+<span class="fc" id="L84">        return createMinefield(coords, playerId, type, density, setting, false, 0);</span>
     }
 
     public static Minefield createMinefield(Coords coords, int playerId, int type, int density, int setting, boolean sea, int depth) {
-<span class="nc" id="L88">        Minefield mf = new Minefield();</span>
+<span class="fc" id="L88">        Minefield mf = new Minefield();</span>
         
-<span class="nc" id="L90">        mf.type = type;</span>
-<span class="nc" id="L91">        mf.density = density;</span>
-<span class="nc" id="L92">        mf.coords = coords;</span>
-<span class="nc" id="L93">        mf.playerId = playerId;</span>
-<span class="nc" id="L94">        mf.setting = setting;</span>
-<span class="nc" id="L95">        mf.sea = sea;</span>
-<span class="nc" id="L96">        mf.depth = depth;</span>
-<span class="nc" id="L97">        return mf;</span>
+<span class="fc" id="L90">        mf.type = type;</span>
+<span class="fc" id="L91">        mf.density = density;</span>
+<span class="fc" id="L92">        mf.coords = coords;</span>
+<span class="fc" id="L93">        mf.playerId = playerId;</span>
+<span class="fc" id="L94">        mf.setting = setting;</span>
+<span class="fc" id="L95">        mf.sea = sea;</span>
+<span class="fc" id="L96">        mf.depth = depth;</span>
+<span class="fc" id="L97">        return mf;</span>
     }
     
     
@@ -122,8 +122,8 @@ public class Minefield implements Serializable, Cloneable {
 
     @Override
     public boolean equals(Object obj) {
-<span class="nc bnc" id="L125" title="All 2 branches missed.">        if(this == obj) {</span>
-<span class="nc" id="L126">            return true;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        if(this == obj) {</span>
+<span class="fc" id="L126">            return true;</span>
         }
 <span class="nc bnc" id="L128" title="All 4 branches missed.">        if((null == obj) || (getClass() != obj.getClass())) {</span>
 <span class="nc" id="L129">            return false;</span>

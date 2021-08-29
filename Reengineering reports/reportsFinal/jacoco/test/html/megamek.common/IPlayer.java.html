@@ -29,8 +29,8 @@ public interface IPlayer extends ITurnOrdered {
     int PLAYER_NONE = -1;
     int TEAM_NONE = 0;
     int TEAM_UNASSIGNED = -1;
-<span class="nc" id="L32">    String[] teamNames = {&quot;No Team&quot;, &quot;Team 1&quot;, &quot;Team 2&quot;, &quot;Team 3&quot;, &quot;Team 4&quot;, &quot;Team 5&quot;};</span>
-<span class="nc" id="L33">    int MAX_TEAMS = teamNames.length;</span>
+<span class="fc" id="L32">    String[] teamNames = {&quot;No Team&quot;, &quot;Team 1&quot;, &quot;Team 2&quot;, &quot;Team 3&quot;, &quot;Team 4&quot;, &quot;Team 5&quot;};</span>
+<span class="fc" id="L33">    int MAX_TEAMS = teamNames.length;</span>
 
     Vector&lt;Minefield&gt; getMinefields();
 
@@ -111,6 +111,10 @@ public interface IPlayer extends ITurnOrdered {
     int getStartingPos();
 
     void setStartingPos(int startingPos);
+
+    int getRating();
+
+    void setRating(int newRating);
 
     /**
      * Set deployment zone to edge of board for reinforcements

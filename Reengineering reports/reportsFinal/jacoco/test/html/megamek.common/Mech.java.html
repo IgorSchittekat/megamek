@@ -328,7 +328,7 @@ public abstract class Mech extends Entity {
 <span class="fc" id="L328">        autoEject = !PreferenceManager.getClientPreferences()</span>
 <span class="pc bpc" id="L329" title="1 of 2 branches missed.">                .defaultAutoejectDisabled();</span>
 
-<span class="pc bpc" id="L331" title="4 of 6 branches missed.">        switch (inCockpitType) {</span>
+<span class="pc bpc" id="L331" title="5 of 6 branches missed.">        switch (inCockpitType) {</span>
         case COCKPIT_TRIPOD:
 <span class="nc" id="L333">            setCrew(new Crew(CrewType.TRIPOD));</span>
 <span class="nc" id="L334">            break;</span>
@@ -344,7 +344,7 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L344">            setCrew(new Crew(CrewType.COMMAND_CONSOLE));</span>
 <span class="nc" id="L345">            break;</span>
         case COCKPIT_QUADVEE:
-<span class="fc" id="L347">            setCrew(new Crew(CrewType.QUADVEE));</span>
+<span class="nc" id="L347">            setCrew(new Crew(CrewType.QUADVEE));</span>
             break;
         }
 <span class="fc" id="L350">    }</span>
@@ -394,7 +394,7 @@ public abstract class Mech extends Entity {
      * given location.
      */
     public static int getInnerLocation(int location) {
-<span class="pc bpc" id="L397" title="3 of 4 branches missed.">        switch (location) {</span>
+<span class="nc bnc" id="L397" title="All 4 branches missed.">        switch (location) {</span>
             case Mech.LOC_RT:
             case Mech.LOC_LT:
             case Mech.LOC_CLEG:
@@ -406,7 +406,7 @@ public abstract class Mech extends Entity {
             case Mech.LOC_RARM:
 <span class="nc" id="L407">                return Mech.LOC_RT;</span>
             default:
-<span class="fc" id="L409">                return location;</span>
+<span class="nc" id="L409">                return location;</span>
         }
     }
 
@@ -414,8 +414,8 @@ public abstract class Mech extends Entity {
      * Returns the location with the most restrictive firing arc for a weapon.
      */
     public static int mostRestrictiveLoc(int location1, int location2) {
-<span class="pc bpc" id="L417" title="1 of 2 branches missed.">        if (location1 == location2) {</span>
-<span class="fc" id="L418">            return location1;</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">        if (location1 == location2) {</span>
+<span class="nc" id="L418">            return location1;</span>
 <span class="nc" id="L419">        } else if (Mech.restrictScore(location1) &gt;= Mech</span>
 <span class="nc bnc" id="L420" title="All 2 branches missed.">                .restrictScore(location2)) {</span>
 <span class="nc" id="L421">            return location1;</span>
@@ -432,8 +432,8 @@ public abstract class Mech extends Entity {
      * @return
      */
     public static int leastRestrictiveLoc(int location1, int location2) {
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">        if (location1 == location2) {</span>
-<span class="fc" id="L436">            return location2;</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (location1 == location2) {</span>
+<span class="nc" id="L436">            return location2;</span>
 <span class="nc" id="L437">        } else if (Mech.restrictScore(location1) &gt;= Mech</span>
 <span class="nc bnc" id="L438" title="All 2 branches missed.">                .restrictScore(location2)) {</span>
 <span class="nc" id="L439">            return location2;</span>
@@ -447,13 +447,13 @@ public abstract class Mech extends Entity {
      * Used for finding the most restrictive firing arc for a weapon.
      */
     public static int restrictScore(int location) {
-<span class="pc bpc" id="L450" title="3 of 4 branches missed.">        switch (location) {</span>
+<span class="nc bnc" id="L450" title="All 4 branches missed.">        switch (location) {</span>
             case Mech.LOC_RARM:
             case Mech.LOC_LARM:
 <span class="nc" id="L453">                return 0;</span>
             case Mech.LOC_RT:
             case Mech.LOC_LT:
-<span class="fc" id="L456">                return 1;</span>
+<span class="nc" id="L456">                return 1;</span>
             case Mech.LOC_CT:
 <span class="nc" id="L458">                return 2;</span>
             default:
@@ -657,12 +657,12 @@ public abstract class Mech extends Entity {
      */
     @Override
     public boolean hasHipCrit() {
-<span class="fc bfc" id="L660" title="All 2 branches covered.">        for (int loc = 0; loc &lt; locations(); loc++) {</span>
-<span class="pc bpc" id="L661" title="1 of 2 branches missed.">            if (legHasHipCrit(loc)) {</span>
+<span class="nc bnc" id="L660" title="All 2 branches missed.">        for (int loc = 0; loc &lt; locations(); loc++) {</span>
+<span class="nc bnc" id="L661" title="All 2 branches missed.">            if (legHasHipCrit(loc)) {</span>
 <span class="nc" id="L662">                return true;</span>
             }
         }
-<span class="fc" id="L665">        return false;</span>
+<span class="nc" id="L665">        return false;</span>
     }
 
     /**
@@ -673,12 +673,12 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L673">            return false;</span>
         }
 
-<span class="fc bfc" id="L676" title="All 2 branches covered.">        if (locationIsLeg(loc)) {</span>
+<span class="pc bpc" id="L676" title="1 of 2 branches missed.">        if (locationIsLeg(loc)) {</span>
 <span class="pc bpc" id="L677" title="1 of 2 branches missed.">            return (getGoodCriticals(CriticalSlot.TYPE_SYSTEM,</span>
                     Mech.ACTUATOR_HIP, loc) == 0);
         }
 
-<span class="fc" id="L681">        return false;</span>
+<span class="nc" id="L681">        return false;</span>
     }
 
     /**
@@ -990,7 +990,7 @@ public abstract class Mech extends Entity {
      */
     @Override
     public int getStandingHeat() {
-<span class="pc bpc" id="L993" title="1 of 2 branches missed.">        return hasEngine() ? getEngine().getStandingHeat() : 0;</span>
+<span class="nc bnc" id="L993" title="All 2 branches missed.">        return hasEngine() ? getEngine().getStandingHeat() : 0;</span>
     }
 
     /**
@@ -1036,8 +1036,8 @@ public abstract class Mech extends Entity {
      */
     @Override
     public int getWalkHeat() {
-<span class="pc bpc" id="L1039" title="1 of 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
-<span class="pc bpc" id="L1040" title="1 of 2 branches missed.">        return extra + (hasEngine() ? getEngine().getWalkHeat(this) : 0);</span>
+<span class="nc bnc" id="L1039" title="All 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
+<span class="nc bnc" id="L1040" title="All 2 branches missed.">        return extra + (hasEngine() ? getEngine().getWalkHeat(this) : 0);</span>
     }
 
     /**
@@ -1081,8 +1081,8 @@ public abstract class Mech extends Entity {
     @Override
     public int getRunMPwithoutMASC(boolean gravity, boolean ignoreheat,
             boolean ignoremodulararmor) {
-<span class="fc" id="L1084">        return super.getRunMP(gravity, ignoreheat, ignoremodulararmor)</span>
-<span class="pc bpc" id="L1085" title="1 of 2 branches missed.">                - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
+<span class="nc" id="L1084">        return super.getRunMP(gravity, ignoreheat, ignoremodulararmor)</span>
+<span class="nc bnc" id="L1085" title="All 2 branches missed.">                - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
     }
 
     /**
@@ -1110,8 +1110,8 @@ public abstract class Mech extends Entity {
      */
     @Override
     public int getRunHeat() {
-<span class="pc bpc" id="L1113" title="1 of 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
-<span class="pc bpc" id="L1114" title="1 of 2 branches missed.">        return extra + (hasEngine() ? getEngine().getRunHeat(this) : 0);</span>
+<span class="nc bnc" id="L1113" title="All 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
+<span class="nc bnc" id="L1114" title="All 2 branches missed.">        return extra + (hasEngine() ? getEngine().getRunHeat(this) : 0);</span>
     }
 
     /*
@@ -1135,20 +1135,20 @@ public abstract class Mech extends Entity {
     @Override
     public int getSprintMP(boolean gravity, boolean ignoreheat,
             boolean ignoremodulararmor) {
-<span class="pc bpc" id="L1138" title="1 of 2 branches missed.">        if (hasHipCrit()) {</span>
+<span class="nc bnc" id="L1138" title="All 2 branches missed.">        if (hasHipCrit()) {</span>
 <span class="nc" id="L1139">            return getRunMP(gravity, ignoreheat, ignoremodulararmor);</span>
         }
-<span class="pc bpc" id="L1141" title="1 of 2 branches missed.">        if (hasArmedMASCAndSuperCharger()) {</span>
+<span class="nc bnc" id="L1141" title="All 2 branches missed.">        if (hasArmedMASCAndSuperCharger()) {</span>
 <span class="nc" id="L1142">            return ((int) Math.ceil(getWalkMP(gravity, ignoreheat,</span>
                     ignoremodulararmor) * 3.0))
 <span class="nc bnc" id="L1144" title="All 2 branches missed.">                    - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
         }
-<span class="pc bpc" id="L1146" title="1 of 2 branches missed.">        if (hasArmedMASC()) {</span>
+<span class="nc bnc" id="L1146" title="All 2 branches missed.">        if (hasArmedMASC()) {</span>
 <span class="nc" id="L1147">            return ((int) Math.ceil(getWalkMP(gravity, ignoreheat,</span>
                     ignoremodulararmor) * 2.5))
 <span class="nc bnc" id="L1149" title="All 2 branches missed.">                    - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
         }
-<span class="fc" id="L1151">        return getSprintMPwithoutMASC(gravity, ignoreheat, ignoremodulararmor);</span>
+<span class="nc" id="L1151">        return getSprintMPwithoutMASC(gravity, ignoreheat, ignoremodulararmor);</span>
     }
 
     /*
@@ -1170,12 +1170,12 @@ public abstract class Mech extends Entity {
     @Override
     public int getSprintMPwithoutMASC(boolean gravity, boolean ignoreheat,
             boolean ignoremodulararmor) {
-<span class="pc bpc" id="L1173" title="1 of 2 branches missed.">        if (hasHipCrit()) {</span>
+<span class="nc bnc" id="L1173" title="All 2 branches missed.">        if (hasHipCrit()) {</span>
 <span class="nc" id="L1174">            return getRunMPwithoutMASC(gravity, ignoreheat, ignoremodulararmor);</span>
         }
-<span class="fc" id="L1176">        return ((int) Math.ceil(getWalkMP(gravity, ignoreheat,</span>
+<span class="nc" id="L1176">        return ((int) Math.ceil(getWalkMP(gravity, ignoreheat,</span>
                 ignoremodulararmor) * 2.0))
-<span class="pc bpc" id="L1178" title="1 of 2 branches missed.">                - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
+<span class="nc bnc" id="L1178" title="All 2 branches missed.">                - (hasMPReducingHardenedArmor() ? 1 : 0);</span>
     }
 
     public int getOriginalSprintMPwithoutMASC() {
@@ -1211,8 +1211,8 @@ public abstract class Mech extends Entity {
      */
     @Override
     public int getSprintHeat() {
-<span class="pc bpc" id="L1214" title="1 of 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
-<span class="pc bpc" id="L1215" title="1 of 2 branches missed.">        return extra + (hasEngine() ? getEngine().getSprintHeat() : 0);</span>
+<span class="nc bnc" id="L1214" title="All 2 branches missed.">        int extra = bDamagedCoolantSystem?1:0;</span>
+<span class="nc bnc" id="L1215" title="All 2 branches missed.">        return extra + (hasEngine() ? getEngine().getSprintHeat() : 0);</span>
     }
 
     /**
@@ -1233,13 +1233,13 @@ public abstract class Mech extends Entity {
     }
 
     public int getJumpMP(boolean gravity, boolean ignoremodulararmor) {
-<span class="fc" id="L1236">        int jump = 0;</span>
+<span class="nc" id="L1236">        int jump = 0;</span>
 
-<span class="pc bpc" id="L1238" title="3 of 4 branches missed.">        if (hasShield() &amp;&amp; (getNumberOfShields(MiscType.S_SHIELD_LARGE) &gt; 0)) {</span>
+<span class="nc bnc" id="L1238" title="All 4 branches missed.">        if (hasShield() &amp;&amp; (getNumberOfShields(MiscType.S_SHIELD_LARGE) &gt; 0)) {</span>
 <span class="nc" id="L1239">            return 0;</span>
         }
 
-<span class="pc bpc" id="L1242" title="1 of 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L1242" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
 <span class="nc bnc" id="L1243" title="All 2 branches missed.">            if (mounted.getType().hasFlag(MiscType.F_JUMP_JET)</span>
 <span class="nc bnc" id="L1244" title="All 4 branches missed.">                    &amp;&amp; !mounted.isDestroyed() &amp;&amp; !mounted.isBreached()) {</span>
 <span class="nc" id="L1245">                jump++;</span>
@@ -1251,7 +1251,7 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L1251">        }</span>
 
         // apply Partial Wing bonus if we have the ability to jump
-<span class="pc bpc" id="L1254" title="1 of 2 branches missed.">        if (jump &gt; 0) {</span>
+<span class="nc bnc" id="L1254" title="All 2 branches missed.">        if (jump &gt; 0) {</span>
 <span class="nc bnc" id="L1255" title="All 2 branches missed.">            for (Mounted mount : getMisc()) {</span>
 <span class="nc bnc" id="L1256" title="All 2 branches missed.">                if (mount.getType().hasFlag(MiscType.F_PARTIAL_WING)) {</span>
 <span class="nc" id="L1257">                    jump += getPartialWingJumpBonus(mount);</span>
@@ -1260,14 +1260,14 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L1260">            }</span>
         }
         // Medium shield reduces jump mp by 1/shield
-<span class="fc" id="L1263">        jump -= getNumberOfShields(MiscType.S_SHIELD_MEDIUM);</span>
+<span class="nc" id="L1263">        jump -= getNumberOfShields(MiscType.S_SHIELD_MEDIUM);</span>
 
-<span class="pc bpc" id="L1265" title="3 of 4 branches missed.">        if (hasModularArmor() &amp;&amp; !ignoremodulararmor) {</span>
+<span class="nc bnc" id="L1265" title="All 4 branches missed.">        if (hasModularArmor() &amp;&amp; !ignoremodulararmor) {</span>
 <span class="nc" id="L1266">            jump--;</span>
         }
         
-<span class="pc bpc" id="L1269" title="1 of 2 branches missed.">        if (gravity) {</span>
-<span class="fc" id="L1270">            return Math.max(applyGravityEffectsOnMP(jump), 0);</span>
+<span class="nc bnc" id="L1269" title="All 2 branches missed.">        if (gravity) {</span>
+<span class="nc" id="L1270">            return Math.max(applyGravityEffectsOnMP(jump), 0);</span>
         }
 <span class="nc" id="L1272">        return Math.max(jump, 0);</span>
     }
@@ -1472,9 +1472,9 @@ public abstract class Mech extends Entity {
      * Returns the number of (working) jump jets mounted in the torsos.
      */
     public int torsoJumpJets() {
-<span class="fc" id="L1475">        int jump = 0;</span>
+<span class="nc" id="L1475">        int jump = 0;</span>
 
-<span class="pc bpc" id="L1477" title="1 of 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L1477" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
 <span class="nc bnc" id="L1478" title="All 2 branches missed.">            if (mounted.getType().hasFlag(MiscType.F_JUMP_JET)</span>
 <span class="nc bnc" id="L1479" title="All 4 branches missed.">                    &amp;&amp; !mounted.isDestroyed() &amp;&amp; !mounted.isBreached()</span>
 <span class="nc bnc" id="L1480" title="All 2 branches missed.">                    &amp;&amp; locationIsTorso(mounted.getLocation())) {</span>
@@ -1483,7 +1483,7 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L1483">        }</span>
 
         // apply Partial Wing bonus if we have the ability to jump
-<span class="pc bpc" id="L1486" title="1 of 2 branches missed.">        if (jump &gt; 0) {</span>
+<span class="nc bnc" id="L1486" title="All 2 branches missed.">        if (jump &gt; 0) {</span>
 <span class="nc bnc" id="L1487" title="All 2 branches missed.">            for (Mounted mount : getMisc()) {</span>
 <span class="nc bnc" id="L1488" title="All 2 branches missed.">                if (mount.getType().hasFlag(MiscType.F_PARTIAL_WING)) {</span>
 <span class="nc" id="L1489">                    jump += getPartialWingJumpBonus(mount);</span>
@@ -1492,7 +1492,7 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L1492">            }</span>
         }
 
-<span class="fc" id="L1495">        return jump;</span>
+<span class="nc" id="L1495">        return jump;</span>
     }
 
     @Override
@@ -1528,7 +1528,7 @@ public abstract class Mech extends Entity {
      */
     @Override
     public int height() {
-<span class="pc bpc" id="L1531" title="2 of 4 branches missed.">        return isProne() ? 0 : isSuperHeavy() ? 2 : 1;</span>
+<span class="nc bnc" id="L1531" title="All 4 branches missed.">        return isProne() ? 0 : isSuperHeavy() ? 2 : 1;</span>
     }
 
     /**
@@ -1897,10 +1897,10 @@ public abstract class Mech extends Entity {
      */
     @Override
     public boolean canChangeSecondaryFacing() {
-<span class="pc bpc" id="L1900" title="1 of 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_NEG_NO_TWIST)) {</span>
+<span class="nc bnc" id="L1900" title="All 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_NEG_NO_TWIST)) {</span>
 <span class="nc" id="L1901">            return false;</span>
         }
-<span class="pc bpc" id="L1903" title="1 of 2 branches missed.">        return !isProne();</span>
+<span class="nc bnc" id="L1903" title="All 2 branches missed.">        return !isProne();</span>
     }
 
     /**
@@ -3073,13 +3073,13 @@ public abstract class Mech extends Entity {
 
     //From IO pg 50
     public static TechAdvancement getTechAdvancement(long etype, boolean primitive, boolean industrial, int weightClass) {
-<span class="fc bfc" id="L3076" title="All 2 branches covered.">        if ((etype &amp; ETYPE_TRIPOD_MECH) != 0) {</span>
-<span class="pc bpc" id="L3077" title="1 of 2 branches missed.">            if (weightClass != EntityWeightClass.WEIGHT_SUPER_HEAVY) {</span>
-<span class="fc" id="L3078">                return new TechAdvancement(TECH_BASE_IS)</span>
-<span class="fc" id="L3079">                        .setISAdvancement(2585, 2602).setISApproximate(true).setPrototypeFactions(F_TH)</span>
-<span class="fc" id="L3080">                        .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
-<span class="fc" id="L3081">                        .setAvailability(RATING_F, RATING_F, RATING_F, RATING_E)</span>
-<span class="fc" id="L3082">                        .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
+<span class="pc bpc" id="L3076" title="1 of 2 branches missed.">        if ((etype &amp; ETYPE_TRIPOD_MECH) != 0) {</span>
+<span class="nc bnc" id="L3077" title="All 2 branches missed.">            if (weightClass != EntityWeightClass.WEIGHT_SUPER_HEAVY) {</span>
+<span class="nc" id="L3078">                return new TechAdvancement(TECH_BASE_IS)</span>
+<span class="nc" id="L3079">                        .setISAdvancement(2585, 2602).setISApproximate(true).setPrototypeFactions(F_TH)</span>
+<span class="nc" id="L3080">                        .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
+<span class="nc" id="L3081">                        .setAvailability(RATING_F, RATING_F, RATING_F, RATING_E)</span>
+<span class="nc" id="L3082">                        .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
             } else {
 <span class="nc" id="L3084">                return new TechAdvancement(TECH_BASE_IS)</span>
 <span class="nc" id="L3085">                        .setISAdvancement(2930, 2940).setISApproximate(true).setPrototypeFactions(F_FW)</span>
@@ -3087,12 +3087,12 @@ public abstract class Mech extends Entity {
 <span class="nc" id="L3087">                        .setAvailability(RATING_X, RATING_F, RATING_X, RATING_F)</span>
 <span class="nc" id="L3088">                        .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
             }
-<span class="pc bpc" id="L3090" title="1 of 4 branches missed.">        } else if (primitive &amp;&amp; industrial) {</span>
-<span class="fc" id="L3091">            return new TechAdvancement(TECH_BASE_IS)</span>
-<span class="fc" id="L3092">                    .setISAdvancement(2300, 2350, 2425, 2520).setPrototypeFactions(F_TA)</span>
-<span class="fc" id="L3093">                    .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
-<span class="fc" id="L3094">                    .setAvailability(RATING_D, RATING_X, RATING_F, RATING_F)</span>
-<span class="fc" id="L3095">                    .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
+<span class="pc bpc" id="L3090" title="3 of 4 branches missed.">        } else if (primitive &amp;&amp; industrial) {</span>
+<span class="nc" id="L3091">            return new TechAdvancement(TECH_BASE_IS)</span>
+<span class="nc" id="L3092">                    .setISAdvancement(2300, 2350, 2425, 2520).setPrototypeFactions(F_TA)</span>
+<span class="nc" id="L3093">                    .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
+<span class="nc" id="L3094">                    .setAvailability(RATING_D, RATING_X, RATING_F, RATING_F)</span>
+<span class="nc" id="L3095">                    .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
 <span class="pc bpc" id="L3096" title="1 of 2 branches missed.">        } else if (primitive) {</span>
 <span class="nc" id="L3097">            return new TechAdvancement(TECH_BASE_IS)</span>
 <span class="nc" id="L3098">                    .setISAdvancement(2439, 2443, 2470, 2520).setPrototypeFactions(F_TH)</span>
@@ -3268,11 +3268,11 @@ public abstract class Mech extends Entity {
     // Advanced fire control for industrial mechs is implemented with a standard cockpit,
     // but the tech progression is different.
     public static TechAdvancement getIndustrialAdvFireConTA() {
-<span class="fc" id="L3271">        return new TechAdvancement(TECH_BASE_ALL).setAdvancement(2469, 2470, 2491)</span>
-<span class="fc" id="L3272">                .setApproximate(true, false, false).setPrototypeFactions(F_TA)</span>
-<span class="fc" id="L3273">                .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
-<span class="fc" id="L3274">                .setAvailability(RATING_D, RATING_E, RATING_E, RATING_D)</span>
-<span class="fc" id="L3275">                .setStaticTechLevel(SimpleTechLevel.STANDARD);</span>
+<span class="nc" id="L3271">        return new TechAdvancement(TECH_BASE_ALL).setAdvancement(2469, 2470, 2491)</span>
+<span class="nc" id="L3272">                .setApproximate(true, false, false).setPrototypeFactions(F_TA)</span>
+<span class="nc" id="L3273">                .setProductionFactions(F_TH).setTechRating(RATING_D)</span>
+<span class="nc" id="L3274">                .setAvailability(RATING_D, RATING_E, RATING_E, RATING_D)</span>
+<span class="nc" id="L3275">                .setStaticTechLevel(SimpleTechLevel.STANDARD);</span>
     }
 
     public static TechAdvancement getCockpitTechAdvancement(int cockpitType) {
@@ -3301,11 +3301,11 @@ public abstract class Mech extends Entity {
     }
 
     public static TechAdvancement getFullHeadEjectAdvancement() {
-<span class="fc" id="L3304">        return new TechAdvancement(TECH_BASE_ALL).setISAdvancement(3020, 3023, 3100)</span>
-<span class="fc" id="L3305">                .setClanAdvancement(DATE_NONE, 3052, 3100).setPrototypeFactions(F_LC)</span>
-<span class="fc" id="L3306">                .setProductionFactions(F_LC, F_CWF).setTechRating(RATING_D)</span>
-<span class="fc" id="L3307">                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)</span>
-<span class="fc" id="L3308">                .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
+<span class="nc" id="L3304">        return new TechAdvancement(TECH_BASE_ALL).setISAdvancement(3020, 3023, 3100)</span>
+<span class="nc" id="L3305">                .setClanAdvancement(DATE_NONE, 3052, 3100).setPrototypeFactions(F_LC)</span>
+<span class="nc" id="L3306">                .setProductionFactions(F_LC, F_CWF).setTechRating(RATING_D)</span>
+<span class="nc" id="L3307">                .setAvailability(RATING_X, RATING_X, RATING_E, RATING_D)</span>
+<span class="nc" id="L3308">                .setStaticTechLevel(SimpleTechLevel.ADVANCED);</span>
     }
 
     @Override
@@ -6331,8 +6331,8 @@ public abstract class Mech extends Entity {
     }
 
     public void setGyroType(int type) {
-<span class="fc" id="L6334">        gyroType = type;</span>
-<span class="fc" id="L6335">    }</span>
+<span class="nc" id="L6334">        gyroType = type;</span>
+<span class="nc" id="L6335">    }</span>
 
     public void setCockpitType(int type) {
 <span class="nc" id="L6338">        cockpitType = type;</span>
@@ -6347,50 +6347,50 @@ public abstract class Mech extends Entity {
     }
 
     public static String getGyroTypeString(int inGyroType) {
-<span class="pc bpc" id="L6350" title="2 of 4 branches missed.">        if ((inGyroType &lt; 0) || (inGyroType &gt;= GYRO_STRING.length)) {</span>
+<span class="nc bnc" id="L6350" title="All 4 branches missed.">        if ((inGyroType &lt; 0) || (inGyroType &gt;= GYRO_STRING.length)) {</span>
 <span class="nc" id="L6351">            return &quot;Unknown&quot;;</span>
         }
-<span class="fc" id="L6353">        return GYRO_STRING[inGyroType];</span>
+<span class="nc" id="L6353">        return GYRO_STRING[inGyroType];</span>
     }
 
     public static String getGyroTypeShortString(int inGyroType) {
-<span class="pc bpc" id="L6357" title="2 of 4 branches missed.">        if ((inGyroType &lt; 0) || (inGyroType &gt;= GYRO_SHORT_STRING.length)) {</span>
+<span class="nc bnc" id="L6357" title="All 4 branches missed.">        if ((inGyroType &lt; 0) || (inGyroType &gt;= GYRO_SHORT_STRING.length)) {</span>
 <span class="nc" id="L6358">            return &quot;Unknown&quot;;</span>
         }
-<span class="fc" id="L6360">        return GYRO_SHORT_STRING[inGyroType];</span>
+<span class="nc" id="L6360">        return GYRO_SHORT_STRING[inGyroType];</span>
     }
 
     public static String getCockpitTypeString(int inCockpitType) {
-<span class="pc bpc" id="L6364" title="2 of 4 branches missed.">        if ((inCockpitType &lt; 0) || (inCockpitType &gt;= COCKPIT_STRING.length)) {</span>
+<span class="nc bnc" id="L6364" title="All 4 branches missed.">        if ((inCockpitType &lt; 0) || (inCockpitType &gt;= COCKPIT_STRING.length)) {</span>
 <span class="nc" id="L6365">            return &quot;Unknown&quot;;</span>
         }
-<span class="fc" id="L6367">        return COCKPIT_STRING[inCockpitType];</span>
+<span class="nc" id="L6367">        return COCKPIT_STRING[inCockpitType];</span>
     }
 
     public static int getGyroTypeForString(String inType) {
 <span class="pc bpc" id="L6371" title="2 of 4 branches missed.">        if ((inType == null) || (inType.length() &lt; 1)) {</span>
 <span class="nc" id="L6372">            return GYRO_UNKNOWN;</span>
         }
-<span class="fc bfc" id="L6374" title="All 2 branches covered.">        for (int x = 0; x &lt; GYRO_STRING.length; x++) {</span>
+<span class="pc bpc" id="L6374" title="1 of 2 branches missed.">        for (int x = 0; x &lt; GYRO_STRING.length; x++) {</span>
 <span class="pc bpc" id="L6375" title="1 of 2 branches missed.">            if ((inType.equals(GYRO_STRING[x]))</span>
-<span class="fc bfc" id="L6376" title="All 2 branches covered.">                    || (inType.equals(GYRO_SHORT_STRING[x]))) {</span>
+<span class="pc bpc" id="L6376" title="1 of 2 branches missed.">                    || (inType.equals(GYRO_SHORT_STRING[x]))) {</span>
 <span class="fc" id="L6377">                return x;</span>
             }
         }
-<span class="fc" id="L6380">        return GYRO_UNKNOWN;</span>
+<span class="nc" id="L6380">        return GYRO_UNKNOWN;</span>
     }
 
     public static int getCockpitTypeForString(String inType) {
 <span class="pc bpc" id="L6384" title="2 of 4 branches missed.">        if ((inType == null) || (inType.length() &lt; 1)) {</span>
 <span class="nc" id="L6385">            return COCKPIT_UNKNOWN;</span>
         }
-<span class="fc bfc" id="L6387" title="All 2 branches covered.">        for (int x = 0; x &lt; COCKPIT_STRING.length; x++) {</span>
+<span class="pc bpc" id="L6387" title="1 of 2 branches missed.">        for (int x = 0; x &lt; COCKPIT_STRING.length; x++) {</span>
 <span class="pc bpc" id="L6388" title="1 of 2 branches missed.">            if ((inType.equals(COCKPIT_STRING[x]))</span>
-<span class="fc bfc" id="L6389" title="All 2 branches covered.">                    || (inType.equals(COCKPIT_SHORT_STRING[x]))) {</span>
+<span class="pc bpc" id="L6389" title="1 of 2 branches missed.">                    || (inType.equals(COCKPIT_SHORT_STRING[x]))) {</span>
 <span class="fc" id="L6390">                return x;</span>
             }
         }
-<span class="fc" id="L6393">        return COCKPIT_UNKNOWN;</span>
+<span class="nc" id="L6393">        return COCKPIT_UNKNOWN;</span>
     }
 
     public String getSystemName(int index) {
@@ -6411,11 +6411,11 @@ public abstract class Mech extends Entity {
     }
 
     public static String getGyroDisplayString(int inType) {
-<span class="fc" id="L6414">        String inName = &quot;&quot;;</span>
-<span class="pc bpc" id="L6415" title="6 of 7 branches missed.">        switch (inType) {</span>
+<span class="nc" id="L6414">        String inName = &quot;&quot;;</span>
+<span class="nc bnc" id="L6415" title="All 7 branches missed.">        switch (inType) {</span>
             case GYRO_XL:
-<span class="fc" id="L6417">                inName = &quot;GYRO_XL&quot;;</span>
-<span class="fc" id="L6418">                break;</span>
+<span class="nc" id="L6417">                inName = &quot;GYRO_XL&quot;;</span>
+<span class="nc" id="L6418">                break;</span>
             case GYRO_COMPACT:
 <span class="nc" id="L6420">                inName = &quot;GYRO_COMPACT&quot;;</span>
 <span class="nc" id="L6421">                break;</span>
@@ -6434,23 +6434,23 @@ public abstract class Mech extends Entity {
             default:
 <span class="nc" id="L6435">                inName = &quot;GYRO_UNKNOWN&quot;;</span>
         }
-<span class="fc" id="L6437">        String result = EquipmentMessages</span>
-<span class="fc" id="L6438">                .getString(&quot;SystemType.Gyro.&quot; + inName);</span>
-<span class="pc bpc" id="L6439" title="1 of 2 branches missed.">        if (result != null) {</span>
-<span class="fc" id="L6440">            return result;</span>
+<span class="nc" id="L6437">        String result = EquipmentMessages</span>
+<span class="nc" id="L6438">                .getString(&quot;SystemType.Gyro.&quot; + inName);</span>
+<span class="nc bnc" id="L6439" title="All 2 branches missed.">        if (result != null) {</span>
+<span class="nc" id="L6440">            return result;</span>
         }
 <span class="nc" id="L6442">        return inName;</span>
     }
 
     public static String getCockpitDisplayString(int inType) {
-<span class="fc" id="L6446">        String inName = &quot;&quot;;</span>
-<span class="pc bpc" id="L6447" title="17 of 18 branches missed.">        switch (inType) {</span>
+<span class="nc" id="L6446">        String inName = &quot;&quot;;</span>
+<span class="nc bnc" id="L6447" title="All 18 branches missed.">        switch (inType) {</span>
             case COCKPIT_COMMAND_CONSOLE:
 <span class="nc" id="L6449">                inName = &quot;COCKPIT_COMMAND_CONSOLE&quot;;</span>
 <span class="nc" id="L6450">                break;</span>
             case COCKPIT_SMALL:
-<span class="fc" id="L6452">                inName = &quot;COCKPIT_SMALL&quot;;</span>
-<span class="fc" id="L6453">                break;</span>
+<span class="nc" id="L6452">                inName = &quot;COCKPIT_SMALL&quot;;</span>
+<span class="nc" id="L6453">                break;</span>
             case COCKPIT_TORSO_MOUNTED:
 <span class="nc" id="L6455">                inName = &quot;COCKPIT_TORSO_MOUNTED&quot;;</span>
 <span class="nc" id="L6456">                break;</span>
@@ -6499,10 +6499,10 @@ public abstract class Mech extends Entity {
             default:
 <span class="nc" id="L6500">                inName = &quot;COCKPIT_UNKNOWN&quot;;</span>
         }
-<span class="fc" id="L6502">        String result = EquipmentMessages.getString(&quot;SystemType.Cockpit.&quot;</span>
+<span class="nc" id="L6502">        String result = EquipmentMessages.getString(&quot;SystemType.Cockpit.&quot;</span>
                 + inName);
-<span class="pc bpc" id="L6504" title="1 of 2 branches missed.">        if (result != null) {</span>
-<span class="fc" id="L6505">            return result;</span>
+<span class="nc bnc" id="L6504" title="All 2 branches missed.">        if (result != null) {</span>
+<span class="nc" id="L6505">            return result;</span>
         }
 <span class="nc" id="L6507">        return inName;</span>
     }
@@ -7326,20 +7326,20 @@ public abstract class Mech extends Entity {
      * @return false if insufficient critical space
      */
     public boolean addGyro() {
-<span class="pc bpc" id="L7329" title="2 of 4 branches missed.">        if (getEmptyCriticals(LOC_CT) &lt; (isSuperHeavy() ? 2 : 4)) {</span>
+<span class="nc bnc" id="L7329" title="All 4 branches missed.">        if (getEmptyCriticals(LOC_CT) &lt; (isSuperHeavy() ? 2 : 4)) {</span>
 <span class="nc" id="L7330">            return false;</span>
         }
-<span class="fc" id="L7332">        addCompactGyro();</span>
-<span class="pc bpc" id="L7333" title="1 of 2 branches missed.">        if (!isSuperHeavy()) {</span>
-<span class="fc" id="L7334">            addCritical(LOC_CT, 5, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L7332">        addCompactGyro();</span>
+<span class="nc bnc" id="L7333" title="All 2 branches missed.">        if (!isSuperHeavy()) {</span>
+<span class="nc" id="L7334">            addCritical(LOC_CT, 5, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                     SYSTEM_GYRO));
-<span class="fc" id="L7336">            addCritical(LOC_CT, 6, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L7336">            addCritical(LOC_CT, 6, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                     SYSTEM_GYRO));
-<span class="fc" id="L7338">            setGyroType(GYRO_STANDARD);</span>
+<span class="nc" id="L7338">            setGyroType(GYRO_STANDARD);</span>
         } else {
 <span class="nc" id="L7340">            setGyroType(GYRO_SUPERHEAVY);</span>
         }
-<span class="fc" id="L7342">        return true;</span>
+<span class="nc" id="L7342">        return true;</span>
     }
 
     /**
@@ -7374,15 +7374,15 @@ public abstract class Mech extends Entity {
      * @return false if insufficient critical space
      */
     public boolean addCompactGyro() {
-<span class="pc bpc" id="L7377" title="1 of 2 branches missed.">        if (getEmptyCriticals(LOC_CT) &lt; 2) {</span>
+<span class="nc bnc" id="L7377" title="All 2 branches missed.">        if (getEmptyCriticals(LOC_CT) &lt; 2) {</span>
 <span class="nc" id="L7378">            return false;</span>
         }
-<span class="fc" id="L7380">        addCritical(LOC_CT, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L7380">        addCritical(LOC_CT, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                 SYSTEM_GYRO));
-<span class="fc" id="L7382">        addCritical(LOC_CT, 4, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L7382">        addCritical(LOC_CT, 4, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                 SYSTEM_GYRO));
-<span class="fc" id="L7384">        setGyroType(GYRO_COMPACT);</span>
-<span class="fc" id="L7385">        return true;</span>
+<span class="nc" id="L7384">        setGyroType(GYRO_COMPACT);</span>
+<span class="nc" id="L7385">        return true;</span>
     }
 
     /**
@@ -7416,9 +7416,9 @@ public abstract class Mech extends Entity {
      * @return false if insufficient critical space
      */
     public boolean addHeavyDutyGyro() {
-<span class="pc bpc" id="L7419" title="1 of 2 branches missed.">        if (addGyro()) {</span>
-<span class="fc" id="L7420">            setGyroType(GYRO_HEAVY_DUTY);</span>
-<span class="fc" id="L7421">            return true;</span>
+<span class="nc bnc" id="L7419" title="All 2 branches missed.">        if (addGyro()) {</span>
+<span class="nc" id="L7420">            setGyroType(GYRO_HEAVY_DUTY);</span>
+<span class="nc" id="L7421">            return true;</span>
         }
 <span class="nc" id="L7423">        return false;</span>
     }
@@ -8416,16 +8416,16 @@ public abstract class Mech extends Entity {
     }
 
     public int getGyroHits() {
-<span class="fc" id="L8419">        return getHitCriticals(CriticalSlot.TYPE_SYSTEM, Mech.SYSTEM_GYRO,</span>
+<span class="nc" id="L8419">        return getHitCriticals(CriticalSlot.TYPE_SYSTEM, Mech.SYSTEM_GYRO,</span>
                 Mech.LOC_CT);
     }
 
     @Override
     public boolean isGyroDestroyed() {
-<span class="pc bpc" id="L8425" title="1 of 2 branches missed.">        if (getGyroType() == GYRO_HEAVY_DUTY) {</span>
+<span class="nc bnc" id="L8425" title="All 2 branches missed.">        if (getGyroType() == GYRO_HEAVY_DUTY) {</span>
 <span class="nc bnc" id="L8426" title="All 2 branches missed.">            return getGyroHits() &gt; 2;</span>
         } else {
-<span class="pc bpc" id="L8428" title="1 of 2 branches missed.">            return getGyroHits() &gt; 1;</span>
+<span class="nc bnc" id="L8428" title="All 2 branches missed.">            return getGyroHits() &gt; 1;</span>
         }
     }
 

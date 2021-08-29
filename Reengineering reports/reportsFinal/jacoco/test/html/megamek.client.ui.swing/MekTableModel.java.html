@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MekTableModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.swing</a> &gt; <span class="el_source">MekTableModel.java</span></div><h1>MekTableModel.java</h1><pre class="source lang-java linenums">package megamek.client.ui.swing;
+
+import megamek.client.ui.Messages;
+import megamek.common.*;
+import megamek.common.icons.Portrait;
+import megamek.common.options.OptionsConstants;
+import megamek.common.options.PilotOptions;
+import megamek.common.options.Quirks;
+import megamek.common.util.fileUtils.MegaMekFile;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class MekTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 4819661751806908535L;
+
+    public static final int COL_UNIT = 0;
+    public static final int COL_PILOT = 1;
+    public static final int COL_PLAYER = 2;
+    public static final int COL_BV = 3;
+    public static final int N_COL = 4;
+
+    private final ChatLounge chatLounge;
+    private ArrayList&lt;Entity&gt; data;
+
+<span class="nc" id="L29">    public MekTableModel(ChatLounge lounge) {</span>
+<span class="nc" id="L30">        chatLounge = lounge;</span>
+<span class="nc" id="L31">        data = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc" id="L32">    }</span>
+
+    @Override
+    public int getRowCount() {
+<span class="nc" id="L36">        return data.size();</span>
+    }
+
+    public void clearData() {
+<span class="nc" id="L40">        data = new ArrayList&lt;Entity&gt;();</span>
+<span class="nc" id="L41">        fireTableDataChanged();</span>
+<span class="nc" id="L42">    }</span>
+
+    @Override
+    public int getColumnCount() {
+<span class="nc" id="L46">        return N_COL;</span>
+    }
+
+    public void addUnit(Entity en) {
+<span class="nc" id="L50">        data.add(en);</span>
+<span class="nc" id="L51">        fireTableDataChanged();</span>
+<span class="nc" id="L52">    }</span>
+
+    @Override
+    public String getColumnName(int column) {
+<span class="nc bnc" id="L56" title="All 5 branches missed.">        switch (column) {</span>
+            case (COL_PILOT):
+<span class="nc" id="L58">                return Messages.getString(&quot;ChatLounge.colPilot&quot;);</span>
+            case (COL_UNIT):
+<span class="nc" id="L60">                return Messages.getString(&quot;ChatLounge.colUnit&quot;);</span>
+            case (COL_PLAYER):
+<span class="nc" id="L62">                return Messages.getString(&quot;ChatLounge.colPlayer&quot;);</span>
+            case (COL_BV):
+<span class="nc" id="L64">                return Messages.getString(&quot;ChatLounge.colBV&quot;);</span>
+        }
+<span class="nc" id="L66">        return &quot;??&quot;;</span>
+    }
+
+    @Override
+    public Class&lt;?&gt; getColumnClass(int c) {
+<span class="nc" id="L71">        return getValueAt(0, c).getClass();</span>
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int col) {
+<span class="nc" id="L76">        return false;</span>
+    }
+
+    @Override
+    public Object getValueAt(int row, int col) {
+<span class="nc" id="L81">        boolean compact = chatLounge.getButCompact().isSelected();</span>
+<span class="nc" id="L82">        Entity entity = getEntityAt(row);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        boolean blindDrop = !entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer())</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                &amp;&amp; chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_BLIND_DROP);</span>
+<span class="nc" id="L85">        String value = &quot;&quot;;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (col == COL_BV) {</span>
+<span class="nc" id="L87">            value += entity.calculateBattleValue();</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        } else if (col == COL_PLAYER) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (compact) {</span>
+<span class="nc" id="L90">                value += entity.getOwner().getName();</span>
+            } else {
+<span class="nc" id="L92">                value += entity.getOwner().getName() + &quot;&lt;br&gt;Team &quot;</span>
+<span class="nc" id="L93">                        + chatLounge.getClientgui().getClient().getGame().getPlayer(entity.getOwnerId()).getTeam();</span>
+            }
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        } else if (col == COL_PILOT) {</span>
+<span class="nc" id="L96">            final boolean rpgSkills = chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.RPG_RPG_GUNNERY);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            if (compact) {</span>
+<span class="nc" id="L98">                return formatPilotCompact(entity.getCrew(), blindDrop, rpgSkills);</span>
+            }
+<span class="nc" id="L100">            return formatPilotHTML(entity.getCrew(), blindDrop, rpgSkills);</span>
+        } else {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            if (compact) {</span>
+<span class="nc" id="L103">                return formatUnitCompact(entity, blindDrop);</span>
+            }
+<span class="nc" id="L105">            return formatUnitHTML(entity, blindDrop);</span>
+        }
+<span class="nc" id="L107">        return value;</span>
+    }
+
+    public Entity getEntityAt(int row) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (row &lt; 0) {</span>
+<span class="nc" id="L112">            return null;</span>
+        }
+<span class="nc" id="L114">        return data.get(row);</span>
+    }
+
+    public String formatPilotCompact(Crew pilot, boolean blindDrop, boolean rpgSkills) {
+<span class="nc" id="L118">        String value = &quot;&quot;;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (blindDrop) {</span>
+<span class="nc" id="L120">            value += Messages.getString(&quot;ChatLounge.Unknown&quot;);</span>
+        } else {
+<span class="nc" id="L122">            value += pilot.getDesc();</span>
+        }
+
+<span class="nc" id="L125">        value += &quot; (&quot; + pilot.getSkillsAsString(rpgSkills) + &quot;)&quot;;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (pilot.countOptions() &gt; 0) {</span>
+<span class="nc" id="L127">            value += &quot; (&quot; + pilot.countOptions() + Messages.getString(&quot;ChatLounge.abilities&quot;) + &quot;)&quot;;</span>
+        }
+<span class="nc" id="L129">        return value;</span>
+    }
+
+    public String formatPilotHTML(Crew pilot, boolean blindDrop, boolean rpgSkill) {
+
+<span class="nc" id="L134">        int crewAdvCount = pilot.countOptions(PilotOptions.LVL3_ADVANTAGES);</span>
+<span class="nc" id="L135">        int implants = pilot.countOptions(PilotOptions.MD_ADVANTAGES);</span>
+
+<span class="nc" id="L137">        String value = &quot;&quot;;</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">        if (!blindDrop &amp;&amp; pilot.getSlotCount() &gt; 1) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            for (int i = 0; i &lt; pilot.getSlotCount(); i++) {</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                if (pilot.isMissing(i)) {</span>
+<span class="nc" id="L141">                    value += &quot;&lt;b&gt;No &quot; + pilot.getCrewType().getRoleName(i) + &quot;&lt;/b&gt;&quot;;</span>
+                } else {
+<span class="nc" id="L143">                    value += &quot;&lt;b&gt;&quot; + pilot.getDesc(i) + &quot;&lt;/b&gt; (&quot; + pilot.getCrewType().getRoleName(i) + &quot;): &quot;;</span>
+<span class="nc" id="L144">                    value += pilot.getSkillsAsString(i, rpgSkill);</span>
+                }
+<span class="nc" id="L146">                value += &quot;&lt;br/&gt;&quot;;</span>
+            }
+        } else {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            if (blindDrop) {</span>
+<span class="nc" id="L150">                value += &quot;&lt;b&gt;&quot; + Messages.getString(&quot;ChatLounge.Unknown&quot;) + &quot;&lt;/b&gt;&lt;br/&gt;&quot;;</span>
+            } else {
+<span class="nc" id="L152">                value += &quot;&lt;b&gt;&quot; + pilot.getDesc() + &quot;&lt;/b&gt;&lt;br/&gt;&quot;;</span>
+            }
+<span class="nc" id="L154">            value += &quot;&quot; + pilot.getSkillsAsString(rpgSkill);</span>
+        }
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (crewAdvCount &gt; 0) {</span>
+<span class="nc" id="L157">            value += &quot;, &quot; + crewAdvCount + Messages.getString(&quot;ChatLounge.advs&quot;);</span>
+        }
+<span class="nc" id="L159">        value += &quot;&lt;br&gt;&quot;;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (implants &gt; 0) {</span>
+<span class="nc" id="L161">            value += &quot;&lt;i&gt;&quot; + Messages.getString(&quot;ChatLounge.md&quot;) + &quot;&lt;/i&gt;, &quot; + implants</span>
+<span class="nc" id="L162">                    + Messages.getString(&quot;ChatLounge.implants&quot;) + &quot;&lt;br&gt;&quot;;</span>
+        }
+<span class="nc" id="L164">        return value;</span>
+    }
+
+    public String formatUnitCompact(Entity entity, boolean blindDrop) {
+
+<span class="nc" id="L169">        String value = &quot;&quot;;</span>
+        // Reset the tree strings.
+<span class="nc" id="L171">        String strTreeSet = &quot;&quot;; //$NON-NLS-1$</span>
+<span class="nc" id="L172">        String strTreeView = &quot;&quot;; //$NON-NLS-1$</span>
+
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (blindDrop) {</span>
+<span class="nc" id="L175">            return formatUtilBlindDrop(entity);</span>
+        }
+
+        // Set the tree strings based on C3 settings for the unit.
+<span class="nc bnc" id="L179" title="All 4 branches missed.">        if (entity.hasC3i() || entity.hasNavalC3()) {</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            if (entity.calculateFreeC3Nodes() == 5) {</span>
+<span class="nc" id="L181">                strTreeSet = &quot;**&quot;; //$NON-NLS-1$</span>
+            }
+<span class="nc" id="L183">            strTreeView = &quot; (&quot; + entity.getC3NetId() + &quot;)&quot;; //$NON-NLS-1$ //$NON-NLS-2$</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        } else if (entity.hasC3()) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            if (entity.getC3Master() == null) {</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">                if (entity.hasC3S()) {</span>
+<span class="nc" id="L187">                    strTreeSet = &quot;***&quot;; //$NON-NLS-1$</span>
+                } else {
+<span class="nc" id="L189">                    strTreeSet = &quot;*&quot;; //$NON-NLS-1$</span>
+                }
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            } else if (!entity.C3MasterIs(entity)) {</span>
+<span class="nc" id="L192">                strTreeSet = &quot;&gt;&quot;; //$NON-NLS-1$</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                if ((entity.getC3Master().getC3Master() != null)</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                        &amp;&amp; !entity.getC3Master().C3MasterIs(entity.getC3Master())) {</span>
+<span class="nc" id="L195">                    strTreeSet = &quot;&gt;&gt;&quot;; //$NON-NLS-1$</span>
+                }
+<span class="nc" id="L197">                strTreeView = &quot; -&gt; &quot; + entity.getC3Master().getDisplayName(); //$NON-NLS-1$</span>
+            }
+        }
+
+<span class="nc" id="L201">        value += strTreeSet + entity.getShortName() + strTreeView;</span>
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (entity.getTransportId() != Entity.NONE) {</span>
+<span class="nc" id="L204">            Entity loader = entity.getGame().getEntity(entity.getTransportId());</span>
+<span class="nc" id="L205">            value += &quot;, aboard &quot; + loader.getShortName() + &quot;&quot;;</span>
+        }
+
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (entity.isHidden()) {</span>
+<span class="nc" id="L209">            value += &quot; (&quot; + Messages.getString(&quot;ChatLounge.hidden&quot;) + &quot;)&quot;; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$</span>
+        }
+
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (entity.isOffBoard()) {</span>
+<span class="nc" id="L213">            value += &quot; (&quot; + Messages.getString(&quot;ChatLounge.deploysOffBoard&quot;) + &quot;)&quot;; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        } else if (entity.getDeployRound() &gt; 0) {</span>
+<span class="nc" id="L215">            value += &quot; (&quot; + Messages.getString(&quot;ChatLounge.deploysAfterRound&quot;) //$NON-NLS-1$ //$NON-NLS-2$</span>
+<span class="nc" id="L216">                    + entity.getDeployRound();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">            if (entity.getStartingPos(false) != Board.START_NONE) {</span>
+<span class="nc" id="L218">                value += Messages.getString(&quot;ChatLounge.deploysAfterZone&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L219">                        + IStartingPositions.START_LOCATION_NAMES[entity.getStartingPos(false)];</span>
+            }
+            // $NON-NLS-2$
+<span class="nc" id="L222">            value += &quot;)&quot;; //$NON-NLS-1$</span>
+        }
+<span class="nc" id="L224">        return value;</span>
+    }
+
+    public String formatUnitHTML(Entity entity, boolean blindDrop) {
+<span class="nc" id="L228">        String value = &quot;&quot;;</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if (blindDrop) {</span>
+<span class="nc" id="L230">            value = formatUtilBlindDrop(entity);</span>
+<span class="nc" id="L231">            value += &quot;&lt;br&gt;&quot;;</span>
+        } else {
+<span class="nc" id="L233">            String c3network = &quot;&quot;;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">            if (entity.hasC3i()) {</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">                if (entity.calculateFreeC3Nodes() &gt;= 5) {</span>
+<span class="nc" id="L236">                    c3network += Messages.getString(&quot;ChatLounge.C3iNone&quot;);</span>
+                } else {
+<span class="nc" id="L238">                    c3network += Messages.getString(&quot;ChatLounge.C3iNetwork&quot;) + entity.getC3NetId();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">                    if (entity.calculateFreeC3Nodes() &gt; 0) {</span>
+<span class="nc" id="L240">                        c3network += Messages.getString(&quot;ChatLounge.C3iNodes&quot;,</span>
+<span class="nc" id="L241">                                entity.calculateFreeC3Nodes());</span>
+                    }
+                }
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            } else if (entity.hasNavalC3()) {</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                if (entity.calculateFreeC3Nodes() &gt;= 5) {</span>
+<span class="nc" id="L246">                    c3network += Messages.getString(&quot;ChatLounge.NC3None&quot;);</span>
+                } else {
+<span class="nc" id="L248">                    c3network += Messages.getString(&quot;ChatLounge.NC3Network&quot;) + entity.getC3NetId();</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                    if (entity.calculateFreeC3Nodes() &gt; 0) {</span>
+<span class="nc" id="L250">                        c3network += Messages.getString(&quot;ChatLounge.NC3Nodes&quot;,</span>
+<span class="nc" id="L251">                                entity.calculateFreeC3Nodes());</span>
+                    }
+                }
+<span class="nc bnc" id="L254" title="All 2 branches missed.">            } else if (entity.hasC3()) {</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">                if (entity.C3MasterIs(entity)) {</span>
+<span class="nc" id="L256">                    c3network += Messages.getString(&quot;ChatLounge.C3Master&quot;);</span>
+<span class="nc" id="L257">                    c3network += Messages.getString(&quot;ChatLounge.C3MNodes&quot;,</span>
+<span class="nc" id="L258">                            entity.calculateFreeC3MNodes());</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">                    if (entity.hasC3MM()) {</span>
+<span class="nc" id="L260">                        c3network += Messages.getString(&quot;ChatLounge.C3SNodes&quot;,</span>
+<span class="nc" id="L261">                                entity.calculateFreeC3Nodes());</span>
+                    }
+<span class="nc bnc" id="L263" title="All 2 branches missed.">                } else if (!entity.hasC3S()) {</span>
+<span class="nc" id="L264">                    c3network += Messages.getString(&quot;ChatLounge.C3Master&quot;);</span>
+<span class="nc" id="L265">                    c3network += Messages.getString(&quot;ChatLounge.C3SNodes&quot;,</span>
+<span class="nc" id="L266">                            entity.calculateFreeC3Nodes());</span>
+                    // an independent master might also be a slave to a company
+                    // master
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                    if (entity.getC3Master() != null) {</span>
+<span class="nc" id="L270">                        c3network += &quot;&lt;br&gt;&quot; + Messages.getString(&quot;ChatLounge.C3Slave&quot;)</span>
+<span class="nc" id="L271">                                + entity.getC3Master().getDisplayName();</span>
+                        // $NON-NLS-1$
+                    }
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                } else if (entity.getC3Master() != null) {</span>
+<span class="nc" id="L275">                    c3network += Messages.getString(&quot;ChatLounge.C3Slave&quot;) + entity.getC3Master().getDisplayName();</span>
+                    // $NON-NLS-1$
+                } else {
+<span class="nc" id="L278">                    c3network += Messages.getString(&quot;ChatLounge.C3None&quot;);</span>
+                }
+            }
+
+<span class="nc" id="L282">            int posQuirkCount = entity.countQuirks(Quirks.POS_QUIRKS);</span>
+<span class="nc" id="L283">            int negQuirkCount = entity.countQuirks(Quirks.NEG_QUIRKS);</span>
+<span class="nc" id="L284">            int partRepCount = entity.countPartialRepairs();</span>
+
+<span class="nc" id="L286">            value += &quot;&lt;b&gt;&quot; + entity.getShortName() + &quot;&lt;/b&gt;&lt;br&gt;&quot;;</span>
+<span class="nc" id="L287">            value += &quot;&quot; + Math.round(entity.getWeight()) + Messages.getString(&quot;ChatLounge.Tons&quot;) + &quot;&lt;br&gt;&quot;;</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">            if (entity.getTransportId() != Entity.NONE) {</span>
+<span class="nc" id="L289">                Entity loader = entity.getGame().getEntity(entity.getTransportId());</span>
+<span class="nc" id="L290">                value += &quot;&lt;i&gt;Carried by &quot; + loader.getShortName() + &quot;&lt;/i&gt;&lt;br&gt;&quot;;</span>
+            }
+<span class="nc bnc" id="L292" title="All 2 branches missed.">            if (c3network.length() &gt; 0) {</span>
+<span class="nc" id="L293">                value += c3network + &quot;&lt;br&gt;&quot;;</span>
+            }
+<span class="nc bnc" id="L295" title="All 6 branches missed.">            if ((posQuirkCount &gt; 0) | (negQuirkCount &gt; 0)) {</span>
+<span class="nc" id="L296">                value += Messages.getString(&quot;ChatLounge.Quirks&quot;) + &quot;+&quot; + posQuirkCount + &quot;/&quot; + &quot;-&quot; + negQuirkCount</span>
+                        + &quot;&lt;br&gt;&quot;;
+            }
+<span class="nc bnc" id="L299" title="All 2 branches missed.">            if ((partRepCount &gt; 0)) {</span>
+<span class="nc" id="L300">                value += Messages.getString(&quot;ChatLounge.PartialRepairs&quot;) + &quot; + &quot; + partRepCount + &quot;&lt;br&gt;&quot;;</span>
+            }
+
+        }
+
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        if (entity.isHidden()) {</span>
+<span class="nc" id="L306">            value += Messages.getString(&quot;ChatLounge.hidden&quot;) + &quot;&lt;br&gt;&quot;; // ; //$NON-NLS-1$</span>
+        }
+
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        if (entity.isOffBoard()) {</span>
+<span class="nc" id="L310">            value += Messages.getString(&quot;ChatLounge.deploysOffBoard&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        } else if (entity.getDeployRound() &gt; 0) {</span>
+<span class="nc" id="L312">            value += Messages.getString(&quot;ChatLounge.deploysAfterRound&quot;) + entity.getDeployRound(); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">            if (entity.getStartingPos(false) != Board.START_NONE) {</span>
+<span class="nc" id="L314">                value += Messages.getString(&quot;ChatLounge.deploysAfterZone&quot;) //$NON-NLS-1$</span>
+<span class="nc" id="L315">                        + IStartingPositions.START_LOCATION_NAMES[entity.getStartingPos(false)];</span>
+            }
+        }
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        if (!entity.isDesignValid()) {</span>
+<span class="nc" id="L319">            value += Messages.getString(&quot;ChatLounge.invalidDesign&quot;);</span>
+        }
+<span class="nc" id="L321">        return value;</span>
+    }
+
+    private String formatUtilBlindDrop(Entity entity) {
+<span class="nc" id="L325">        String value = &quot;&quot;;</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if (entity instanceof Infantry) {</span>
+<span class="nc" id="L327">            value += Messages.getString(&quot;ChatLounge.0&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L328" title="All 2 branches missed.">        } else if (entity instanceof Protomech) {</span>
+<span class="nc" id="L329">            value += Messages.getString(&quot;ChatLounge.1&quot;); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        } else if (entity instanceof GunEmplacement) {</span>
+<span class="nc" id="L331">            value += Messages.getString(&quot;ChatLounge.2&quot;); //$NON-NLS-1$</span>
+        } else {
+<span class="nc" id="L333">            value += entity.getWeightClassName();</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            if (entity instanceof Tank) {</span>
+<span class="nc" id="L335">                value += Messages.getString(&quot;ChatLounge.6&quot;); //$NON-NLS-1$</span>
+            }
+        }
+<span class="nc" id="L338">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

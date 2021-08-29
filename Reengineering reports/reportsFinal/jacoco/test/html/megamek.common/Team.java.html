@@ -51,7 +51,7 @@ public final class Team extends TurnOrdered {
     }
 
     public Enumeration&lt;IPlayer&gt; getPlayers() {
-<span class="nc" id="L54">        return players.elements();</span>
+<span class="fc" id="L54">        return players.elements();</span>
     }
 
     public Enumeration&lt;IPlayer&gt; getNonObserverPlayers() {
@@ -77,20 +77,20 @@ public final class Team extends TurnOrdered {
 <span class="fc" id="L77">    }</span>
     
     public boolean isObserverTeam() {
-<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (ObserverTeam == null) {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (ObserverTeam == null) {</span>
 <span class="nc" id="L81">            cacheObversverStatus();</span>
         }
-<span class="nc" id="L83">        return ObserverTeam.booleanValue();</span>
+<span class="fc" id="L83">        return ObserverTeam.booleanValue();</span>
     }
     
     public void cacheObversverStatus() {
-<span class="nc" id="L87">        ObserverTeam = Boolean.valueOf(true);</span>
-<span class="nc bnc" id="L88" title="All 2 branches missed.">        for (int i = 0; i &lt; players.size(); i++) {</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (!players.get(i).isObserver()) {</span>
-<span class="nc" id="L90">                ObserverTeam = false;</span>
+<span class="fc" id="L87">        ObserverTeam = Boolean.valueOf(true);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (int i = 0; i &lt; players.size(); i++) {</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (!players.get(i).isObserver()) {</span>
+<span class="fc" id="L90">                ObserverTeam = false;</span>
             }
         }
-<span class="nc" id="L93">    }</span>
+<span class="fc" id="L93">    }</span>
 
     //get the next player on this team.
     public IPlayer getNextValidPlayer(IPlayer p, IGame game) {
@@ -269,14 +269,14 @@ public final class Team extends TurnOrdered {
      */
     @Override
     public boolean equals(Object object) {
-<span class="nc bnc" id="L272" title="All 2 branches missed.">        if(this == object) {</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if(this == object) {</span>
 <span class="nc" id="L273">            return true;</span>
         }
-<span class="nc bnc" id="L275" title="All 4 branches missed.">        if((null == object) || (getClass() != object.getClass())) {</span>
+<span class="pc bpc" id="L275" title="2 of 4 branches missed.">        if((null == object) || (getClass() != object.getClass())) {</span>
 <span class="nc" id="L276">            return false;</span>
         }
-<span class="nc" id="L278">        final Team other = (Team) object;</span>
-<span class="nc bnc" id="L279" title="All 4 branches missed.">        return (id == other.id) &amp;&amp; Objects.equals(players, other.players);</span>
+<span class="fc" id="L278">        final Team other = (Team) object;</span>
+<span class="pc bpc" id="L279" title="1 of 4 branches missed.">        return (id == other.id) &amp;&amp; Objects.equals(players, other.players);</span>
     }
     
     @Override

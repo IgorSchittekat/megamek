@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MekTableModelRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.swing</a> &gt; <span class="el_source">MekTableModelRenderer.java</span></div><h1>MekTableModelRenderer.java</h1><pre class="source lang-java linenums">package megamek.client.ui.swing;
+
+import megamek.common.Configuration;
+import megamek.common.Entity;
+import megamek.common.icons.Portrait;
+import megamek.common.options.OptionsConstants;
+import megamek.common.util.fileUtils.MegaMekFile;
+
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+
+public class MekTableModelRenderer extends JPanel implements TableCellRenderer {
+    private static final String FILENAME_UNKNOWN_UNIT = &quot;unknown_unit.gif&quot;;
+    private static final long serialVersionUID = -9154596036677641620L;
+
+    private JLabel lblImage;
+    private JLabel lblLoad;
+    private final ChatLounge chatLounge;
+
+<span class="nc" id="L21">    public MekTableModelRenderer(ChatLounge lounge) {</span>
+<span class="nc" id="L22">        chatLounge = lounge;</span>
+<span class="nc" id="L23">        lblImage = new JLabel();</span>
+<span class="nc" id="L24">        lblLoad = new JLabel();</span>
+
+<span class="nc" id="L26">        GridBagLayout gridbag = new GridBagLayout();</span>
+<span class="nc" id="L27">        GridBagConstraints c = new GridBagConstraints();</span>
+<span class="nc" id="L28">        setLayout(gridbag);</span>
+
+<span class="nc" id="L30">        c.fill = GridBagConstraints.NONE;</span>
+<span class="nc" id="L31">        c.insets = new Insets(1, 1, 1, 1);</span>
+<span class="nc" id="L32">        c.gridx = 0;</span>
+<span class="nc" id="L33">        c.gridy = 0;</span>
+<span class="nc" id="L34">        c.weightx = 0.0;</span>
+<span class="nc" id="L35">        c.weighty = 0.0;</span>
+<span class="nc" id="L36">        c.gridwidth = 1;</span>
+<span class="nc" id="L37">        c.gridheight = 1;</span>
+<span class="nc" id="L38">        c.anchor = GridBagConstraints.CENTER;</span>
+<span class="nc" id="L39">        gridbag.setConstraints(lblLoad, c);</span>
+<span class="nc" id="L40">        add(lblLoad);</span>
+
+<span class="nc" id="L42">        c.fill = GridBagConstraints.BOTH;</span>
+<span class="nc" id="L43">        c.insets = new Insets(1, 1, 1, 1);</span>
+<span class="nc" id="L44">        c.gridx = 1;</span>
+<span class="nc" id="L45">        c.gridy = 0;</span>
+<span class="nc" id="L46">        c.weightx = 1.0;</span>
+<span class="nc" id="L47">        c.weighty = 1.0;</span>
+<span class="nc" id="L48">        c.gridwidth = 1;</span>
+<span class="nc" id="L49">        c.gridheight = 1;</span>
+<span class="nc" id="L50">        c.anchor = GridBagConstraints.NORTHWEST;</span>
+<span class="nc" id="L51">        gridbag.setConstraints(lblImage, c);</span>
+<span class="nc" id="L52">        add(lblImage);</span>
+
+<span class="nc" id="L54">        lblImage.setBorder(BorderFactory.createEmptyBorder());</span>
+<span class="nc" id="L55">    }</span>
+
+    public void setText(String s, boolean isSelected) {
+<span class="nc" id="L58">        lblImage.setText(String.format(&quot;&lt;html&gt;%s&lt;/html&gt;&quot;, s));</span>
+<span class="nc" id="L59">    }</span>
+
+    public void clearImage() {
+<span class="nc" id="L62">        lblImage.setIcon(null);</span>
+<span class="nc" id="L63">    }</span>
+
+    public void setImage(Image img) {
+<span class="nc" id="L66">        lblImage.setIcon(new ImageIcon(img));</span>
+<span class="nc" id="L67">    }</span>
+
+    public JLabel getLabel() {
+<span class="nc" id="L70">        return lblImage;</span>
+    }
+
+    public void setLoad(boolean load) {
+        // if this is a loaded unit then do something with lblLoad to make
+        // it show up
+        // otherwise clear lblLoad
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (load) {</span>
+<span class="nc" id="L78">            lblLoad.setText(&quot; +&quot;);</span>
+        } else {
+<span class="nc" id="L80">            lblLoad.setText(&quot;&quot;);</span>
+        }
+<span class="nc" id="L82">    }</span>
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                   boolean hasFocus, int row, int column) {
+<span class="nc" id="L87">        Component c = this;</span>
+<span class="nc" id="L88">        setText(chatLounge.getMekModel().getValueAt(row, column).toString(), isSelected);</span>
+<span class="nc" id="L89">        Entity entity = chatLounge.getMekModel().getEntityAt(row);</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (null == entity) {</span>
+<span class="nc" id="L91">            return null;</span>
+        }
+<span class="nc" id="L93">        boolean isOwner = entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer());</span>
+<span class="nc" id="L94">        boolean blindDrop = chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc" id="L95">                .booleanOption(OptionsConstants.BASE_BLIND_DROP);</span>
+<span class="nc" id="L96">        boolean compact = chatLounge.getButCompact().isSelected();</span>
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        if (!isOwner &amp;&amp; blindDrop) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (column == MekTableModel.COL_UNIT) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                if (compact) {</span>
+<span class="nc" id="L100">                    clearImage();</span>
+                } else {
+<span class="nc" id="L102">                    Image image = getToolkit().getImage(</span>
+<span class="nc" id="L103">                            new MegaMekFile(Configuration.miscImagesDir(),</span>
+<span class="nc" id="L104">                                    FILENAME_UNKNOWN_UNIT).toString());</span>
+<span class="nc" id="L105">                    image = image.getScaledInstance(-1, 72,</span>
+                            Image.SCALE_DEFAULT);
+<span class="nc" id="L107">                    setImage(image);</span>
+<span class="nc" id="L108">                }</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            } else if (column == MekTableModel.COL_PILOT) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">                if (compact) {</span>
+<span class="nc" id="L111">                    clearImage();</span>
+                } else {
+<span class="nc" id="L113">                    Image image = getToolkit().getImage(</span>
+<span class="nc" id="L114">                            new MegaMekFile(Configuration.portraitImagesDir(),</span>
+                                    Portrait.DEFAULT_PORTRAIT_FILENAME)
+<span class="nc" id="L116">                                    .toString());</span>
+<span class="nc" id="L117">                    image = image.getScaledInstance(-1, 50,</span>
+                            Image.SCALE_DEFAULT);
+<span class="nc" id="L119">                    setImage(image);</span>
+<span class="nc" id="L120">                }</span>
+            }
+        } else {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (column == MekTableModel.COL_UNIT) {</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                if (compact) {</span>
+<span class="nc" id="L125">                    clearImage();</span>
+                } else {
+<span class="nc" id="L127">                    chatLounge.getClientgui().loadPreviewImage(getLabel(), entity);</span>
+                }
+<span class="nc" id="L129">                setToolTipText(ChatLounge.formatUnitTooltip(entity));</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                setLoad(entity.getTransportId() != Entity.NONE);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            } else if (column == MekTableModel.COL_PILOT) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                if (compact) {</span>
+<span class="nc" id="L133">                    clearImage();</span>
+                } else {
+<span class="nc" id="L135">                    setImage(entity.getCrew().getPortrait(0).getImage(50));</span>
+                }
+<span class="nc" id="L137">                setToolTipText(ChatLounge.formatPilotTooltip(entity.getCrew(),</span>
+<span class="nc" id="L138">                        chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc" id="L139">                                .booleanOption(OptionsConstants.RPG_COMMAND_INIT),</span>
+<span class="nc" id="L140">                        chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc" id="L141">                                .booleanOption(OptionsConstants.RPG_INDIVIDUAL_INITIATIVE),</span>
+<span class="nc" id="L142">                        chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc" id="L143">                                .booleanOption(OptionsConstants.RPG_TOUGHNESS),</span>
+<span class="nc" id="L144">                        chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc" id="L145">                                .booleanOption(OptionsConstants.RPG_RPG_GUNNERY)));</span>
+            }
+        }
+
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (isSelected) {</span>
+<span class="nc" id="L150">            c.setForeground(table.getSelectionForeground());</span>
+<span class="nc" id="L151">            c.setBackground(table.getSelectionBackground());</span>
+        } else {
+<span class="nc" id="L153">            Color background = table.getBackground();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">            if (row % 2 != 0) {</span>
+<span class="nc" id="L155">                Color alternateColor = UIManager.getColor(&quot;Table.alternateRowColor&quot;);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                if (alternateColor == null) {</span>
+                    // If we don't have an alternate row color, use 'controlHighlight'
+                    // as it is pretty reasonable across the various themes.
+<span class="nc" id="L159">                    alternateColor = UIManager.getColor(&quot;controlHighlight&quot;);</span>
+                }
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                if (alternateColor != null) {</span>
+<span class="nc" id="L162">                    background = alternateColor;</span>
+                }
+            }
+<span class="nc" id="L165">            c.setForeground(table.getForeground());</span>
+<span class="nc" id="L166">            c.setBackground(background);</span>
+        }
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        if (hasFocus) {</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            if (!isSelected ) {</span>
+<span class="nc" id="L171">                Color col = UIManager.getColor(&quot;Table.focusCellForeground&quot;);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                if (col != null) {</span>
+<span class="nc" id="L173">                    c.setForeground(col);</span>
+                }
+<span class="nc" id="L175">                col = UIManager.getColor(&quot;Table.focusCellBackground&quot;);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (col != null) {</span>
+<span class="nc" id="L177">                    c.setBackground(col);</span>
+                }
+            }
+        }
+<span class="nc" id="L181">        return c;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

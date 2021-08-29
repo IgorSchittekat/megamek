@@ -37,13 +37,13 @@ import megamek.common.MovePath;
         private Coords coords;
         private int facing;
 
-<span class="fc" id="L40">        private CoordFacingCombo(Coords c, int f) {</span>
-<span class="fc" id="L41">            setCoords(c);</span>
-<span class="fc" id="L42">            setFacing(f);</span>
-<span class="fc" id="L43">        }</span>
+<span class="nc" id="L40">        private CoordFacingCombo(Coords c, int f) {</span>
+<span class="nc" id="L41">            setCoords(c);</span>
+<span class="nc" id="L42">            setFacing(f);</span>
+<span class="nc" id="L43">        }</span>
 
         static CoordFacingCombo createCoordFacingCombo(Coords c, int f) {
-<span class="fc" id="L46">            return new CoordFacingCombo(c, f);</span>
+<span class="nc" id="L46">            return new CoordFacingCombo(c, f);</span>
         }
 
         static CoordFacingCombo createCoordFacingCombo(Entity e) {
@@ -79,16 +79,16 @@ import megamek.common.MovePath;
         }
 
         void setCoords(Coords coords) {
-<span class="fc" id="L82">            this.coords = coords;</span>
-<span class="fc" id="L83">        }</span>
+<span class="nc" id="L82">            this.coords = coords;</span>
+<span class="nc" id="L83">        }</span>
 
         int getFacing() {
 <span class="nc" id="L86">            return facing;</span>
         }
 
         void setFacing(int facing) {
-<span class="fc" id="L90">            this.facing = facing;</span>
-<span class="fc" id="L91">        }</span>
+<span class="nc" id="L90">            this.facing = facing;</span>
+<span class="nc" id="L91">        }</span>
 
         @Override
         public String toString() {

@@ -26,14 +26,14 @@ public class TripodMech extends Mech {
      */
     private static final long serialVersionUID = 4166375446709772785L;
 
-<span class="fc" id="L29">    private static final String[] LOCATION_NAMES = {&quot;Head&quot;, &quot;Center Torso&quot;,</span>
+<span class="nc" id="L29">    private static final String[] LOCATION_NAMES = {&quot;Head&quot;, &quot;Center Torso&quot;,</span>
                                                     &quot;Right Torso&quot;, &quot;Left Torso&quot;, &quot;Right Arm&quot;, &quot;Left Arm&quot;, &quot;Right Leg&quot;,
                                                     &quot;Left Leg&quot;, &quot;Center Leg&quot;};
 
-<span class="fc" id="L33">    private static final String[] LOCATION_ABBRS = {&quot;HD&quot;, &quot;CT&quot;, &quot;RT&quot;, &quot;LT&quot;,</span>
+<span class="nc" id="L33">    private static final String[] LOCATION_ABBRS = {&quot;HD&quot;, &quot;CT&quot;, &quot;RT&quot;, &quot;LT&quot;,</span>
                                                     &quot;RA&quot;, &quot;LA&quot;, &quot;RL&quot;, &quot;LL&quot;, &quot;CL&quot;};
 
-<span class="fc" id="L36">    private static final int[] NUM_OF_SLOTS = {6, 12, 12, 12, 12, 12, 6, 6, 6};</span>
+<span class="nc" id="L36">    private static final int[] NUM_OF_SLOTS = {6, 12, 12, 12, 12, 12, 6, 6, 6};</span>
 
     public TripodMech(String inGyroType, String inCockpitType) {
 <span class="nc" id="L39">        this(getGyroTypeForString(inGyroType),</span>
@@ -41,54 +41,54 @@ public class TripodMech extends Mech {
 <span class="nc" id="L41">    }</span>
 
     public TripodMech() {
-<span class="fc" id="L44">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
-<span class="fc" id="L45">    }</span>
+<span class="nc" id="L44">        this(Mech.GYRO_STANDARD, Mech.COCKPIT_STANDARD);</span>
+<span class="nc" id="L45">    }</span>
 
     public TripodMech(int inGyroType, int inCockpitType) {
-<span class="fc" id="L48">        super(inGyroType, inCockpitType);</span>
+<span class="nc" id="L48">        super(inGyroType, inCockpitType);</span>
 
-<span class="fc" id="L50">        movementMode = EntityMovementMode.TRIPOD;</span>
-<span class="fc" id="L51">        originalMovementMode = EntityMovementMode.TRIPOD;</span>
+<span class="nc" id="L50">        movementMode = EntityMovementMode.TRIPOD;</span>
+<span class="nc" id="L51">        originalMovementMode = EntityMovementMode.TRIPOD;</span>
 
-<span class="fc" id="L53">        setCritical(LOC_RARM, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L53">        setCritical(LOC_RARM, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_SHOULDER));
-<span class="fc" id="L55">        setCritical(LOC_RARM, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L55">        setCritical(LOC_RARM, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_UPPER_ARM));
-<span class="fc" id="L57">        setCritical(LOC_RARM, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L57">        setCritical(LOC_RARM, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_LOWER_ARM));
-<span class="fc" id="L59">        setCritical(LOC_RARM, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L59">        setCritical(LOC_RARM, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_HAND));
 
-<span class="fc" id="L62">        setCritical(LOC_LARM, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L62">        setCritical(LOC_LARM, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_SHOULDER));
-<span class="fc" id="L64">        setCritical(LOC_LARM, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L64">        setCritical(LOC_LARM, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_UPPER_ARM));
-<span class="fc" id="L66">        setCritical(LOC_LARM, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L66">        setCritical(LOC_LARM, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_LOWER_ARM));
-<span class="fc" id="L68">        setCritical(LOC_LARM, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L68">        setCritical(LOC_LARM, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_HAND));
 
-<span class="fc" id="L71">        setCritical(LOC_CLEG, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L71">        setCritical(LOC_CLEG, 0, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_HIP));
-<span class="fc" id="L73">        setCritical(LOC_CLEG, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L73">        setCritical(LOC_CLEG, 1, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_UPPER_LEG));
-<span class="fc" id="L75">        setCritical(LOC_CLEG, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L75">        setCritical(LOC_CLEG, 2, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_LOWER_LEG));
-<span class="fc" id="L77">        setCritical(LOC_CLEG, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
+<span class="nc" id="L77">        setCritical(LOC_CLEG, 3, new CriticalSlot(CriticalSlot.TYPE_SYSTEM,</span>
                                                   ACTUATOR_FOOT));
-<span class="fc" id="L79">    }</span>
+<span class="nc" id="L79">    }</span>
 
     /**
      * Returns true if the location in question is a leg
      */
     @Override
     public boolean locationIsLeg(int loc) {
-<span class="fc bfc" id="L86" title="All 6 branches covered.">        return (loc == LOC_LLEG) || (loc == LOC_RLEG) || (loc == LOC_CLEG);</span>
+<span class="nc bnc" id="L86" title="All 6 branches missed.">        return (loc == LOC_LLEG) || (loc == LOC_RLEG) || (loc == LOC_CLEG);</span>
     }
 
     @Override
     public long getEntityType() {
-<span class="fc" id="L91">        return Entity.ETYPE_MECH | Entity.ETYPE_TRIPOD_MECH;</span>
+<span class="nc" id="L91">        return Entity.ETYPE_MECH | Entity.ETYPE_TRIPOD_MECH;</span>
     }
 
     /**
@@ -96,10 +96,10 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean canFlipArms() {
-<span class="fc" id="L99">        boolean canFlip = true;</span>
+<span class="nc" id="L99">        boolean canFlip = true;</span>
 
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
-<span class="fc" id="L102">            canFlip = false;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
+<span class="nc" id="L102">            canFlip = false;</span>
 <span class="nc bnc" id="L103" title="All 2 branches missed.">        } else if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_LARM)) {</span>
 <span class="nc" id="L104">            canFlip = false;</span>
 <span class="nc bnc" id="L105" title="All 2 branches missed.">        } else if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_RARM)) {</span>
@@ -108,28 +108,28 @@ public class TripodMech extends Mech {
 <span class="nc" id="L108">            canFlip = false;</span>
         }
 
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_POS_HYPER_ACTUATOR)) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (hasQuirk(OptionsConstants.QUIRK_POS_HYPER_ACTUATOR)) {</span>
 <span class="nc" id="L112">            canFlip = true;</span>
         }
 
-<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (isProne()) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (isProne()) {</span>
 <span class="nc" id="L116">            canFlip = false;</span>
         }
 
-<span class="fc" id="L119">        return canFlip;</span>
+<span class="nc" id="L119">        return canFlip;</span>
     }
 
     @Override
     public int getWalkMP(boolean gravity, boolean ignoreheat,
                          boolean ignoremodulararmor) {
-<span class="fc" id="L125">        int wmp = getOriginalWalkMP();</span>
-<span class="fc" id="L126">        int legsDestroyed = 0;</span>
-<span class="fc" id="L127">        int hipHits = 0;</span>
-<span class="fc" id="L128">        int actuatorHits = 0;</span>
+<span class="nc" id="L125">        int wmp = getOriginalWalkMP();</span>
+<span class="nc" id="L126">        int legsDestroyed = 0;</span>
+<span class="nc" id="L127">        int hipHits = 0;</span>
+<span class="nc" id="L128">        int actuatorHits = 0;</span>
 
         //A Mech using tracks has its movement reduced by 1/3 per leg or track destroyed, based
         //on analogy with biped and quad mechs.
-<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (getMovementMode() == EntityMovementMode.TRACKED) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (getMovementMode() == EntityMovementMode.TRACKED) {</span>
 <span class="nc bnc" id="L133" title="All 2 branches missed.">            for (Mounted m : getMisc()) {</span>
 <span class="nc bnc" id="L134" title="All 2 branches missed.">                if (m.getType().hasFlag(MiscType.F_TRACKS)) {</span>
 <span class="nc bnc" id="L135" title="All 4 branches missed.">                    if (m.isHit() || isLocationBad(m.getLocation())) {</span>
@@ -139,10 +139,10 @@ public class TripodMech extends Mech {
 <span class="nc" id="L139">            }</span>
 <span class="nc" id="L140">            wmp = (wmp * (3 - legsDestroyed)) / 3; </span>
         } else {
-<span class="fc bfc" id="L142" title="All 2 branches covered.">            for (int i = 0; i &lt; locations(); i++) {</span>
-<span class="fc bfc" id="L143" title="All 2 branches covered.">                if (locationIsLeg(i)) {</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                    if (!isLocationBad(i)) {</span>
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">                        if (legHasHipCrit(i)) {</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            for (int i = 0; i &lt; locations(); i++) {</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                if (locationIsLeg(i)) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                    if (!isLocationBad(i)) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                        if (legHasHipCrit(i)) {</span>
 <span class="nc" id="L146">                            hipHits++;</span>
 <span class="nc bnc" id="L147" title="All 2 branches missed.">                            if ((game == null)</span>
 <span class="nc bnc" id="L148" title="All 2 branches missed.">                                || !game.getOptions().booleanOption(</span>
@@ -150,7 +150,7 @@ public class TripodMech extends Mech {
 <span class="nc" id="L150">                                continue;</span>
                             }
                         }
-<span class="fc" id="L153">                        actuatorHits += countLegActuatorCrits(i);</span>
+<span class="nc" id="L153">                        actuatorHits += countLegActuatorCrits(i);</span>
                     } else {
 <span class="nc" id="L155">                        legsDestroyed++;</span>
                     }
@@ -158,10 +158,10 @@ public class TripodMech extends Mech {
             }
 
             // leg damage effects
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">            if (legsDestroyed &gt; 0) {</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (legsDestroyed &gt; 0) {</span>
 <span class="nc bnc" id="L162" title="All 2 branches missed.">                wmp = (legsDestroyed == 1) ? 1 : 0;</span>
             } else {
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">                if (hipHits &gt; 0) {</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                if (hipHits &gt; 0) {</span>
 <span class="nc bnc" id="L165" title="All 2 branches missed.">                    if ((game != null)</span>
 <span class="nc bnc" id="L166" title="All 2 branches missed.">                        &amp;&amp; game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_LEG_DAMAGE)) {</span>
 <span class="nc bnc" id="L167" title="All 2 branches missed.">                        wmp = (hipHits &gt;= 1) ? wmp - (2 * hipHits) : 0;</span>
@@ -169,20 +169,20 @@ public class TripodMech extends Mech {
 <span class="nc bnc" id="L169" title="All 2 branches missed.">                        wmp = (hipHits == 1) ? (int) Math.ceil(wmp / 2.0) : 0;</span>
                     }
                 }
-<span class="fc" id="L172">                wmp -= actuatorHits;</span>
+<span class="nc" id="L172">                wmp -= actuatorHits;</span>
             }
         }
 
-<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        if (hasShield()) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (hasShield()) {</span>
 <span class="nc" id="L177">            wmp -= getNumberOfShields(MiscType.S_SHIELD_LARGE);</span>
 <span class="nc" id="L178">            wmp -= getNumberOfShields(MiscType.S_SHIELD_MEDIUM);</span>
         }
 
-<span class="pc bpc" id="L181" title="3 of 4 branches missed.">        if (!ignoremodulararmor &amp;&amp; hasModularArmor()) {</span>
+<span class="nc bnc" id="L181" title="All 4 branches missed.">        if (!ignoremodulararmor &amp;&amp; hasModularArmor()) {</span>
 <span class="nc" id="L182">            wmp--;</span>
         }
 
-<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (!ignoreheat) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (!ignoreheat) {</span>
             // factor in heat
 <span class="nc bnc" id="L187" title="All 2 branches missed.">            if ((game != null)</span>
 <span class="nc bnc" id="L188" title="All 2 branches missed.">                &amp;&amp; game.getOptions().booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_HEAT)) {</span>
@@ -207,8 +207,8 @@ public class TripodMech extends Mech {
 <span class="nc" id="L207">                wmp += 2;</span>
             }
         }
-<span class="fc" id="L210">        wmp = Math.max(wmp - getCargoMpReduction(this), 0);</span>
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (null != game) {</span>
+<span class="nc" id="L210">        wmp = Math.max(wmp - getCargoMpReduction(this), 0);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (null != game) {</span>
 <span class="nc" id="L212">            int weatherMod = game.getPlanetaryConditions()</span>
 <span class="nc" id="L213">                                 .getMovementMods(this);</span>
 <span class="nc bnc" id="L214" title="All 2 branches missed.">            if (weatherMod != 0) {</span>
@@ -216,14 +216,14 @@ public class TripodMech extends Mech {
             }
         }
         // gravity
-<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        if (gravity) {</span>
-<span class="fc" id="L220">            wmp = applyGravityEffectsOnMP(wmp);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (gravity) {</span>
+<span class="nc" id="L220">            wmp = applyGravityEffectsOnMP(wmp);</span>
         }
 
         // For sanity sake...
-<span class="fc" id="L224">        wmp = Math.max(0, wmp);</span>
+<span class="nc" id="L224">        wmp = Math.max(0, wmp);</span>
 
-<span class="fc" id="L226">        return wmp;</span>
+<span class="nc" id="L226">        return wmp;</span>
     }
 
     /**
@@ -232,8 +232,8 @@ public class TripodMech extends Mech {
     @Override
     public int getRunMP(boolean gravity, boolean ignoreheat,
                         boolean ignoremodulararmor) {
-<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (countBadLegs() == 0) {</span>
-<span class="fc" id="L236">            return super.getRunMP(gravity, ignoreheat, ignoremodulararmor);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (countBadLegs() == 0) {</span>
+<span class="nc" id="L236">            return super.getRunMP(gravity, ignoreheat, ignoremodulararmor);</span>
         }
 <span class="nc" id="L238">        return getWalkMP(gravity, ignoreheat, ignoremodulararmor);</span>
     }
@@ -245,8 +245,8 @@ public class TripodMech extends Mech {
     @Override
     public int getRunMPwithoutMASC(boolean gravity, boolean ignoreheat,
                                    boolean ignoremodulararmor) {
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (countBadLegs() == 0) {</span>
-<span class="fc" id="L249">            return super.getRunMPwithoutMASC(gravity, ignoreheat,</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (countBadLegs() == 0) {</span>
+<span class="nc" id="L249">            return super.getRunMPwithoutMASC(gravity, ignoreheat,</span>
                                              ignoremodulararmor);
         }
 <span class="nc" id="L252">        return getWalkMP(gravity, ignoreheat, ignoremodulararmor);</span>
@@ -263,16 +263,16 @@ public class TripodMech extends Mech {
      */
     @Override
     public void setInternal(int head, int ct, int t, int arm, int leg) {
-<span class="fc" id="L266">        initializeInternal(head, LOC_HEAD);</span>
-<span class="fc" id="L267">        initializeInternal(ct, LOC_CT);</span>
-<span class="fc" id="L268">        initializeInternal(t, LOC_RT);</span>
-<span class="fc" id="L269">        initializeInternal(t, LOC_LT);</span>
-<span class="fc" id="L270">        initializeInternal(arm, LOC_RARM);</span>
-<span class="fc" id="L271">        initializeInternal(arm, LOC_LARM);</span>
-<span class="fc" id="L272">        initializeInternal(leg, LOC_RLEG);</span>
-<span class="fc" id="L273">        initializeInternal(leg, LOC_LLEG);</span>
-<span class="fc" id="L274">        initializeInternal(leg, LOC_CLEG);</span>
-<span class="fc" id="L275">    }</span>
+<span class="nc" id="L266">        initializeInternal(head, LOC_HEAD);</span>
+<span class="nc" id="L267">        initializeInternal(ct, LOC_CT);</span>
+<span class="nc" id="L268">        initializeInternal(t, LOC_RT);</span>
+<span class="nc" id="L269">        initializeInternal(t, LOC_LT);</span>
+<span class="nc" id="L270">        initializeInternal(arm, LOC_RARM);</span>
+<span class="nc" id="L271">        initializeInternal(arm, LOC_LARM);</span>
+<span class="nc" id="L272">        initializeInternal(leg, LOC_RLEG);</span>
+<span class="nc" id="L273">        initializeInternal(leg, LOC_LLEG);</span>
+<span class="nc" id="L274">        initializeInternal(leg, LOC_CLEG);</span>
+<span class="nc" id="L275">    }</span>
 
     /**
      * Add in any piloting skill mods
@@ -343,7 +343,7 @@ public class TripodMech extends Mech {
      */
     @Override
     protected int[] getNoOfSlots() {
-<span class="fc" id="L346">        return NUM_OF_SLOTS;</span>
+<span class="nc" id="L346">        return NUM_OF_SLOTS;</span>
     }
 
     /**
@@ -364,37 +364,37 @@ public class TripodMech extends Mech {
 
     @Override
     protected double getArmActuatorCost() {
-<span class="fc" id="L367">        double cost = 0;</span>
-<span class="fc" id="L368">        int numOfUpperArmActuators = 0;</span>
-<span class="fc" id="L369">        int numOfLowerArmActuators = 0;</span>
-<span class="fc" id="L370">        int numOfHands = 0;</span>
-<span class="pc bpc" id="L371" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
-<span class="fc" id="L372">            numOfHands++;</span>
+<span class="nc" id="L367">        double cost = 0;</span>
+<span class="nc" id="L368">        int numOfUpperArmActuators = 0;</span>
+<span class="nc" id="L369">        int numOfLowerArmActuators = 0;</span>
+<span class="nc" id="L370">        int numOfHands = 0;</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_LARM)) {</span>
+<span class="nc" id="L372">            numOfHands++;</span>
         }
-<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_LARM)) {</span>
-<span class="fc" id="L375">            numOfLowerArmActuators++;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_LARM)) {</span>
+<span class="nc" id="L375">            numOfLowerArmActuators++;</span>
         }
-<span class="pc bpc" id="L377" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_UPPER_ARM, Mech.LOC_LARM)) {</span>
-<span class="fc" id="L378">            numOfUpperArmActuators++;</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_UPPER_ARM, Mech.LOC_LARM)) {</span>
+<span class="nc" id="L378">            numOfUpperArmActuators++;</span>
         }
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_RARM)) {</span>
-<span class="fc" id="L381">            numOfHands++;</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_HAND, Mech.LOC_RARM)) {</span>
+<span class="nc" id="L381">            numOfHands++;</span>
         }
-<span class="pc bpc" id="L383" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_RARM)) {</span>
-<span class="fc" id="L384">            numOfLowerArmActuators++;</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_LOWER_ARM, Mech.LOC_RARM)) {</span>
+<span class="nc" id="L384">            numOfLowerArmActuators++;</span>
         }
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_UPPER_ARM, Mech.LOC_RARM)) {</span>
-<span class="fc" id="L387">            numOfUpperArmActuators++;</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">        if (hasSystem(Mech.ACTUATOR_UPPER_ARM, Mech.LOC_RARM)) {</span>
+<span class="nc" id="L387">            numOfUpperArmActuators++;</span>
         }
-<span class="fc" id="L389">        cost += numOfUpperArmActuators * weight * 100;</span>
-<span class="fc" id="L390">        cost += numOfLowerArmActuators * weight * 50;</span>
-<span class="fc" id="L391">        cost += numOfHands * weight * 80;</span>
-<span class="fc" id="L392">        return cost;</span>
+<span class="nc" id="L389">        cost += numOfUpperArmActuators * weight * 100;</span>
+<span class="nc" id="L390">        cost += numOfLowerArmActuators * weight * 50;</span>
+<span class="nc" id="L391">        cost += numOfHands * weight * 80;</span>
+<span class="nc" id="L392">        return cost;</span>
     }
 
     @Override
     protected double getLegActuatorCost() {
-<span class="fc" id="L397">        return (weight * 150 * 2) + (weight * 80 * 2) + (weight * 120 * 2);</span>
+<span class="nc" id="L397">        return (weight * 150 * 2) + (weight * 80 * 2) + (weight * 120 * 2);</span>
     }
 
     /**
@@ -405,8 +405,8 @@ public class TripodMech extends Mech {
      */
     public boolean hasClaw(int location) {
         // only arms have claws.
-<span class="pc bpc" id="L408" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L409">            return false;</span>
+<span class="nc bnc" id="L408" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L409">            return false;</span>
         }
 <span class="nc bnc" id="L411" title="All 2 branches missed.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
 <span class="nc" id="L412">            CriticalSlot cs = getCritical(location, slot);</span>
@@ -436,16 +436,16 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean hasVibroblades() {
-<span class="fc" id="L439">        int count = 0;</span>
+<span class="nc" id="L439">        int count = 0;</span>
 
-<span class="pc bpc" id="L441" title="1 of 2 branches missed.">        if (hasVibrobladesInLocation(Mech.LOC_RARM)) {</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">        if (hasVibrobladesInLocation(Mech.LOC_RARM)) {</span>
 <span class="nc" id="L442">            count++;</span>
         }
-<span class="pc bpc" id="L444" title="1 of 2 branches missed.">        if (hasVibrobladesInLocation(Mech.LOC_LARM)) {</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">        if (hasVibrobladesInLocation(Mech.LOC_LARM)) {</span>
 <span class="nc" id="L445">            count++;</span>
         }
 
-<span class="pc bpc" id="L448" title="1 of 2 branches missed.">        return count &gt; 0;</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">        return count &gt; 0;</span>
     }
 
     /**
@@ -458,18 +458,18 @@ public class TripodMech extends Mech {
     public boolean hasVibrobladesInLocation(int location) {
 
         // Only arms have VibroBlades.
-<span class="fc bfc" id="L461" title="All 4 branches covered.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L462">            return false;</span>
+<span class="nc bnc" id="L461" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L462">            return false;</span>
         }
 
-<span class="fc bfc" id="L465" title="All 2 branches covered.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
-<span class="fc" id="L466">            CriticalSlot cs = getCritical(location, slot);</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
+<span class="nc" id="L466">            CriticalSlot cs = getCritical(location, slot);</span>
 
-<span class="fc bfc" id="L468" title="All 2 branches covered.">            if (cs == null) {</span>
-<span class="fc" id="L469">                continue;</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            if (cs == null) {</span>
+<span class="nc" id="L469">                continue;</span>
             }
-<span class="pc bpc" id="L471" title="1 of 2 branches missed.">            if (cs.getType() != CriticalSlot.TYPE_EQUIPMENT) {</span>
-<span class="fc" id="L472">                continue;</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">            if (cs.getType() != CriticalSlot.TYPE_EQUIPMENT) {</span>
+<span class="nc" id="L472">                continue;</span>
             }
 <span class="nc" id="L474">            Mounted m = cs.getMount();</span>
             // sometimes this mounted is null in MML - causing problems so check
@@ -482,7 +482,7 @@ public class TripodMech extends Mech {
             }
         }
 
-<span class="fc" id="L485">        return false;</span>
+<span class="nc" id="L485">        return false;</span>
     }
 
     /**
@@ -490,16 +490,16 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean hasRetractedBlade(int loc) {
-<span class="fc bfc" id="L493" title="All 2 branches covered.">        for (Mounted m : getEquipment()) {</span>
-<span class="pc bpc" id="L494" title="2 of 6 branches missed.">            if ((m.getLocation() == loc) &amp;&amp; !m.isDestroyed() &amp;&amp; !m.isBreached()</span>
-<span class="pc bpc" id="L495" title="1 of 2 branches missed.">                &amp;&amp; (m.getType() instanceof MiscType)</span>
+<span class="nc bnc" id="L493" title="All 2 branches missed.">        for (Mounted m : getEquipment()) {</span>
+<span class="nc bnc" id="L494" title="All 6 branches missed.">            if ((m.getLocation() == loc) &amp;&amp; !m.isDestroyed() &amp;&amp; !m.isBreached()</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">                &amp;&amp; (m.getType() instanceof MiscType)</span>
 <span class="nc bnc" id="L496" title="All 2 branches missed.">                &amp;&amp; m.getType().hasFlag(MiscType.F_CLUB)</span>
 <span class="nc bnc" id="L497" title="All 2 branches missed.">                &amp;&amp; m.getType().hasSubType(MiscType.S_RETRACTABLE_BLADE)</span>
 <span class="nc bnc" id="L498" title="All 2 branches missed.">                &amp;&amp; !m.curMode().equals(&quot;extended&quot;)) {</span>
 <span class="nc" id="L499">                return true;</span>
             }
-<span class="fc" id="L501">        }</span>
-<span class="fc" id="L502">        return false;</span>
+<span class="nc" id="L501">        }</span>
+<span class="nc" id="L502">        return false;</span>
     }
 
     /**
@@ -512,14 +512,14 @@ public class TripodMech extends Mech {
      */
     @Override
     public int getActiveVibrobladeHeat(int location) {
-<span class="fc" id="L515">        return getActiveVibrobladeHeat(location, false);</span>
+<span class="nc" id="L515">        return getActiveVibrobladeHeat(location, false);</span>
     }
 
     @Override
     public int getActiveVibrobladeHeat(int location, boolean ignoreMode) {
         // Only arms have VibroBlades.
-<span class="pc bpc" id="L521" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L522">            return 0;</span>
+<span class="nc bnc" id="L521" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L522">            return 0;</span>
         }
 
 <span class="nc bnc" id="L525" title="All 2 branches missed.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
@@ -563,7 +563,7 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean hasShield() {
-<span class="pc bpc" id="L566" title="1 of 2 branches missed.">        for (Mounted m : getMisc()) {</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">        for (Mounted m : getMisc()) {</span>
 <span class="nc" id="L567">            EquipmentType type = m.getType();</span>
 <span class="nc bnc" id="L568" title="All 6 branches missed.">            if (((m.getLocation() == Mech.LOC_LARM) || (m.getLocation() == Mech.LOC_RARM))</span>
                     &amp;&amp; (type instanceof MiscType)
@@ -584,7 +584,7 @@ public class TripodMech extends Mech {
                 }
             }
 <span class="nc" id="L586">        }</span>
-<span class="fc" id="L587">        return false;</span>
+<span class="nc" id="L587">        return false;</span>
     }
 
     /**
@@ -596,10 +596,10 @@ public class TripodMech extends Mech {
     @Override
     public int getNumberOfShields(long size) {
 
-<span class="fc" id="L599">        int raShield = 0;</span>
-<span class="fc" id="L600">        int laShield = 0;</span>
+<span class="nc" id="L599">        int raShield = 0;</span>
+<span class="nc" id="L600">        int laShield = 0;</span>
 
-<span class="pc bpc" id="L602" title="1 of 2 branches missed.">        for (Mounted m : getMisc()) {</span>
+<span class="nc bnc" id="L602" title="All 2 branches missed.">        for (Mounted m : getMisc()) {</span>
 <span class="nc" id="L603">            EquipmentType type = m.getType();</span>
 <span class="nc bnc" id="L604" title="All 4 branches missed.">            if ((type instanceof MiscType) &amp;&amp; type.hasFlag(MiscType.F_CLUB)</span>
 <span class="nc bnc" id="L605" title="All 2 branches missed.">                &amp;&amp; (type.hasSubType(size))) {</span>
@@ -616,7 +616,7 @@ public class TripodMech extends Mech {
                 }
             }
 <span class="nc" id="L618">        }</span>
-<span class="fc" id="L619">        return raShield + laShield;</span>
+<span class="nc" id="L619">        return raShield + laShield;</span>
     }
 
     /**
@@ -626,14 +626,14 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasActiveShield(int location, boolean rear) {
 
-<span class="pc bpc" id="L629" title="2 of 3 branches missed.">        switch (location) {</span>
+<span class="nc bnc" id="L629" title="All 3 branches missed.">        switch (location) {</span>
             case Mech.LOC_CT:
             case Mech.LOC_HEAD:
                 // no rear head location so must be rear CT which is not
                 // proected by
                 // any shield
-<span class="pc bpc" id="L635" title="1 of 2 branches missed.">                if (rear) {</span>
-<span class="fc" id="L636">                    return false;</span>
+<span class="nc bnc" id="L635" title="All 2 branches missed.">                if (rear) {</span>
+<span class="nc" id="L636">                    return false;</span>
                 }
 <span class="nc bnc" id="L638" title="All 2 branches missed.">                if (hasActiveShield(Mech.LOC_LARM)</span>
 <span class="nc bnc" id="L639" title="All 2 branches missed.">                    || hasActiveShield(Mech.LOC_RARM)) {</span>
@@ -657,8 +657,8 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasActiveShield(int location) {
 
-<span class="pc bpc" id="L660" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L661">            return false;</span>
+<span class="nc bnc" id="L660" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L661">            return false;</span>
         }
 
 <span class="nc bnc" id="L664" title="All 2 branches missed.">        if (isShutDown()</span>
@@ -698,13 +698,13 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasPassiveShield(int location, boolean rear) {
 
-<span class="pc bpc" id="L701" title="2 of 3 branches missed.">        switch (location) {</span>
+<span class="nc bnc" id="L701" title="All 3 branches missed.">        switch (location) {</span>
             // CT Head and legs are not protected by Passive shields.
             case Mech.LOC_CT:
             case Mech.LOC_HEAD:
             case Mech.LOC_LLEG:
             case Mech.LOC_RLEG:
-<span class="fc" id="L707">                return false;</span>
+<span class="nc" id="L707">                return false;</span>
             case Mech.LOC_LARM:
             case Mech.LOC_LT:
 <span class="nc bnc" id="L710" title="All 2 branches missed.">                if (rear) {</span>
@@ -729,13 +729,13 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasPassiveShield(int location) {
 
-<span class="pc bpc" id="L732" title="1 of 2 branches missed.">        if (isShutDown()</span>
-<span class="pc bpc" id="L733" title="2 of 4 branches missed.">            || (getCrew().isKoThisRound() || getCrew().isUnconscious())) {</span>
+<span class="nc bnc" id="L732" title="All 2 branches missed.">        if (isShutDown()</span>
+<span class="nc bnc" id="L733" title="All 4 branches missed.">            || (getCrew().isKoThisRound() || getCrew().isUnconscious())) {</span>
 <span class="nc" id="L734">            return false;</span>
         }
 
-<span class="pc bpc" id="L737" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L738">            return false;</span>
+<span class="nc bnc" id="L737" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L738">            return false;</span>
         }
 
 <span class="nc bnc" id="L741" title="All 2 branches missed.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
@@ -769,8 +769,8 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasNoDefenseShield(int location) {
 
-<span class="pc bpc" id="L772" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L773">            return false;</span>
+<span class="nc bnc" id="L772" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L773">            return false;</span>
         }
 
 <span class="nc bnc" id="L776" title="All 2 branches missed.">        for (int slot = 0; slot &lt; this.getNumberOfCriticals(location); slot++) {</span>
@@ -817,9 +817,9 @@ public class TripodMech extends Mech {
     @Override
     public boolean hasFunctionalArmAES(int location) {
 
-<span class="fc" id="L820">        boolean hasAES = false;</span>
-<span class="pc bpc" id="L821" title="2 of 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
-<span class="fc" id="L822">            return false;</span>
+<span class="nc" id="L820">        boolean hasAES = false;</span>
+<span class="nc bnc" id="L821" title="All 4 branches missed.">        if ((location != Mech.LOC_RARM) &amp;&amp; (location != Mech.LOC_LARM)) {</span>
+<span class="nc" id="L822">            return false;</span>
         }
 
 <span class="nc bnc" id="L825" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
@@ -845,11 +845,11 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean hasFunctionalLegAES() {
-<span class="fc" id="L848">        boolean rightLeg = false;</span>
-<span class="fc" id="L849">        boolean leftLeg = false;</span>
-<span class="fc" id="L850">        boolean centerLeg = false;</span>
+<span class="nc" id="L848">        boolean rightLeg = false;</span>
+<span class="nc" id="L849">        boolean leftLeg = false;</span>
+<span class="nc" id="L850">        boolean centerLeg = false;</span>
 
-<span class="pc bpc" id="L852" title="1 of 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
+<span class="nc bnc" id="L852" title="All 2 branches missed.">        for (Mounted mounted : getMisc()) {</span>
 <span class="nc bnc" id="L853" title="All 2 branches missed.">            if ((mounted.getLocation() == Mech.LOC_LLEG)</span>
 <span class="nc bnc" id="L854" title="All 2 branches missed.">                || (mounted.getLocation() == Mech.LOC_RLEG)</span>
 <span class="nc bnc" id="L855" title="All 2 branches missed.">                || (mounted.getLocation() == Mech.LOC_CLEG)) {</span>
@@ -873,15 +873,15 @@ public class TripodMech extends Mech {
             }
 <span class="nc" id="L874">        }</span>
 
-<span class="pc bpc" id="L876" title="5 of 6 branches missed.">        return rightLeg &amp;&amp; leftLeg &amp;&amp; centerLeg;</span>
+<span class="nc bnc" id="L876" title="All 6 branches missed.">        return rightLeg &amp;&amp; leftLeg &amp;&amp; centerLeg;</span>
     }
 
     @Override
     public boolean canGoHullDown() {
         // check the option
-<span class="fc" id="L882">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
-<span class="pc bpc" id="L883" title="1 of 2 branches missed.">        if (!retVal) {</span>
-<span class="fc" id="L884">            return false;</span>
+<span class="nc" id="L882">        boolean retVal = game.getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_TACOPS_HULL_DOWN);</span>
+<span class="nc bnc" id="L883" title="All 2 branches missed.">        if (!retVal) {</span>
+<span class="nc" id="L884">            return false;</span>
         }
         // check the locations
 <span class="nc bnc" id="L887" title="All 2 branches missed.">        retVal = (!isLocationBad(Mech.LOC_LLEG)</span>
@@ -951,22 +951,22 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean cannotStandUpFromHullDown() {
-<span class="fc" id="L954">        int i = 0;</span>
-<span class="pc bpc" id="L955" title="1 of 2 branches missed.">        if (isLocationBad(LOC_LLEG)) {</span>
+<span class="nc" id="L954">        int i = 0;</span>
+<span class="nc bnc" id="L955" title="All 2 branches missed.">        if (isLocationBad(LOC_LLEG)) {</span>
 <span class="nc" id="L956">            i++;</span>
         }
-<span class="pc bpc" id="L958" title="1 of 2 branches missed.">        if (isLocationBad(LOC_RLEG)) {</span>
+<span class="nc bnc" id="L958" title="All 2 branches missed.">        if (isLocationBad(LOC_RLEG)) {</span>
 <span class="nc" id="L959">            i++;</span>
         }
-<span class="pc bpc" id="L961" title="1 of 2 branches missed.">        if (isLocationBad(LOC_CLEG)) {</span>
+<span class="nc bnc" id="L961" title="All 2 branches missed.">        if (isLocationBad(LOC_CLEG)) {</span>
 <span class="nc" id="L962">            i++;</span>
         }
-<span class="pc bpc" id="L964" title="2 of 4 branches missed.">        return (i &gt;= 1) || isGyroDestroyed();</span>
+<span class="nc bnc" id="L964" title="All 4 branches missed.">        return (i &gt;= 1) || isGyroDestroyed();</span>
     }
 
     @Override
     public boolean hasMPReducingHardenedArmor() {
-<span class="pc bpc" id="L969" title="3 of 6 branches missed.">        return (armorType[LOC_LLEG] == EquipmentType.T_ARMOR_HARDENED)</span>
+<span class="nc bnc" id="L969" title="All 6 branches missed.">        return (armorType[LOC_LLEG] == EquipmentType.T_ARMOR_HARDENED)</span>
                || (armorType[LOC_RLEG] == EquipmentType.T_ARMOR_HARDENED)
                || (armorType[LOC_CLEG] == EquipmentType.T_ARMOR_HARDENED);
     }
@@ -976,7 +976,7 @@ public class TripodMech extends Mech {
      */
     @Override
     public int locations() {
-<span class="fc" id="L979">        return 9;</span>
+<span class="nc" id="L979">        return 9;</span>
     }
 
     /*
@@ -1621,7 +1621,7 @@ public class TripodMech extends Mech {
      */
     @Override
     public boolean isValidSecondaryFacing(int dir) {
-<span class="fc" id="L1624">        return canChangeSecondaryFacing();</span>
+<span class="nc" id="L1624">        return canChangeSecondaryFacing();</span>
     }
 
 }

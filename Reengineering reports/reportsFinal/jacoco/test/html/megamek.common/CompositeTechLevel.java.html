@@ -205,7 +205,7 @@ public class CompositeTechLevel implements ITechnology, Serializable {
              */
             
 <span class="fc bfc" id="L207" title="All 2 branches covered.">            if (advanced == null) {</span>
-<span class="fc bfc" id="L208" title="All 4 branches covered.">                if (standard != null &amp;&amp; commonDate &gt; standard) {</span>
+<span class="pc bpc" id="L208" title="1 of 4 branches missed.">                if (standard != null &amp;&amp; commonDate &gt; standard) {</span>
 <span class="fc" id="L209">                    advanced = standard;</span>
                 }
             } else {
@@ -276,7 +276,7 @@ public class CompositeTechLevel implements ITechnology, Serializable {
      * @param end - reintroduction date of new extinction range, or DATE_NONE if never reintroduced
      */
     private void addExtinctionRange(int start, int end) {
-<span class="fc bfc" id="L279" title="All 6 branches covered.">        if (start == DATE_NONE</span>
+<span class="pc bpc" id="L279" title="1 of 6 branches missed.">        if (start == DATE_NONE</span>
                 || (end != DATE_NONE &amp;&amp; end &lt;= introYear)) {
 <span class="fc" id="L281">            return;</span>
         }
@@ -313,7 +313,7 @@ public class CompositeTechLevel implements ITechnology, Serializable {
         
 <span class="fc" id="L314">        DateRange(int start, int end) {</span>
 <span class="fc" id="L315">            this.start = start;</span>
-<span class="fc bfc" id="L316" title="All 2 branches covered.">            this.end = end == DATE_NONE? null : end;</span>
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">            this.end = end == DATE_NONE? null : end;</span>
 <span class="fc" id="L317">        }</span>
         
 <span class="nc" id="L319">        DateRange(int start) {</span>

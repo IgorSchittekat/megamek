@@ -1,0 +1,925 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MekTableMouseAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.swing</a> &gt; <span class="el_source">MekTableMouseAdapter.java</span></div><h1>MekTableMouseAdapter.java</h1><pre class="source lang-java linenums">package megamek.client.ui.swing;
+
+import megamek.client.Client;
+import megamek.client.generator.RandomCallsignGenerator;
+import megamek.client.generator.RandomGenderGenerator;
+import megamek.client.generator.RandomNameGenerator;
+import megamek.client.ui.Messages;
+import megamek.client.ui.swing.util.MenuScroller;
+import megamek.common.*;
+import megamek.common.enums.Gender;
+import megamek.common.options.OptionsConstants;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
+public class MekTableMouseAdapter extends MouseInputAdapter implements ActionListener {
+
+    //region Action Commands
+    private static final String NAME_COMMAND = &quot;NAME&quot;;
+    private static final String CALLSIGN_COMMAND = &quot;CALLSIGN&quot;;
+
+    private final ChatLounge chatLounge;
+
+<span class="nc" id="L32">    public MekTableMouseAdapter(ChatLounge lounge) {</span>
+<span class="nc" id="L33">        chatLounge = lounge;</span>
+<span class="nc" id="L34">    }</span>
+
+    @Override
+    public void actionPerformed(ActionEvent action) {
+<span class="nc" id="L38">        StringTokenizer st = new StringTokenizer(action.getActionCommand(), &quot;|&quot;);</span>
+<span class="nc" id="L39">        String command = st.nextToken();</span>
+<span class="nc" id="L40">        int[] rows = chatLounge.getTableEntities().getSelectedRows();</span>
+<span class="nc" id="L41">        int row = chatLounge.getTableEntities().getSelectedRow();</span>
+<span class="nc" id="L42">        Entity entity = chatLounge.getMekModel().getEntityAt(row);</span>
+<span class="nc" id="L43">        Vector&lt;Entity&gt; entities = new Vector&lt;&gt;();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (int value : rows) {</span>
+<span class="nc" id="L45">            entities.add(chatLounge.getMekModel().getEntityAt(value));</span>
+        }
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (null == entity) {</span>
+<span class="nc" id="L48">            return;</span>
+        }
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (command.equalsIgnoreCase(&quot;VIEW&quot;)) {</span>
+<span class="nc" id="L51">            chatLounge.mechReadout(entity);</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;BV&quot;)) {</span>
+<span class="nc" id="L53">            chatLounge.mechBVDisplay(entity);</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;DAMAGE&quot;)) {</span>
+<span class="nc" id="L55">            chatLounge.mechEdit(entity);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;INDI_CAMO&quot;)) {</span>
+<span class="nc" id="L57">            chatLounge.mechCamo(entities);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;CONFIGURE&quot;)) {</span>
+<span class="nc" id="L59">            chatLounge.customizeMech(entity);</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;CONFIGURE_ALL&quot;)) {</span>
+<span class="nc" id="L61">            chatLounge.customizeMechs(entities);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;DELETE&quot;)) {</span>
+<span class="nc" id="L63">            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (c == null) {</span>
+<span class="nc" id="L65">                c = chatLounge.getClientgui().getClient();</span>
+            }
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+                // first unload any units from this unit
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                if (e.getLoadedUnits().size() &gt; 0) {</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                    for (Entity loaded : e.getLoadedUnits()) {</span>
+<span class="nc" id="L71">                        e.unload(loaded);</span>
+<span class="nc" id="L72">                        loaded.setTransportId(Entity.NONE);</span>
+<span class="nc" id="L73">                        c.sendUpdateEntity(loaded);</span>
+<span class="nc" id="L74">                    }</span>
+<span class="nc" id="L75">                    c.sendUpdateEntity(e);</span>
+                }
+                // unload this unit from any other units it might be loaded
+                // onto
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                if (entity.getTransportId() != Entity.NONE) {</span>
+<span class="nc" id="L80">                    Entity loader = chatLounge.getClientgui().getClient().getGame().getEntity(entity.getTransportId());</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                    if (null != loader) {</span>
+<span class="nc" id="L82">                        loader.unload(entity);</span>
+<span class="nc" id="L83">                        entity.setTransportId(Entity.NONE);</span>
+<span class="nc" id="L84">                        c.sendUpdateEntity(loader);</span>
+<span class="nc" id="L85">                        c.sendUpdateEntity(entity);</span>
+                    }
+                }
+<span class="nc" id="L88">                c.sendDeleteEntity(e.getId());</span>
+<span class="nc" id="L89">            }</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SKILLS&quot;)) {</span>
+<span class="nc" id="L91">            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            if (c == null) {</span>
+<span class="nc" id="L93">                c = chatLounge.getClientgui().getClient();</span>
+            }
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                for (int i = 0; i &lt; e.getCrew().getSlotCount(); i++) {</span>
+<span class="nc" id="L97">                    int[] skills = c.getRandomSkillsGenerator().getRandomSkills(e, true);</span>
+<span class="nc" id="L98">                    e.getCrew().setGunnery(skills[0], i);</span>
+<span class="nc" id="L99">                    e.getCrew().setPiloting(skills[1], i);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                    if (e.getCrew() instanceof LAMPilot) {</span>
+<span class="nc" id="L101">                        skills = c.getRandomSkillsGenerator().getRandomSkills(e, true);</span>
+<span class="nc" id="L102">                        ((LAMPilot) e.getCrew()).setGunneryAero(skills[0]);</span>
+<span class="nc" id="L103">                        ((LAMPilot) e.getCrew()).setPilotingAero(skills[1]);</span>
+                    }
+                }
+<span class="nc" id="L106">                e.getCrew().sortRandomSkills();</span>
+<span class="nc" id="L107">                c.sendUpdateEntity(e);</span>
+<span class="nc" id="L108">            }</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(NAME_COMMAND)) {</span>
+<span class="nc" id="L110">            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            if (c == null) {</span>
+<span class="nc" id="L112">                c = chatLounge.getClientgui().getClient();</span>
+            }
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                for (int i = 0; i &lt; e.getCrew().getSlotCount(); i++) {</span>
+<span class="nc" id="L116">                    Gender gender = RandomGenderGenerator.generate();</span>
+<span class="nc" id="L117">                    e.getCrew().setGender(gender, i);</span>
+<span class="nc" id="L118">                    e.getCrew().setName(RandomNameGenerator.getInstance().generate(gender, e.getOwner().getName()), i);</span>
+                }
+<span class="nc" id="L120">                c.sendUpdateEntity(e);</span>
+<span class="nc" id="L121">            }</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        } else if (command.equals(CALLSIGN_COMMAND)) {</span>
+<span class="nc" id="L123">            Client c = chatLounge.getClientgui().getBots().get(entity.getOwner().getName());</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (c == null) {</span>
+<span class="nc" id="L125">                c = chatLounge.getClientgui().getClient();</span>
+            }
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                for (int i = 0; i &lt; e.getCrew().getSlotCount(); i++) {</span>
+<span class="nc" id="L129">                    e.getCrew().setNickname(RandomCallsignGenerator.getInstance().generate(), i);</span>
+                }
+<span class="nc" id="L131">                c.sendUpdateEntity(e);</span>
+<span class="nc" id="L132">            }</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;LOAD&quot;)) {</span>
+<span class="nc" id="L134">            StringTokenizer stLoad = new StringTokenizer(st.nextToken(), &quot;:&quot;);</span>
+<span class="nc" id="L135">            int id = Integer.parseInt(stLoad.nextToken());</span>
+<span class="nc" id="L136">            int bayNumber = Integer.parseInt(stLoad.nextToken());</span>
+<span class="nc" id="L137">            Entity loadingEntity = chatLounge.getClientgui().getClient().getEntity(id);</span>
+<span class="nc" id="L138">            boolean loadRear = false;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (stLoad.hasMoreTokens()) {</span>
+<span class="nc" id="L140">                loadRear = Boolean.parseBoolean(stLoad.nextToken());</span>
+            }
+
+            double capacity;
+            boolean hasEnoughCargoCapacity;
+<span class="nc" id="L145">            String errorMessage = &quot;&quot;;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if (bayNumber != -1) {</span>
+<span class="nc" id="L147">                Bay bay = loadingEntity.getBayById(bayNumber);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                if (null != bay) {</span>
+<span class="nc" id="L149">                    double loadSize = entities.stream().mapToDouble(bay::spaceForUnit).sum();</span>
+<span class="nc" id="L150">                    capacity = bay.getUnused();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">                    hasEnoughCargoCapacity = loadSize &lt;= capacity;</span>
+<span class="nc" id="L152">                    errorMessage = Messages.getString(&quot;LoadingBay.baytoomany&quot;) + // $NON-NLS-2$</span>
+<span class="nc" id="L153">                            &quot; &quot; + (int) bay.getUnusedSlots()</span>
+<span class="nc" id="L154">                            + bay.getDefaultSlotDescription() + &quot;.&quot;;</span>
+                    // We're also using bay number to distinguish between front and rear locations
+                    // for protomech mag clamp systems
+<span class="nc bnc" id="L157" title="All 2 branches missed.">                } else if (loadingEntity.hasETypeFlag(Entity.ETYPE_MECH)</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                        &amp;&amp; entities.get(0).hasETypeFlag(Entity.ETYPE_PROTOMECH)) {</span>
+<span class="nc" id="L159">                    capacity = 1;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                    hasEnoughCargoCapacity = entities.size() == 1;</span>
+<span class="nc" id="L161">                    errorMessage = Messages.getString(&quot;LoadingBay.protostoomany&quot;);</span>
+                } else {
+<span class="nc" id="L163">                    hasEnoughCargoCapacity = false;</span>
+<span class="nc" id="L164">                    errorMessage = Messages.getString(&quot;LoadingBay.bayNumberNotFound&quot;, bayNumber);</span>
+                }
+<span class="nc" id="L166">            } else {</span>
+                HashMap&lt;Long, Double&gt; capacities, counts;
+<span class="nc" id="L168">                capacities = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L169">                counts = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L170">                HashMap&lt;Transporter, Double&gt; potentialLoad = new HashMap&lt;&gt;();</span>
+                // Get the counts and capacities for all present types
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                for (Entity e : entities) {</span>
+<span class="nc" id="L173">                    long entityType = e.getEntityType();</span>
+<span class="nc" id="L174">                    long loaderType = loadingEntity.getEntityType();</span>
+                    double unitSize;
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                    if ((entityType &amp; Entity.ETYPE_MECH) != 0) {</span>
+<span class="nc" id="L177">                        entityType = Entity.ETYPE_MECH;</span>
+<span class="nc" id="L178">                        unitSize = 1;</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_INFANTRY) != 0) {</span>
+<span class="nc" id="L180">                        entityType = Entity.ETYPE_INFANTRY;</span>
+<span class="nc" id="L181">                        boolean useCount = true;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                        if ((loaderType &amp; Entity.ETYPE_TANK) != 0) {</span>
+                            // This is a super hack... When getting
+                            // capacities, troopspace gives unused space in
+                            // terms of tons, and BattleArmorHandles gives
+                            // it in terms of unit count. If I call
+                            // getUnused, it sums these together, and is
+                            // meaningless, so we'll go through all
+                            // transporters....
+<span class="nc" id="L190">                            boolean hasTroopSpace = false;</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">                            for (Transporter t : loadingEntity.getTransports()) {</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                                if (t instanceof TankTrailerHitch) {</span>
+<span class="nc" id="L193">                                    continue;</span>
+                                }
+<span class="nc" id="L195">                                double loadWeight = e.getWeight();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                                if (potentialLoad.containsKey(t)) {</span>
+<span class="nc" id="L197">                                    loadWeight += potentialLoad.get(t);</span>
+                                }
+<span class="nc bnc" id="L199" title="All 4 branches missed.">                                if (!(t instanceof BattleArmorHandlesTank) &amp;&amp; t.canLoad(e)</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                                        &amp;&amp; (loadWeight &lt;= t.getUnused())) {</span>
+<span class="nc" id="L201">                                    hasTroopSpace = true;</span>
+<span class="nc" id="L202">                                    potentialLoad.put(t, loadWeight);</span>
+<span class="nc" id="L203">                                    break;</span>
+                                }
+<span class="nc" id="L205">                            }</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                            if (hasTroopSpace) {</span>
+<span class="nc" id="L207">                                useCount = false;</span>
+                            }
+                        }
+                        // TroopSpace uses tonnage
+                        // bays and BA handlebars use a count
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                        if (useCount) {</span>
+<span class="nc" id="L213">                            unitSize = 1;</span>
+                        } else {
+<span class="nc" id="L215">                            unitSize = e.getWeight();</span>
+                        }
+<span class="nc bnc" id="L217" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_PROTOMECH) != 0) {</span>
+<span class="nc" id="L218">                        entityType = Entity.ETYPE_PROTOMECH;</span>
+<span class="nc" id="L219">                        unitSize = 1;</span>
+                        // Loading using mag clamps; user can specify front or rear.
+                        // Make use of bayNumber field
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                        if ((loaderType &amp; Entity.ETYPE_MECH) != 0) {</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">                            bayNumber = loadRear? 1 : 0;</span>
+                        }
+<span class="nc bnc" id="L225" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_DROPSHIP) != 0) {</span>
+<span class="nc" id="L226">                        entityType = Entity.ETYPE_DROPSHIP;</span>
+<span class="nc" id="L227">                        unitSize = 1;</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_JUMPSHIP) != 0) {</span>
+<span class="nc" id="L229">                        entityType = Entity.ETYPE_JUMPSHIP;</span>
+<span class="nc" id="L230">                        unitSize = 1;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_AERO) != 0) {</span>
+<span class="nc" id="L232">                        entityType = Entity.ETYPE_AERO;</span>
+<span class="nc" id="L233">                        unitSize = 1;</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                    } else if ((entityType &amp; Entity.ETYPE_TANK) != 0) {</span>
+<span class="nc" id="L235">                        entityType = Entity.ETYPE_TANK;</span>
+<span class="nc" id="L236">                        unitSize = 1;</span>
+                    } else {
+<span class="nc" id="L238">                        unitSize = 1;</span>
+                    }
+
+<span class="nc" id="L241">                    Double count = counts.get(entityType);</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">                    if (count == null) {</span>
+<span class="nc" id="L243">                        count = 0.0;</span>
+                    }
+<span class="nc" id="L245">                    count = count + unitSize;</span>
+<span class="nc" id="L246">                    counts.put(entityType, count);</span>
+
+<span class="nc" id="L248">                    Double cap = capacities.get(entityType);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                    if (cap == null) {</span>
+<span class="nc" id="L250">                        cap = loadingEntity.getUnused(e);</span>
+<span class="nc" id="L251">                        capacities.put(entityType, cap);</span>
+                    }
+<span class="nc" id="L253">                }</span>
+<span class="nc" id="L254">                hasEnoughCargoCapacity = true;</span>
+<span class="nc" id="L255">                capacity = 0;</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                for (Long typeId : counts.keySet()) {</span>
+<span class="nc" id="L257">                    double currCount = counts.get(typeId);</span>
+<span class="nc" id="L258">                    double currCapacity = capacities.get(typeId);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">                    if (currCount &gt; currCapacity) {</span>
+<span class="nc" id="L260">                        hasEnoughCargoCapacity = false;</span>
+<span class="nc" id="L261">                        capacity = currCapacity;</span>
+                        String messageName;
+<span class="nc bnc" id="L263" title="All 2 branches missed.">                        if (typeId == Entity.ETYPE_INFANTRY) {</span>
+<span class="nc" id="L264">                            messageName = &quot;LoadingBay.nonbaytoomanyInf&quot;;</span>
+                        } else {
+<span class="nc" id="L266">                            messageName = &quot;LoadingBay.nonbaytoomany&quot;;</span>
+                        }
+<span class="nc" id="L268">                        errorMessage = Messages.getString(messageName, currCount,</span>
+<span class="nc" id="L269">                                Entity.getEntityTypeName(typeId), currCapacity);</span>
+                    }
+<span class="nc" id="L271">                }</span>
+            }
+<span class="nc bnc" id="L273" title="All 2 branches missed.">            if (hasEnoughCargoCapacity) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                for (Entity e : entities) {</span>
+<span class="nc" id="L275">                    chatLounge.loader(e, id, bayNumber);</span>
+<span class="nc" id="L276">                }</span>
+            } else {
+<span class="nc" id="L278">                JOptionPane.showMessageDialog(chatLounge.getClientgui().frame, errorMessage, Messages.getString(&quot;LoadingBay.error&quot;), // $NON-NLS-2$</span>
+                        JOptionPane.ERROR_MESSAGE);
+            }
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;UNLOAD&quot;)) {</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L283">                chatLounge.unloader(e);</span>
+<span class="nc" id="L284">            }</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;UNLOADALL&quot;)) {</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">            for (Entity loadee : entity.getLoadedUnits()) {</span>
+<span class="nc" id="L287">                chatLounge.unloader(loadee);</span>
+<span class="nc" id="L288">            }</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;UNLOADALLFROMBAY&quot;)) {</span>
+<span class="nc" id="L290">            int id = Integer.parseInt(st.nextToken());</span>
+<span class="nc" id="L291">            Bay bay = entity.getBayById(id);</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">            for (Entity loadee : bay.getLoadedUnits()) {</span>
+<span class="nc" id="L293">                chatLounge.unloader(loadee);</span>
+<span class="nc" id="L294">            }</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SQUADRON&quot;)) {</span>
+<span class="nc" id="L296">            Vector&lt;Integer&gt; fighters = new Vector&lt;Integer&gt;();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L298">                fighters.add(e.getId());</span>
+<span class="nc" id="L299">            }</span>
+<span class="nc" id="L300">            if ((!chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">                    .booleanOption(OptionsConstants.ADVAERORULES_ALLOW_LARGE_SQUADRONS)</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">                    &amp;&amp; (fighters.size() &gt; FighterSquadron.MAX_SIZE))</span>
+<span class="nc" id="L303">                    || (chatLounge.getClientgui().getClient().getGame().getOptions()</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">                    .booleanOption(OptionsConstants.ADVAERORULES_ALLOW_LARGE_SQUADRONS)</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">                    &amp;&amp; (fighters.size() &gt; FighterSquadron.ALTERNATE_MAX_SIZE))) {</span>
+<span class="nc" id="L306">                JOptionPane.showMessageDialog(chatLounge.getClientgui().frame, Messages.getString(&quot;FighterSquadron.toomany&quot;),</span>
+<span class="nc" id="L307">                        Messages.getString(&quot;FighterSquadron.error&quot;), JOptionPane.ERROR_MESSAGE); // $NON-NLS-1$</span>
+                // //$NON-NLS-2$
+            } else {
+<span class="nc" id="L310">                chatLounge.loadFS(fighters);</span>
+            }
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SWAP&quot;)) {</span>
+<span class="nc" id="L313">            int id = Integer.parseInt(st.nextToken());</span>
+<span class="nc" id="L314">            chatLounge.swapPilots(entity, id);</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;CHANGE_OWNER&quot;)) {</span>
+            // Code to swap entities to a player.
+<span class="nc" id="L317">            int id = Integer.parseInt(st.nextToken());</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L319">                chatLounge.changeEntityOwner(e, id);</span>
+<span class="nc" id="L320">            }</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SAVE_QUIRKS_ALL&quot;)) {</span>
+<span class="nc bnc" id="L322" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L323">                QuirksHandler.addCustomQuirk(e, false);</span>
+<span class="nc" id="L324">            }</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SAVE_QUIRKS_MODEL&quot;)) {</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L327">                QuirksHandler.addCustomQuirk(e, true);</span>
+<span class="nc" id="L328">            }</span>
+<span class="nc bnc" id="L329" title="All 4 branches missed.">        } else if (command.equalsIgnoreCase(&quot;RAPIDFIREMG_OFF&quot;) || command.equalsIgnoreCase(&quot;RAPIDFIREMG_ON&quot;)) {</span>
+<span class="nc" id="L330">            boolean rapidFire = command.equalsIgnoreCase(&quot;RAPIDFIREMG_ON&quot;);</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L332">                boolean dirty = false;</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">                for (Mounted m : e.getWeaponList()) {</span>
+<span class="nc" id="L334">                    WeaponType wtype = (WeaponType) m.getType();</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">                    if (!wtype.hasFlag(WeaponType.F_MG)) {</span>
+<span class="nc" id="L336">                        continue;</span>
+                    }
+<span class="nc" id="L338">                    m.setRapidfire(rapidFire);</span>
+<span class="nc" id="L339">                    dirty = true;</span>
+<span class="nc" id="L340">                }</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">                if (dirty) {</span>
+<span class="nc" id="L342">                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);</span>
+                }
+<span class="nc" id="L344">            }</span>
+<span class="nc bnc" id="L345" title="All 4 branches missed.">        } else if (command.equalsIgnoreCase(&quot;HOTLOAD_OFF&quot;) || command.equalsIgnoreCase(&quot;HOTLOAD_ON&quot;)) {</span>
+<span class="nc" id="L346">            boolean hotLoad = command.equalsIgnoreCase(&quot;HOTLOAD_ON&quot;);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L348">                boolean dirty = false;</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                for (Mounted m : e.getWeaponList()) {</span>
+<span class="nc" id="L350">                    WeaponType wtype = (WeaponType) m.getType();</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">                    if (!wtype.hasFlag(WeaponType.F_MISSILE)</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">                            || (wtype.getAmmoType() != AmmoType.T_LRM)) {</span>
+<span class="nc" id="L353">                        continue;</span>
+                    }
+<span class="nc" id="L355">                    m.setHotLoad(hotLoad);</span>
+<span class="nc" id="L356">                    dirty = true;</span>
+<span class="nc" id="L357">                }</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">                for (Mounted m : e.getAmmo()) {</span>
+<span class="nc" id="L359">                    AmmoType atype = (AmmoType) m.getType();</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">                    if (atype.getAmmoType() != AmmoType.T_LRM) {</span>
+<span class="nc" id="L361">                        continue;</span>
+                    }
+<span class="nc" id="L363">                    m.setHotLoad(hotLoad);</span>
+                    // Set the mode too, so vehicles can switch back
+<span class="nc" id="L365">                    int numModes = m.getType().getModesCount();</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">                    for (int i = 0; i &lt; numModes; i++) {</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">                        if (m.getType().getMode(i).getName().equals(&quot;HotLoad&quot;)) {</span>
+<span class="nc" id="L368">                            m.setMode(i);</span>
+                        }
+                    }
+<span class="nc" id="L371">                    dirty = true;</span>
+<span class="nc" id="L372">                }</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">                if (dirty) {</span>
+<span class="nc" id="L374">                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);</span>
+                }
+<span class="nc" id="L376">            }</span>
+<span class="nc bnc" id="L377" title="All 4 branches missed.">        } else if (command.equalsIgnoreCase(&quot;SEARCHLIGHT_OFF&quot;) || command.equalsIgnoreCase(&quot;SEARCHLIGHT_ON&quot;)) {</span>
+<span class="nc" id="L378">            boolean searchLight = command.equalsIgnoreCase(&quot;SEARCHLIGHT_ON&quot;);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">            for (Entity e : entities) {</span>
+<span class="nc" id="L380">                boolean dirty = false;</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">                if (!e.hasQuirk(OptionsConstants.QUIRK_POS_SEARCHLIGHT)) {</span>
+<span class="nc" id="L382">                    e.setExternalSpotlight(searchLight);</span>
+<span class="nc" id="L383">                    e.setSpotlightState(searchLight);</span>
+<span class="nc" id="L384">                    dirty = true;</span>
+                }
+<span class="nc bnc" id="L386" title="All 2 branches missed.">                if (dirty) {</span>
+<span class="nc" id="L387">                    chatLounge.getClientgui().getClient().sendUpdateEntity(e);</span>
+                }
+<span class="nc" id="L389">            }</span>
+        }
+
+<span class="nc" id="L392">    }</span>
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (e.getClickCount() == 2) {</span>
+<span class="nc" id="L397">            int row = chatLounge.getTableEntities().rowAtPoint(e.getPoint());</span>
+<span class="nc" id="L398">            Entity entity = chatLounge.getMekModel().getEntityAt(row);</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">            if (entity != null) {</span>
+<span class="nc" id="L400">                boolean isOwner = entity.getOwner().equals(chatLounge.getClientgui().getClient().getLocalPlayer());</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">                boolean isBot = chatLounge.getClientgui().getBots().get(entity.getOwner().getName()) != null;</span>
+<span class="nc bnc" id="L402" title="All 4 branches missed.">                if ((isOwner || isBot)) {</span>
+<span class="nc" id="L403">                    chatLounge.customizeMech(entity);</span>
+                }
+            }
+
+        }
+<span class="nc" id="L408">    }</span>
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+<span class="nc" id="L412">        maybeShowPopup(e);</span>
+<span class="nc" id="L413">    }</span>
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+<span class="nc" id="L417">        maybeShowPopup(e);</span>
+<span class="nc" id="L418">    }</span>
+
+    private void maybeShowPopup(MouseEvent e) {
+<span class="nc" id="L421">        JPopupMenu popup = new JPopupMenu();</span>
+<span class="nc" id="L422">        JTable tableEntities = chatLounge.getTableEntities();</span>
+<span class="nc" id="L423">        MekTableModel mekModel = chatLounge.getMekModel();</span>
+<span class="nc" id="L424">        ClientGUI clientgui = chatLounge.getClientgui();</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">        if (chatLounge.getTableEntities().getSelectedRowCount() == 0) {</span>
+<span class="nc" id="L426">            return;</span>
+        }
+<span class="nc" id="L428">        int[] rows = tableEntities.getSelectedRows();</span>
+<span class="nc" id="L429">        int row = tableEntities.getSelectedRow();</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">        boolean oneSelected = tableEntities.getSelectedRowCount() == 1;</span>
+<span class="nc" id="L431">        Entity entity = mekModel.getEntityAt(row);</span>
+<span class="nc" id="L432">        Vector&lt;Entity&gt; entities = new Vector&lt;&gt;();</span>
+<span class="nc bnc" id="L433" title="All 2 branches missed.">        for (int i = 0; i &lt; rows.length; i++) {</span>
+<span class="nc" id="L434">            entities.add(mekModel.getEntityAt(rows[i]));</span>
+        }
+<span class="nc bnc" id="L436" title="All 2 branches missed.">        if (null == entity) {</span>
+<span class="nc" id="L437">            return;</span>
+        }
+<span class="nc" id="L439">        boolean isOwner = entity.getOwner().equals(clientgui.getClient().getLocalPlayer());</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        boolean isBot = clientgui.getBots().get(entity.getOwner().getName()) != null;</span>
+<span class="nc" id="L441">        boolean blindDrop = clientgui.getClient().getGame().getOptions()</span>
+<span class="nc" id="L442">                .booleanOption(OptionsConstants.BASE_BLIND_DROP);</span>
+<span class="nc" id="L443">        boolean isQuirksEnabled = clientgui.getClient().getGame().getOptions()</span>
+<span class="nc" id="L444">                .booleanOption(OptionsConstants.ADVANCED_STRATOPS_QUIRKS);</span>
+<span class="nc" id="L445">        boolean isRapidFireMG = clientgui.getClient().getGame().getOptions()</span>
+<span class="nc" id="L446">                .booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_BURST);</span>
+<span class="nc" id="L447">        boolean isHotLoad = clientgui.getClient().getGame().getOptions()</span>
+<span class="nc" id="L448">                .booleanOption(OptionsConstants.ADVCOMBAT_TACOPS_HOTLOAD);</span>
+<span class="nc" id="L449">        boolean isSearchlight = clientgui.getClient().getGame().getPlanetaryConditions()</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">                .getLight() &gt; PlanetaryConditions.L_DUSK;</span>
+<span class="nc" id="L451">        boolean allLoaded = true;</span>
+<span class="nc" id="L452">        boolean allUnloaded = true;</span>
+<span class="nc" id="L453">        boolean allCapFighter = true;</span>
+<span class="nc" id="L454">        boolean allDropships = true;</span>
+<span class="nc" id="L455">        boolean allInfantry = true;</span>
+<span class="nc" id="L456">        boolean allBattleArmor = true;</span>
+<span class="nc" id="L457">        boolean allProtomechs = true;</span>
+<span class="nc" id="L458">        boolean allSameEntityType = true;</span>
+<span class="nc" id="L459">        boolean hasMGs = false;</span>
+<span class="nc" id="L460">        boolean hasSearchlight = false;</span>
+<span class="nc" id="L461">        boolean hasLRMS = false;</span>
+<span class="nc" id="L462">        boolean hasHotLoad = false;</span>
+<span class="nc" id="L463">        boolean hasRapidFireMG = false;</span>
+<span class="nc" id="L464">        boolean sameSide = true;</span>
+<span class="nc" id="L465">        Entity prevEntity = null;</span>
+<span class="nc" id="L466">        int prevOwnerId = -1;</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        for (Entity en : entities) {</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">            if (en.getTransportId() == Entity.NONE) {</span>
+<span class="nc" id="L469">                allLoaded = false;</span>
+            } else {
+<span class="nc" id="L471">                allUnloaded = false;</span>
+            }
+<span class="nc bnc" id="L473" title="All 4 branches missed.">            if (!en.isCapitalFighter(true) || (en instanceof FighterSquadron)) {</span>
+<span class="nc" id="L474">                allCapFighter = false;</span>
+            }
+<span class="nc bnc" id="L476" title="All 4 branches missed.">            if ((prevOwnerId != -1) &amp;&amp; (en.getOwnerId() != prevOwnerId)) {</span>
+<span class="nc" id="L477">                sameSide = false;</span>
+            }
+<span class="nc" id="L479">            prevOwnerId = en.getOwnerId();</span>
+<span class="nc" id="L480">            allDropships &amp;= en.hasETypeFlag(Entity.ETYPE_DROPSHIP);</span>
+<span class="nc" id="L481">            allInfantry &amp;= en.hasETypeFlag(Entity.ETYPE_INFANTRY);</span>
+<span class="nc" id="L482">            allBattleArmor &amp;= en.hasETypeFlag(Entity.ETYPE_BATTLEARMOR);</span>
+<span class="nc" id="L483">            allProtomechs &amp;= en.hasETypeFlag(Entity.ETYPE_PROTOMECH);</span>
+<span class="nc bnc" id="L484" title="All 6 branches missed.">            if ((prevEntity != null) &amp;&amp; !en.getClass().equals(prevEntity.getClass()) &amp;&amp; !allInfantry) {</span>
+<span class="nc" id="L485">                allSameEntityType = false;</span>
+            }
+<span class="nc bnc" id="L487" title="All 4 branches missed.">            if (isRapidFireMG || isHotLoad) {</span>
+<span class="nc bnc" id="L488" title="All 2 branches missed.">                for (Mounted m : en.getWeaponList()) {</span>
+<span class="nc" id="L489">                    EquipmentType etype = m.getType();</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">                    if (etype.hasFlag(WeaponType.F_MG)) {</span>
+<span class="nc" id="L491">                        hasMGs = true;</span>
+<span class="nc" id="L492">                        hasRapidFireMG |= m.isRapidfire();</span>
+                    }
+<span class="nc bnc" id="L494" title="All 2 branches missed.">                    if (etype.hasFlag(WeaponType.F_MISSILE)) {</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">                        hasLRMS |= ((WeaponType) etype).getAmmoType() == AmmoType.T_LRM;</span>
+<span class="nc" id="L496">                        hasHotLoad |= m.isHotLoaded();</span>
+                    }
+<span class="nc bnc" id="L498" title="All 2 branches missed.">                    if (etype.hasFlag(WeaponType.F_MISSILE)) {</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">                        hasLRMS |= ((WeaponType) etype).getAmmoType() == AmmoType.T_LRM_IMP;</span>
+<span class="nc" id="L500">                        hasHotLoad |= m.isHotLoaded();</span>
+                    }
+<span class="nc" id="L502">                }</span>
+            }
+<span class="nc bnc" id="L504" title="All 4 branches missed.">            boolean hasSearchlightQuirk = isQuirksEnabled &amp;&amp; en.hasQuirk(OptionsConstants.QUIRK_POS_SEARCHLIGHT);</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">            if (!hasSearchlightQuirk) {</span>
+<span class="nc" id="L506">                hasSearchlight |= en.hasExternaSpotlight();</span>
+            }
+<span class="nc" id="L508">            prevEntity = en;</span>
+<span class="nc" id="L509">        }</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        if (e.isPopupTrigger()) {</span>
+            // This menu uses the following Mnemonics:
+            // B, C, D, E, I, O, R, V
+            JMenuItem menuItem;
+<span class="nc bnc" id="L514" title="All 2 branches missed.">            if (oneSelected) {</span>
+<span class="nc" id="L515">                menuItem = new JMenuItem(&quot;View...&quot;);</span>
+<span class="nc" id="L516">                menuItem.setActionCommand(&quot;VIEW&quot;);</span>
+<span class="nc" id="L517">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L518" title="All 4 branches missed.">                menuItem.setEnabled(isOwner || !blindDrop);</span>
+<span class="nc" id="L519">                menuItem.setMnemonic(KeyEvent.VK_V);</span>
+<span class="nc" id="L520">                popup.add(menuItem);</span>
+            }
+
+<span class="nc bnc" id="L523" title="All 2 branches missed.">            if (oneSelected) {</span>
+<span class="nc" id="L524">                menuItem = new JMenuItem(&quot;Configure...&quot;);</span>
+<span class="nc" id="L525">                menuItem.setActionCommand(&quot;CONFIGURE&quot;);</span>
+<span class="nc" id="L526">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L527" title="All 4 branches missed.">                menuItem.setEnabled(isOwner || isBot);</span>
+            } else {
+<span class="nc" id="L529">                menuItem = new JMenuItem(&quot;Configure all&quot;);</span>
+<span class="nc" id="L530">                menuItem.setActionCommand(&quot;CONFIGURE_ALL&quot;);</span>
+<span class="nc" id="L531">                menuItem.addActionListener(this);</span>
+<span class="nc" id="L532">                menuItem.setEnabled(chatLounge.canConfigureAll(entities));</span>
+            }
+<span class="nc" id="L534">            menuItem.setMnemonic(KeyEvent.VK_C);</span>
+<span class="nc" id="L535">            popup.add(menuItem);</span>
+
+<span class="nc bnc" id="L537" title="All 2 branches missed.">            if (oneSelected) {</span>
+<span class="nc" id="L538">                menuItem = new JMenuItem(&quot;Edit Damage...&quot;);</span>
+<span class="nc" id="L539">                menuItem.setActionCommand(&quot;DAMAGE&quot;);</span>
+<span class="nc" id="L540">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L541" title="All 4 branches missed.">                menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L542">                menuItem.setMnemonic(KeyEvent.VK_E);</span>
+<span class="nc" id="L543">                popup.add(menuItem);</span>
+            }
+
+
+<span class="nc" id="L547">            menuItem = new JMenuItem(&quot;Set individual camo&quot;);</span>
+<span class="nc" id="L548">            menuItem.setActionCommand(&quot;INDI_CAMO&quot;);</span>
+<span class="nc" id="L549">            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L550" title="All 4 branches missed.">            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L551">            menuItem.setMnemonic(KeyEvent.VK_I);</span>
+<span class="nc" id="L552">            popup.add(menuItem);</span>
+
+<span class="nc bnc" id="L554" title="All 2 branches missed.">            if (oneSelected) {</span>
+<span class="nc" id="L555">                menuItem = new JMenuItem(&quot;View BV Calculation...&quot;);</span>
+<span class="nc" id="L556">                menuItem.setActionCommand(&quot;BV&quot;);</span>
+<span class="nc" id="L557">                menuItem.addActionListener(this);</span>
+<span class="nc" id="L558">                menuItem.setMnemonic(KeyEvent.VK_B);</span>
+<span class="nc" id="L559">                popup.add(menuItem);</span>
+            }
+
+<span class="nc" id="L562">            menuItem = new JMenuItem(&quot;Delete...&quot;);</span>
+<span class="nc" id="L563">            menuItem.setActionCommand(&quot;DELETE&quot;);</span>
+<span class="nc" id="L564">            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L565" title="All 4 branches missed.">            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L566">            menuItem.setMnemonic(KeyEvent.VK_D);</span>
+<span class="nc" id="L567">            popup.add(menuItem);</span>
+
+            //region Randomize Submenu
+            // This menu uses the following Mnemonic Keys:
+            // C, N, S
+<span class="nc" id="L572">            JMenu menu = new JMenu(&quot;Randomize&quot;);</span>
+<span class="nc" id="L573">            menu.setMnemonic(KeyEvent.VK_R);</span>
+
+<span class="nc" id="L575">            menuItem = new JMenuItem(&quot;Name&quot;);</span>
+<span class="nc" id="L576">            menuItem.setActionCommand(NAME_COMMAND);</span>
+<span class="nc" id="L577">            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L578" title="All 4 branches missed.">            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L579">            menuItem.setMnemonic(KeyEvent.VK_N);</span>
+<span class="nc" id="L580">            menu.add(menuItem);</span>
+
+<span class="nc" id="L582">            menuItem = new JMenuItem(&quot;Callsign&quot;);</span>
+<span class="nc" id="L583">            menuItem.setActionCommand(CALLSIGN_COMMAND);</span>
+<span class="nc" id="L584">            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L585" title="All 4 branches missed.">            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L586">            menuItem.setMnemonic(KeyEvent.VK_C);</span>
+<span class="nc" id="L587">            menu.add(menuItem);</span>
+
+<span class="nc" id="L589">            menuItem = new JMenuItem(&quot;Skills&quot;);</span>
+<span class="nc" id="L590">            menuItem.setActionCommand(&quot;SKILLS&quot;);</span>
+<span class="nc" id="L591">            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L592" title="All 4 branches missed.">            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L593">            menuItem.setMnemonic(KeyEvent.VK_S);</span>
+<span class="nc" id="L594">            menu.add(menuItem);</span>
+<span class="nc" id="L595">            popup.add(menu);</span>
+            //endregion Randomize Submenu
+
+            // Change Owner Menu Item
+<span class="nc" id="L599">            menu = new JMenu(Messages.getString(&quot;ChatLounge.ChangeOwner&quot;));</span>
+<span class="nc bnc" id="L600" title="All 4 branches missed.">            menu.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L601">            menu.setMnemonic(KeyEvent.VK_O);</span>
+<span class="nc" id="L602">            Enumeration&lt;IPlayer&gt; players = clientgui.getClient().getPlayers();</span>
+<span class="nc bnc" id="L603" title="All 6 branches missed.">            while (players.hasMoreElements() &amp;&amp; (isOwner || isBot)) {</span>
+<span class="nc" id="L604">                IPlayer p = players.nextElement();</span>
+                //
+<span class="nc bnc" id="L606" title="All 2 branches missed.">                if (!entity.getOwner().equals(p)) {</span>
+<span class="nc" id="L607">                    menuItem = new JMenuItem(p.getName());</span>
+<span class="nc" id="L608">                    menuItem.setActionCommand(&quot;CHANGE_OWNER|&quot; + p.getId());</span>
+<span class="nc" id="L609">                    menuItem.addActionListener(this);</span>
+<span class="nc" id="L610">                    menuItem.setEnabled(true);</span>
+<span class="nc" id="L611">                    menu.add(menuItem);</span>
+                }
+<span class="nc" id="L613">            }</span>
+<span class="nc" id="L614">            popup.add(menu);</span>
+
+<span class="nc bnc" id="L616" title="All 2 branches missed.">            if (allUnloaded) {</span>
+<span class="nc" id="L617">                menu = new JMenu(&quot;Load...&quot;);</span>
+<span class="nc" id="L618">                JMenu menuDocking = new JMenu(&quot;Dock With...&quot;);</span>
+<span class="nc" id="L619">                JMenu menuSquadrons = new JMenu(&quot;Join...&quot;);</span>
+<span class="nc" id="L620">                JMenu menuMounting = new JMenu(&quot;Mount...&quot;);</span>
+<span class="nc" id="L621">                JMenu menuClamp = new JMenu(&quot;Mag Clamp...&quot;);</span>
+<span class="nc" id="L622">                JMenu menuLoadAll = new JMenu(&quot;Load All Into&quot;);</span>
+<span class="nc" id="L623">                boolean canLoad = false;</span>
+<span class="nc" id="L624">                boolean allHaveMagClamp = true;</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">                for (Entity b : entities) {</span>
+<span class="nc bnc" id="L626" title="All 2 branches missed.">                    if (b.hasETypeFlag(Entity.ETYPE_BATTLEARMOR)</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">                            || b.hasETypeFlag(Entity.ETYPE_PROTOMECH)) {</span>
+<span class="nc" id="L628">                        allHaveMagClamp &amp;= b.hasWorkingMisc(MiscType.F_MAGNETIC_CLAMP);</span>
+                    }
+<span class="nc" id="L630">                }</span>
+<span class="nc bnc" id="L631" title="All 2 branches missed.">                for (Entity loader : clientgui.getClient().getGame().getEntitiesVector()) {</span>
+                    // TODO don't allow capital fighters to load one another
+                    // at the moment
+<span class="nc bnc" id="L634" title="All 4 branches missed.">                    if (loader.isCapitalFighter() &amp;&amp; !(loader instanceof FighterSquadron)) {</span>
+<span class="nc" id="L635">                        continue;</span>
+                    }
+<span class="nc" id="L637">                    boolean loadable = true;</span>
+<span class="nc bnc" id="L638" title="All 2 branches missed.">                    for (Entity en : entities) {</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">                        if (!loader.canLoad(en, false)</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">                                || (loader.getId() == en.getId())</span>
+                                //TODO: support edge case where a support vee with an internal vehicle bay can load trailer internally
+<span class="nc bnc" id="L642" title="All 2 branches missed.">                                || (loader.canTow(en.getId()))) {</span>
+<span class="nc" id="L643">                            loadable = false;</span>
+<span class="nc" id="L644">                            break;</span>
+                        }
+<span class="nc" id="L646">                    }</span>
+<span class="nc bnc" id="L647" title="All 2 branches missed.">                    if (loadable) {</span>
+<span class="nc" id="L648">                        canLoad = true;</span>
+<span class="nc" id="L649">                        menuItem = new JMenuItem(loader.getShortName());</span>
+<span class="nc" id="L650">                        menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:-1&quot;);</span>
+<span class="nc" id="L651">                        menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L652" title="All 4 branches missed.">                        menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L653">                        menuLoadAll.add(menuItem);</span>
+<span class="nc" id="L654">                        JMenu subMenu = new JMenu(loader.getShortName());</span>
+<span class="nc bnc" id="L655" title="All 4 branches missed.">                        if ((loader instanceof FighterSquadron) &amp;&amp; allCapFighter) {</span>
+<span class="nc" id="L656">                            menuItem = new JMenuItem(&quot;Join &quot; + loader.getShortName());</span>
+<span class="nc" id="L657">                            menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:-1&quot;);</span>
+<span class="nc" id="L658">                            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L659" title="All 4 branches missed.">                            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L660">                            menuSquadrons.add(menuItem);</span>
+<span class="nc bnc" id="L661" title="All 4 branches missed.">                        } else if ((loader instanceof Jumpship) &amp;&amp; allDropships) {</span>
+<span class="nc" id="L662">                            int freeCollars = 0;</span>
+<span class="nc bnc" id="L663" title="All 2 branches missed.">                            for (Transporter t : loader.getTransports()) {</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">                                if (t instanceof DockingCollar) {</span>
+<span class="nc" id="L665">                                    freeCollars += t.getUnused();</span>
+                                }
+<span class="nc" id="L667">                            }</span>
+<span class="nc" id="L668">                            menuItem = new JMenuItem(</span>
+<span class="nc" id="L669">                                    loader.getShortName() + &quot; (Free Collars: &quot; + freeCollars + &quot;)&quot;);</span>
+<span class="nc" id="L670">                            menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:-1&quot;);</span>
+<span class="nc" id="L671">                            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L672" title="All 4 branches missed.">                            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L673">                            menuDocking.add(menuItem);</span>
+<span class="nc bnc" id="L674" title="All 6 branches missed.">                        } else if (allBattleArmor &amp;&amp; allHaveMagClamp &amp;&amp; !loader.isOmni()</span>
+                                // Only load magclamps if applicable
+<span class="nc bnc" id="L676" title="All 2 branches missed.">                                &amp;&amp; loader.hasUnloadedClampMount()</span>
+                                // Only choose MagClamps as last option
+<span class="nc bnc" id="L678" title="All 2 branches missed.">                                &amp;&amp; (loader.getUnused(entities.get(0)) &lt; 2)) {</span>
+<span class="nc bnc" id="L679" title="All 2 branches missed.">                            for (Transporter t : loader.getTransports()) {</span>
+<span class="nc bnc" id="L680" title="All 4 branches missed.">                                if ((t instanceof ClampMountMech) || (t instanceof ClampMountTank)) {</span>
+<span class="nc" id="L681">                                    menuItem = new JMenuItem(&quot;Onto &quot; + loader.getShortName());</span>
+<span class="nc" id="L682">                                    menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:-1&quot;);</span>
+<span class="nc" id="L683">                                    menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L684" title="All 4 branches missed.">                                    menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L685">                                    menuClamp.add(menuItem);</span>
+                                }
+<span class="nc" id="L687">                            }</span>
+<span class="nc bnc" id="L688" title="All 4 branches missed.">                        } else if (allProtomechs &amp;&amp; allHaveMagClamp</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">                                &amp;&amp; loader.hasETypeFlag(Entity.ETYPE_MECH)) {</span>
+<span class="nc" id="L690">                            Transporter front = null;</span>
+<span class="nc" id="L691">                            Transporter rear = null;</span>
+<span class="nc bnc" id="L692" title="All 2 branches missed.">                            for (Transporter t : loader.getTransports()) {</span>
+<span class="nc bnc" id="L693" title="All 2 branches missed.">                                if (t instanceof ProtomechClampMount) {</span>
+<span class="nc bnc" id="L694" title="All 2 branches missed.">                                    if (((ProtomechClampMount) t).isRear()) {</span>
+<span class="nc" id="L695">                                        rear = t;</span>
+                                    } else {
+<span class="nc" id="L697">                                        front = t;</span>
+                                    }
+                                }
+<span class="nc" id="L700">                            }</span>
+<span class="nc" id="L701">                            Entity en = entities.firstElement();</span>
+<span class="nc bnc" id="L702" title="All 4 branches missed.">                            if ((front != null) &amp;&amp; front.canLoad(en)</span>
+<span class="nc bnc" id="L703" title="All 4 branches missed.">                                    &amp;&amp; ((en.getWeightClass() &lt; EntityWeightClass.WEIGHT_SUPER_HEAVY)</span>
+<span class="nc bnc" id="L704" title="All 2 branches missed.">                                    || (rear == null) || rear.getLoadedUnits().isEmpty())) {</span>
+<span class="nc" id="L705">                                menuItem = new JMenuItem(&quot;Onto Front&quot;);</span>
+<span class="nc" id="L706">                                menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:0&quot;);</span>
+<span class="nc" id="L707">                                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L708" title="All 4 branches missed.">                                menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L709">                                subMenu.add(menuItem);</span>
+                            }
+<span class="nc bnc" id="L711" title="All 2 branches missed.">                            boolean frontUltra = (front != null)</span>
+<span class="nc" id="L712">                                    &amp;&amp; front.getLoadedUnits().stream()</span>
+<span class="nc bnc" id="L713" title="All 4 branches missed.">                                    .anyMatch(l -&gt; l.getWeightClass() == EntityWeightClass.WEIGHT_SUPER_HEAVY);</span>
+<span class="nc bnc" id="L714" title="All 6 branches missed.">                            if ((rear != null) &amp;&amp; rear.canLoad(en) &amp;&amp; !frontUltra) {</span>
+<span class="nc" id="L715">                                menuItem = new JMenuItem(&quot;Onto Rear&quot;);</span>
+<span class="nc" id="L716">                                menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:1&quot;);</span>
+<span class="nc" id="L717">                                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L718" title="All 4 branches missed.">                                menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L719">                                subMenu.add(menuItem);</span>
+                            }
+<span class="nc bnc" id="L721" title="All 2 branches missed.">                            if (subMenu.getItemCount() &gt; 0) {</span>
+<span class="nc" id="L722">                                menuClamp.add(subMenu);</span>
+                            }
+<span class="nc bnc" id="L724" title="All 2 branches missed.">                        } else if (allInfantry) {</span>
+<span class="nc" id="L725">                            menuItem = new JMenuItem(loader.getShortName());</span>
+<span class="nc" id="L726">                            menuItem.setActionCommand(&quot;LOAD|&quot; + loader.getId() + &quot;:-1&quot;);</span>
+<span class="nc" id="L727">                            menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L728" title="All 4 branches missed.">                            menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L729">                            menuMounting.add(menuItem);</span>
+                        }
+<span class="nc" id="L731">                        Entity en = entities.firstElement();</span>
+<span class="nc bnc" id="L732" title="All 4 branches missed.">                        if (allSameEntityType &amp;&amp; !allDropships) {</span>
+<span class="nc bnc" id="L733" title="All 2 branches missed.">                            for (Transporter t : loader.getTransports()) {</span>
+<span class="nc bnc" id="L734" title="All 2 branches missed.">                                if (t.canLoad(en)) {</span>
+<span class="nc bnc" id="L735" title="All 2 branches missed.">                                    if (t instanceof Bay) {</span>
+<span class="nc" id="L736">                                        Bay bay = (Bay) t;</span>
+<span class="nc" id="L737">                                        menuItem = new JMenuItem(&quot;Into Bay #&quot; + bay.getBayNumber() + &quot; (Free &quot;</span>
+                                                + &quot;Slots: &quot;
+<span class="nc" id="L739">                                                + (int) loader.getBayById(bay.getBayNumber()).getUnusedSlots()</span>
+<span class="nc" id="L740">                                                + loader.getBayById(bay.getBayNumber()).getDefaultSlotDescription()</span>
+                                                + &quot;)&quot;);
+<span class="nc" id="L742">                                        menuItem.setActionCommand(</span>
+<span class="nc" id="L743">                                                &quot;LOAD|&quot; + loader.getId() + &quot;:&quot; + bay.getBayNumber());</span>
+                                        /*
+                                         * } else { menuItem = new
+                                         * JMenuItem(
+                                         * t.getClass().getName()+
+                                         * &quot;Transporter&quot; );
+                                         * menuItem.setActionCommand(&quot;LOAD|&quot;
+                                         * + loader.getId() + &quot;:-1&quot;); }
+                                         */
+<span class="nc" id="L752">                                        menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L753" title="All 4 branches missed.">                                        menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L754">                                        subMenu.add(menuItem);</span>
+                                    }
+                                }
+<span class="nc" id="L757">                            }</span>
+<span class="nc bnc" id="L758" title="All 2 branches missed.">                            if (subMenu.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc" id="L759">                                menu.add(subMenu);</span>
+                            }
+                        }
+                    }
+<span class="nc" id="L763">                }</span>
+<span class="nc bnc" id="L764" title="All 2 branches missed.">                if (canLoad) {</span>
+<span class="nc bnc" id="L765" title="All 2 branches missed.">                    if (menu.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc bnc" id="L766" title="All 4 branches missed.">                        menu.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L767">                        MenuScroller.createScrollBarsOnMenus(menu);</span>
+<span class="nc" id="L768">                        popup.add(menu);</span>
+                    }
+<span class="nc bnc" id="L770" title="All 2 branches missed.">                    if (menuDocking.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc bnc" id="L771" title="All 4 branches missed.">                        menuDocking.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L772">                        MenuScroller.createScrollBarsOnMenus(menuDocking);</span>
+<span class="nc" id="L773">                        popup.add(menuDocking);</span>
+                    }
+<span class="nc bnc" id="L775" title="All 2 branches missed.">                    if (menuSquadrons.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc bnc" id="L776" title="All 4 branches missed.">                        menuSquadrons.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L777">                        MenuScroller.createScrollBarsOnMenus(menuSquadrons);</span>
+<span class="nc" id="L778">                        popup.add(menuSquadrons);</span>
+                    }
+<span class="nc bnc" id="L780" title="All 2 branches missed.">                    if (menuMounting.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc bnc" id="L781" title="All 4 branches missed.">                        menuMounting.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L782">                        MenuScroller.createScrollBarsOnMenus(menuMounting);</span>
+<span class="nc" id="L783">                        popup.add(menuMounting);</span>
+                    }
+<span class="nc bnc" id="L785" title="All 2 branches missed.">                    if (menuClamp.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc bnc" id="L786" title="All 4 branches missed.">                        menuClamp.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L787">                        MenuScroller.createScrollBarsOnMenus(menuClamp);</span>
+<span class="nc" id="L788">                        popup.add(menuClamp);</span>
+                    }
+<span class="nc bnc" id="L790" title="All 2 branches missed.">                    boolean hasMounting = menuMounting.getMenuComponentCount() &gt; 0;</span>
+<span class="nc bnc" id="L791" title="All 2 branches missed.">                    boolean hasSquadrons = menuSquadrons.getMenuComponentCount() &gt; 0;</span>
+<span class="nc bnc" id="L792" title="All 2 branches missed.">                    boolean hasDocking = menuDocking.getMenuComponentCount() &gt; 0;</span>
+<span class="nc bnc" id="L793" title="All 2 branches missed.">                    boolean hasLoad = menu.getMenuComponentCount() &gt; 0;</span>
+<span class="nc bnc" id="L794" title="All 2 branches missed.">                    boolean hasClamp = menuClamp.getMenuComponentCount() &gt; 0;</span>
+<span class="nc bnc" id="L795" title="All 12 branches missed.">                    if ((menuLoadAll.getMenuComponentCount() &gt; 0)</span>
+                            &amp;&amp; !(hasMounting || hasSquadrons || hasDocking || hasLoad || hasClamp)) {
+<span class="nc bnc" id="L797" title="All 4 branches missed.">                        menuLoadAll.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L798">                        MenuScroller.createScrollBarsOnMenus(menuLoadAll);</span>
+<span class="nc" id="L799">                        popup.add(menuLoadAll);</span>
+                    }
+                }
+<span class="nc bnc" id="L802" title="All 2 branches missed.">            } else if (allLoaded) {</span>
+<span class="nc" id="L803">                menuItem = new JMenuItem(&quot;Unload&quot;);</span>
+<span class="nc" id="L804">                menuItem.setActionCommand(&quot;UNLOAD&quot;);</span>
+<span class="nc" id="L805">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L806" title="All 4 branches missed.">                menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L807">                popup.add(menuItem);</span>
+            }
+<span class="nc bnc" id="L809" title="All 4 branches missed.">            if (oneSelected &amp;&amp; (entity.getLoadedUnits().size() &gt; 0)) {</span>
+<span class="nc" id="L810">                menuItem = new JMenuItem(&quot;Unload All Carried Units&quot;);</span>
+<span class="nc" id="L811">                menuItem.setActionCommand(&quot;UNLOADALL&quot;);</span>
+<span class="nc" id="L812">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L813" title="All 4 branches missed.">                menuItem.setEnabled((isOwner || isBot));</span>
+<span class="nc" id="L814">                popup.add(menuItem);</span>
+<span class="nc" id="L815">                JMenu subMenu = new JMenu(&quot;Unload All From...&quot;);</span>
+<span class="nc bnc" id="L816" title="All 2 branches missed.">                for (Bay bay : entity.getTransportBays()) {</span>
+<span class="nc bnc" id="L817" title="All 2 branches missed.">                    if (bay.getLoadedUnits().size() &gt; 0) {</span>
+<span class="nc" id="L818">                        menuItem = new JMenuItem(</span>
+<span class="nc" id="L819">                                &quot;Bay # &quot; + bay.getBayNumber() + &quot; (&quot; + bay.getLoadedUnits().size() + &quot; units)&quot;);</span>
+<span class="nc" id="L820">                        menuItem.setActionCommand(&quot;UNLOADALLFROMBAY|&quot; + bay.getBayNumber());</span>
+<span class="nc" id="L821">                        menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L822" title="All 4 branches missed.">                        menuItem.setEnabled((isOwner || isBot));</span>
+<span class="nc" id="L823">                        subMenu.add(menuItem);</span>
+                    }
+<span class="nc" id="L825">                }</span>
+<span class="nc bnc" id="L826" title="All 2 branches missed.">                if (subMenu.getItemCount() &gt; 0) {</span>
+<span class="nc bnc" id="L827" title="All 4 branches missed.">                    subMenu.setEnabled((isOwner || isBot));</span>
+<span class="nc" id="L828">                    popup.add(subMenu);</span>
+                }
+            }
+<span class="nc bnc" id="L831" title="All 6 branches missed.">            if (allCapFighter &amp;&amp; allUnloaded &amp;&amp; sameSide) {</span>
+<span class="nc" id="L832">                menuItem = new JMenuItem(&quot;Start Fighter Squadron&quot;);</span>
+<span class="nc" id="L833">                menuItem.setActionCommand(&quot;SQUADRON&quot;);</span>
+<span class="nc" id="L834">                menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L835" title="All 4 branches missed.">                menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L836">                popup.add(menuItem);</span>
+            }
+<span class="nc bnc" id="L838" title="All 2 branches missed.">            if (oneSelected) {</span>
+<span class="nc" id="L839">                menu = new JMenu(&quot;Swap pilots with&quot;);</span>
+<span class="nc" id="L840">                boolean canSwap = false;</span>
+<span class="nc bnc" id="L841" title="All 2 branches missed.">                for (Entity swapper : clientgui.getClient().getGame().getEntitiesVector()) {</span>
+<span class="nc bnc" id="L842" title="All 2 branches missed.">                    if (swapper.isCapitalFighter()) {</span>
+<span class="nc" id="L843">                        continue;</span>
+                    }
+                    // only swap your own pilots and with the same unit and crew type
+<span class="nc bnc" id="L846" title="All 4 branches missed.">                    if ((swapper.getOwnerId() == entity.getOwnerId()) &amp;&amp; (swapper.getId() != entity.getId())</span>
+<span class="nc bnc" id="L847" title="All 2 branches missed.">                            &amp;&amp; (swapper.getUnitType() == entity.getUnitType())</span>
+<span class="nc bnc" id="L848" title="All 2 branches missed.">                            &amp;&amp; swapper.getCrew().getCrewType() == entity.getCrew().getCrewType()) {</span>
+<span class="nc" id="L849">                        canSwap = true;</span>
+<span class="nc" id="L850">                        menuItem = new JMenuItem(swapper.getShortName());</span>
+<span class="nc" id="L851">                        menuItem.setActionCommand(&quot;SWAP|&quot; + swapper.getId());</span>
+<span class="nc" id="L852">                        menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L853" title="All 4 branches missed.">                        menuItem.setEnabled((isOwner || isBot));</span>
+<span class="nc" id="L854">                        menu.add(menuItem);</span>
+                    }
+<span class="nc" id="L856">                }</span>
+<span class="nc bnc" id="L857" title="All 2 branches missed.">                if (canSwap) {</span>
+<span class="nc bnc" id="L858" title="All 4 branches missed.">                    menu.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L859">                    popup.add(menu);</span>
+                }
+            }
+
+            // Set Rapid Fire MGs
+<span class="nc bnc" id="L864" title="All 6 branches missed.">            if (isRapidFireMG || isHotLoad || isSearchlight) {</span>
+<span class="nc" id="L865">                menu = new JMenu(Messages.getString(&quot;ChatLounge.Equipment&quot;));</span>
+<span class="nc bnc" id="L866" title="All 4 branches missed.">                if (isRapidFireMG &amp;&amp; hasMGs) {</span>
+<span class="nc bnc" id="L867" title="All 2 branches missed.">                    if (hasRapidFireMG) {</span>
+<span class="nc" id="L868">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.RapidFireToggleOff&quot;));</span>
+<span class="nc" id="L869">                        menuItem.setActionCommand(&quot;RAPIDFIREMG_OFF&quot;);</span>
+                    } else {
+<span class="nc" id="L871">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.RapidFireToggleOn&quot;));</span>
+<span class="nc" id="L872">                        menuItem.setActionCommand(&quot;RAPIDFIREMG_ON&quot;);</span>
+                    }
+<span class="nc" id="L874">                    menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L875" title="All 4 branches missed.">                    menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L876">                    menu.add(menuItem);</span>
+                }
+<span class="nc bnc" id="L878" title="All 4 branches missed.">                if (isHotLoad &amp;&amp; hasLRMS) {</span>
+<span class="nc bnc" id="L879" title="All 2 branches missed.">                    if (hasHotLoad) {</span>
+<span class="nc" id="L880">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.HotLoadToggleOff&quot;));</span>
+<span class="nc" id="L881">                        menuItem.setActionCommand(&quot;HOTLOAD_OFF&quot;);</span>
+                    } else {
+<span class="nc" id="L883">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.HotLoadToggleOn&quot;));</span>
+<span class="nc" id="L884">                        menuItem.setActionCommand(&quot;HOTLOAD_ON&quot;);</span>
+                    }
+<span class="nc" id="L886">                    menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L887" title="All 4 branches missed.">                    menuItem.setEnabled(isOwner || isBot);</span>
+<span class="nc" id="L888">                    menu.add(menuItem);</span>
+                }
+<span class="nc bnc" id="L890" title="All 2 branches missed.">                if (isSearchlight) {</span>
+<span class="nc bnc" id="L891" title="All 2 branches missed.">                    if (hasSearchlight) {</span>
+<span class="nc" id="L892">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.SearchlightToggleOff&quot;));</span>
+<span class="nc" id="L893">                        menuItem.setActionCommand(&quot;SEARCHLIGHT_OFF&quot;);</span>
+                    } else {
+<span class="nc" id="L895">                        menuItem = new JMenuItem(Messages.getString(&quot;ChatLounge.SearchlightToggleOn&quot;));</span>
+<span class="nc" id="L896">                        menuItem.setActionCommand(&quot;SEARCHLIGHT_ON&quot;);</span>
+                    }
+<span class="nc" id="L898">                    menuItem.addActionListener(this);</span>
+<span class="nc bnc" id="L899" title="All 4 branches missed.">                    boolean loneEntityWithQuirk = oneSelected &amp;&amp; isQuirksEnabled</span>
+<span class="nc bnc" id="L900" title="All 2 branches missed.">                            &amp;&amp; entity.hasQuirk(OptionsConstants.QUIRK_POS_SEARCHLIGHT);</span>
+<span class="nc bnc" id="L901" title="All 6 branches missed.">                    menuItem.setEnabled((isOwner || isBot) &amp;&amp; !loneEntityWithQuirk);</span>
+<span class="nc" id="L902">                    menu.add(menuItem);</span>
+                }
+<span class="nc bnc" id="L904" title="All 2 branches missed.">                if (menu.getMenuComponentCount() &gt; 0) {</span>
+<span class="nc" id="L905">                    popup.add(menu);</span>
+                }
+            }
+
+<span class="nc bnc" id="L909" title="All 2 branches missed.">            if (isQuirksEnabled) {</span>
+<span class="nc" id="L910">                menuItem = new JMenuItem(&quot;Save Quirks for Chassis&quot;);</span>
+<span class="nc" id="L911">                menuItem.setActionCommand(&quot;SAVE_QUIRKS_ALL&quot;);</span>
+<span class="nc" id="L912">                menuItem.addActionListener(this);</span>
+<span class="nc" id="L913">                popup.add(menuItem);</span>
+<span class="nc" id="L914">                menuItem = new JMenuItem(&quot;Save Quirks for Chassis/Model&quot;);</span>
+<span class="nc" id="L915">                menuItem.setActionCommand(&quot;SAVE_QUIRKS_MODEL&quot;);</span>
+<span class="nc" id="L916">                menuItem.addActionListener(this);</span>
+<span class="nc" id="L917">                popup.add(menuItem);</span>
+            }
+
+<span class="nc" id="L920">            popup.show(e.getComponent(), e.getX(), e.getY());</span>
+        }
+<span class="nc" id="L922">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

@@ -78,8 +78,8 @@ public class MinefieldTarget implements Targetable {
 
     // decode 1 number into 2
     public static Coords idToCoords(int id) {
-<span class="fc" id="L81">        int y = id / 100000;</span>
-<span class="fc" id="L82">        return new Coords(id - (y * 100000), y);</span>
+<span class="nc" id="L81">        int y = id / 100000;</span>
+<span class="nc" id="L82">        return new Coords(id - (y * 100000), y);</span>
     }
 
     public int sideTable(Coords src) {

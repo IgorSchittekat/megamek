@@ -79,25 +79,25 @@ public class PathEnumerator {
 <span class="fc" id="L79">    }</span>
 
     private Princess getOwner() {
-<span class="fc" id="L82">        return owner;</span>
+<span class="nc" id="L82">        return owner;</span>
     }
 
     void clear() {
-<span class="fc" id="L86">        getOwner().getLogger().methodBegin();</span>
+<span class="nc" id="L86">        getOwner().getLogger().methodBegin();</span>
         try {
-<span class="fc" id="L88">            getUnitPaths().clear();</span>
-<span class="fc" id="L89">            getUnitPotentialLocations().clear();</span>
-<span class="fc" id="L90">            getLastKnownLocations().clear();</span>
-<span class="fc" id="L91">            getLongRangePaths().clear();</span>
+<span class="nc" id="L88">            getUnitPaths().clear();</span>
+<span class="nc" id="L89">            getUnitPotentialLocations().clear();</span>
+<span class="nc" id="L90">            getLastKnownLocations().clear();</span>
+<span class="nc" id="L91">            getLongRangePaths().clear();</span>
         } finally {
-<span class="fc" id="L93">            getOwner().getLogger().methodEnd();</span>
+<span class="nc" id="L93">            getOwner().getLogger().methodEnd();</span>
         }
-<span class="fc" id="L95">    }</span>
+<span class="nc" id="L95">    }</span>
 
     Coords getLastKnownCoords(Integer entityId) {
-<span class="fc" id="L98">        CoordFacingCombo ccr = getLastKnownLocations().get(entityId);</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (ccr == null) {</span>
-<span class="fc" id="L100">            return null;</span>
+<span class="nc" id="L98">        CoordFacingCombo ccr = getLastKnownLocations().get(entityId);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (ccr == null) {</span>
+<span class="nc" id="L100">            return null;</span>
         }
 <span class="nc" id="L102">        return ccr.getCoords();</span>
     }
@@ -110,11 +110,11 @@ public class PathEnumerator {
      * @return A {@link Set} of {@link Entity} objects at the given {@link Coords}.
      */
     public Set&lt;Integer&gt; getEntitiesWithLocation(Coords location, boolean groundOnly) {
-<span class="fc" id="L113">        Set&lt;Integer&gt; returnSet = new TreeSet&lt;&gt;();</span>
-<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (location == null) {</span>
-<span class="fc" id="L115">            return returnSet;</span>
+<span class="nc" id="L113">        Set&lt;Integer&gt; returnSet = new TreeSet&lt;&gt;();</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (location == null) {</span>
+<span class="nc" id="L115">            return returnSet;</span>
         }
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        for (Integer id : getUnitPotentialLocations().keySet()) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        for (Integer id : getUnitPotentialLocations().keySet()) {</span>
 <span class="nc bnc" id="L118" title="All 2 branches missed.">            if (groundOnly</span>
 <span class="nc bnc" id="L119" title="All 2 branches missed.">                    &amp;&amp; getGame().getEntity(id) != null</span>
 <span class="nc bnc" id="L120" title="All 2 branches missed.">                    &amp;&amp; getGame().getEntity(id).isAero()) {</span>
@@ -129,7 +129,7 @@ public class PathEnumerator {
                 }
             }
 <span class="nc" id="L131">        }</span>
-<span class="fc" id="L132">        return returnSet;</span>
+<span class="nc" id="L132">        return returnSet;</span>
     }
 
     /**
@@ -137,40 +137,40 @@ public class PathEnumerator {
      */
     void updateUnitLocations(Entity entity, List&lt;MovePath&gt; paths) {
         // clear previous locations for this entity
-<span class="fc" id="L140">        getUnitPotentialLocations().remove(entity.getId());</span>
+<span class="nc" id="L140">        getUnitPotentialLocations().remove(entity.getId());</span>
         //
-<span class="fc" id="L142">        Set&lt;CoordFacingCombo&gt; toAdd = new HashSet&lt;&gt;();</span>
-<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        for (MovePath path : paths) {</span>
+<span class="nc" id="L142">        Set&lt;CoordFacingCombo&gt; toAdd = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (MovePath path : paths) {</span>
 <span class="nc" id="L144">            toAdd.add(CoordFacingCombo.createCoordFacingCombo(path));</span>
 <span class="nc" id="L145">        }</span>
-<span class="fc" id="L146">        getUnitPotentialLocations().put(entity.getId(), toAdd);</span>
-<span class="fc" id="L147">    }</span>
+<span class="nc" id="L146">        getUnitPotentialLocations().put(entity.getId(), toAdd);</span>
+<span class="nc" id="L147">    }</span>
 
     /**
      * Calculate what to do on my turn.
      * Has a retry mechanism for when the turn calculation fails due to concurrency issues
      */
     public synchronized void recalculateMovesFor(final Entity mover) {
-<span class="fc" id="L154">        int retryCount = 0;</span>
-<span class="fc" id="L155">        boolean success = false;</span>
+<span class="nc" id="L154">        int retryCount = 0;</span>
+<span class="nc" id="L155">        boolean success = false;</span>
         
-<span class="fc bfc" id="L157" title="All 4 branches covered.">        while((retryCount &lt; BotClient.BOT_TURN_RETRY_COUNT) &amp;&amp; !success) {</span>
-<span class="fc" id="L158">            success = recalculateMovesForWorker(mover);</span>
+<span class="nc bnc" id="L157" title="All 4 branches missed.">        while((retryCount &lt; BotClient.BOT_TURN_RETRY_COUNT) &amp;&amp; !success) {</span>
+<span class="nc" id="L158">            success = recalculateMovesForWorker(mover);</span>
             
-<span class="fc bfc" id="L160" title="All 2 branches covered.">            if(!success) {</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            if(!success) {</span>
                 // if we fail, take a nap for 500-1500 milliseconds, then try again
                 // as it may be due to some kind of thread-related issue
                 // limit number of retries so we're not endlessly spinning
                 // if we can't recover from the error
-<span class="fc" id="L165">                retryCount++;</span>
+<span class="nc" id="L165">                retryCount++;</span>
                 try {
-<span class="fc" id="L167">                    Thread.sleep(Compute.randomInt(1000) + 500);</span>
+<span class="nc" id="L167">                    Thread.sleep(Compute.randomInt(1000) + 500);</span>
 <span class="nc" id="L168">                } catch (InterruptedException e) {</span>
 <span class="nc" id="L169">                    MegaMek.getLogger().error(e.toString());</span>
-<span class="pc" id="L170">                }</span>
+<span class="nc" id="L170">                }</span>
             }
         }
-<span class="fc" id="L173">    }</span>
+<span class="nc" id="L173">    }</span>
     
     /**
      * calculates all moves for a given unit, keeping the shortest (or longest, depending) path to each facing/pair
@@ -179,23 +179,23 @@ public class PathEnumerator {
         try {
     
             // Record it's current position.
-<span class="fc" id="L182">            getLastKnownLocations().put(</span>
-<span class="fc" id="L183">                    mover.getId(),</span>
-<span class="fc" id="L184">                    CoordFacingCombo.createCoordFacingCombo(</span>
-<span class="fc" id="L185">                            mover.getPosition(), mover.getFacing()));</span>
+<span class="nc" id="L182">            getLastKnownLocations().put(</span>
+<span class="nc" id="L183">                    mover.getId(),</span>
+<span class="nc" id="L184">                    CoordFacingCombo.createCoordFacingCombo(</span>
+<span class="nc" id="L185">                            mover.getPosition(), mover.getFacing()));</span>
 
             // Clear out any already calculated paths.
-<span class="fc" id="L188">            getUnitPaths().remove(mover.getId());</span>
-<span class="fc" id="L189">            getLongRangePaths().remove(mover.getId());</span>
+<span class="nc" id="L188">            getUnitPaths().remove(mover.getId());</span>
+<span class="nc" id="L189">            getLongRangePaths().remove(mover.getId());</span>
             
             // if the entity does not exist in the game for any reason, let's cut out safely
             // otherwise, we'll run into problems calculating paths
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">            if (getGame().getEntity(mover.getId()) == null) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            if (getGame().getEntity(mover.getId()) == null) {</span>
                 // clean up orphaned entries in local storage
-<span class="fc" id="L195">                getUnitMovableAreas().remove(mover.getId());</span>
-<span class="fc" id="L196">                getUnitPotentialLocations().remove(mover.getId());</span>
-<span class="fc" id="L197">                getLastKnownLocations().remove(mover.getId());</span>
-<span class="fc" id="L198">                return true;</span>
+<span class="nc" id="L195">                getUnitMovableAreas().remove(mover.getId());</span>
+<span class="nc" id="L196">                getUnitPotentialLocations().remove(mover.getId());</span>
+<span class="nc" id="L197">                getLastKnownLocations().remove(mover.getId());</span>
+<span class="nc" id="L198">                return true;</span>
             }
 
             // Start constructing the new list of paths.
@@ -331,9 +331,9 @@ public class PathEnumerator {
 <span class="nc" id="L331">            getUnitMovableAreas().put(mover.getId(), myArea);</span>
 
 <span class="nc" id="L333">            return true;</span>
-<span class="fc" id="L334">        } catch(Exception e) {</span>
-<span class="fc" id="L335">            MegaMek.getLogger().error(e.toString());</span>
-<span class="fc" id="L336">            return false;</span>
+<span class="nc" id="L334">        } catch(Exception e) {</span>
+<span class="nc" id="L335">            MegaMek.getLogger().error(e.toString());</span>
+<span class="nc" id="L336">            return false;</span>
         }
     }
     
@@ -459,8 +459,8 @@ public class PathEnumerator {
      */
     public boolean isLegalAeroMove(MovePath path) {
         // no non-aeros allowed
-<span class="pc bpc" id="L462" title="1 of 2 branches missed.">        if (!path.getEntity().isAero()) {</span>
-<span class="fc" id="L463">            return true;</span>
+<span class="nc bnc" id="L462" title="All 2 branches missed.">        if (!path.getEntity().isAero()) {</span>
+<span class="nc" id="L463">            return true;</span>
         }
 
 <span class="nc bnc" id="L466" title="All 2 branches missed.">        if (!path.isMoveLegal()) {</span>
@@ -491,27 +491,27 @@ public class PathEnumerator {
 <span class="nc" id="L491">    }</span>
 
     protected Map&lt;Integer, List&lt;BulldozerMovePath&gt;&gt; getLongRangePaths() {
-<span class="fc" id="L494">        return longRangePaths;</span>
+<span class="nc" id="L494">        return longRangePaths;</span>
     }
     
     protected Map&lt;Integer, List&lt;MovePath&gt;&gt; getUnitPaths() {
-<span class="fc" id="L498">        return unitPaths;</span>
+<span class="nc" id="L498">        return unitPaths;</span>
     }
 
     public Map&lt;Integer, ConvexBoardArea&gt; getUnitMovableAreas() {
-<span class="fc" id="L502">        return unitMovableAreas;</span>
+<span class="nc" id="L502">        return unitMovableAreas;</span>
     }
 
     protected Map&lt;Integer, Set&lt;CoordFacingCombo&gt;&gt; getUnitPotentialLocations() {
-<span class="fc" id="L506">        return unitPotentialLocations;</span>
+<span class="nc" id="L506">        return unitPotentialLocations;</span>
     }
 
     protected Map&lt;Integer, CoordFacingCombo&gt; getLastKnownLocations() {
-<span class="fc" id="L510">        return lastKnownLocations;</span>
+<span class="nc" id="L510">        return lastKnownLocations;</span>
     }
 
     protected IGame getGame() {
-<span class="fc" id="L514">        return game;</span>
+<span class="nc" id="L514">        return game;</span>
     }
 
     private boolean worryAboutBridges() {

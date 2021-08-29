@@ -328,9 +328,9 @@ public class Crew implements Serializable {
 
         //For 2-slot crews, this will designate the other crew member as backup. For superheavy tripods,
         //this will designate the pilot and gunner as backups for each other.
-<span class="fc bfc" id="L331" title="All 2 branches covered.">        if (getSlotCount() &gt; 1) {</span>
-<span class="fc" id="L332">            backupPilot = 1 - pilotPos;</span>
-<span class="fc" id="L333">            backupGunner = 1 - gunnerPos;</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">        if (getSlotCount() &gt; 1) {</span>
+<span class="nc" id="L332">            backupPilot = 1 - pilotPos;</span>
+<span class="nc" id="L333">            backupGunner = 1 - gunnerPos;</span>
         }
 <span class="fc" id="L335">        actedThisTurn = new boolean[slots];</span>
 <span class="fc" id="L336">        resetActedFlag();</span>
@@ -659,7 +659,7 @@ public class Crew implements Serializable {
      * @return Whether at least one crew member is alive but none are conscious.
      */
     public boolean isUnconscious() {
-<span class="pc bpc" id="L662" title="2 of 4 branches missed.">        return !isDead() &amp;&amp; !isActive();</span>
+<span class="nc bnc" id="L662" title="All 4 branches missed.">        return !isDead() &amp;&amp; !isActive();</span>
     }
 
     public boolean isUnconscious(int pos) {
@@ -685,9 +685,9 @@ public class Crew implements Serializable {
      * @return Whether all members of the crew are dead.
      */
     public boolean isDead() {
-<span class="pc bpc" id="L688" title="1 of 2 branches missed.">        for (int i = 0; i &lt; this.getSlotCount(); i++) {</span>
-<span class="pc bpc" id="L689" title="1 of 2 branches missed.">            if (!dead[i]) {</span>
-<span class="fc" id="L690">                return false;</span>
+<span class="nc bnc" id="L688" title="All 2 branches missed.">        for (int i = 0; i &lt; this.getSlotCount(); i++) {</span>
+<span class="nc bnc" id="L689" title="All 2 branches missed.">            if (!dead[i]) {</span>
+<span class="nc" id="L690">                return false;</span>
             }
         }
 <span class="nc" id="L693">        return true;</span>
@@ -766,16 +766,16 @@ public class Crew implements Serializable {
      * @return Whether the crew has at least one active member.
      */
     public boolean isActive() {
-<span class="pc bpc" id="L769" title="1 of 2 branches missed.">        for (int i = 0; i &lt; getSlotCount(); i++) {</span>
-<span class="pc bpc" id="L770" title="1 of 2 branches missed.">            if (isActive(i)) {</span>
-<span class="fc" id="L771">                return true;</span>
+<span class="nc bnc" id="L769" title="All 2 branches missed.">        for (int i = 0; i &lt; getSlotCount(); i++) {</span>
+<span class="nc bnc" id="L770" title="All 2 branches missed.">            if (isActive(i)) {</span>
+<span class="nc" id="L771">                return true;</span>
             }
         }
 <span class="nc" id="L774">        return false;</span>
     }
 
     public boolean isActive(int pos) {
-<span class="pc bpc" id="L778" title="3 of 6 branches missed.">        return !unconscious[pos] &amp;&amp; !dead[pos] &amp;&amp; !missing[pos];</span>
+<span class="nc bnc" id="L778" title="All 6 branches missed.">        return !unconscious[pos] &amp;&amp; !dead[pos] &amp;&amp; !missing[pos];</span>
     }
 
     /**
@@ -784,9 +784,9 @@ public class Crew implements Serializable {
      * @return true if all active members of the crew as knocked out this round
      */
     public boolean isKoThisRound() {
-<span class="pc bpc" id="L787" title="1 of 2 branches missed.">        for (int i = 0; i &lt; getSlotCount(); i++) {</span>
-<span class="pc bpc" id="L788" title="2 of 4 branches missed.">            if (isActive(i) &amp;&amp; !koThisRound[i]) {</span>
-<span class="fc" id="L789">                return false;</span>
+<span class="nc bnc" id="L787" title="All 2 branches missed.">        for (int i = 0; i &lt; getSlotCount(); i++) {</span>
+<span class="nc bnc" id="L788" title="All 4 branches missed.">            if (isActive(i) &amp;&amp; !koThisRound[i]) {</span>
+<span class="nc" id="L789">                return false;</span>
             }
         }
 <span class="nc" id="L792">        return true;</span>

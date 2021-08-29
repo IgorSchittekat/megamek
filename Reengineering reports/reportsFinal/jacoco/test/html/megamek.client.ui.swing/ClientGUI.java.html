@@ -1929,357 +1929,360 @@ public class ClientGUI extends JPanel implements WindowListener, BoardViewListen
         public void gameEnd(GameEndEvent e) {
 <span class="nc" id="L1930">            bv.clearMovementData();</span>
 <span class="nc" id="L1931">            bv.clearFieldofF();</span>
-<span class="nc bnc" id="L1932" title="All 2 branches missed.">            for (Client client2 : getBots().values()) {</span>
-<span class="nc" id="L1933">                client2.die();</span>
-<span class="nc" id="L1934">            }</span>
-<span class="nc" id="L1935">            getBots().clear();</span>
+            /*
+            The next lines are removed, in order to keep the rating system for bots over several games
+            for (Client client2 : getBots().values()) {
+                client2.die();
+            }
+            getBots().clear();
+             */
 
             // Make a list of the player's living units.
-<span class="nc" id="L1938">            ArrayList&lt;Entity&gt; living = getClient().getGame().getPlayerEntities(getClient().getLocalPlayer(), false);</span>
+<span class="nc" id="L1941">            ArrayList&lt;Entity&gt; living = getClient().getGame().getPlayerEntities(getClient().getLocalPlayer(), false);</span>
 
             // Be sure to include all units that have retreated.
-<span class="nc bnc" id="L1941" title="All 2 branches missed.">            for (Enumeration&lt;Entity&gt; iter = getClient().getGame().getRetreatedEntities(); iter.hasMoreElements(); ) {</span>
-<span class="nc" id="L1942">                Entity ent = iter.nextElement();</span>
-<span class="nc bnc" id="L1943" title="All 2 branches missed.">                if (ent.getOwnerId() == getClient().getLocalPlayer().getId()) {</span>
-<span class="nc" id="L1944">                    living.add(ent);</span>
+<span class="nc bnc" id="L1944" title="All 2 branches missed.">            for (Enumeration&lt;Entity&gt; iter = getClient().getGame().getRetreatedEntities(); iter.hasMoreElements(); ) {</span>
+<span class="nc" id="L1945">                Entity ent = iter.nextElement();</span>
+<span class="nc bnc" id="L1946" title="All 2 branches missed.">                if (ent.getOwnerId() == getClient().getLocalPlayer().getId()) {</span>
+<span class="nc" id="L1947">                    living.add(ent);</span>
                 }
-<span class="nc" id="L1946">            }</span>
+<span class="nc" id="L1949">            }</span>
 
             // Allow players to save their living units to a file.
             // Don't bother asking if none survived.
-<span class="nc bnc" id="L1950" title="All 4 branches missed.">            if (!living.isEmpty() &amp;&amp; doYesNoDialog(Messages.getString(&quot;ClientGUI.SaveUnitsDialog.title&quot;), //$NON-NLS-1$</span>
-<span class="nc" id="L1951">                    Messages.getString(&quot;ClientGUI.SaveUnitsDialog.message&quot;))) { //$NON-NLS-1$</span>
+<span class="nc bnc" id="L1953" title="All 4 branches missed.">            if (!living.isEmpty() &amp;&amp; doYesNoDialog(Messages.getString(&quot;ClientGUI.SaveUnitsDialog.title&quot;), //$NON-NLS-1$</span>
+<span class="nc" id="L1954">                    Messages.getString(&quot;ClientGUI.SaveUnitsDialog.message&quot;))) { //$NON-NLS-1$</span>
 
                 // Allow the player to save the units to a file.
-<span class="nc" id="L1954">                saveVictoryList();</span>
+<span class="nc" id="L1957">                saveVictoryList();</span>
             } // End user-wants-a-MUL
 
             // save all destroyed units in a separate &quot;salvage MUL&quot;
-<span class="nc" id="L1958">            ArrayList&lt;Entity&gt; destroyed = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L1959">            Enumeration&lt;Entity&gt; graveyard = getClient().getGame().getGraveyardEntities();</span>
-<span class="nc bnc" id="L1960" title="All 2 branches missed.">            while (graveyard.hasMoreElements()) {</span>
-<span class="nc" id="L1961">                Entity entity = graveyard.nextElement();</span>
-<span class="nc bnc" id="L1962" title="All 2 branches missed.">                if (entity.isSalvage()) {</span>
-<span class="nc" id="L1963">                    destroyed.add(entity);</span>
+<span class="nc" id="L1961">            ArrayList&lt;Entity&gt; destroyed = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L1962">            Enumeration&lt;Entity&gt; graveyard = getClient().getGame().getGraveyardEntities();</span>
+<span class="nc bnc" id="L1963" title="All 2 branches missed.">            while (graveyard.hasMoreElements()) {</span>
+<span class="nc" id="L1964">                Entity entity = graveyard.nextElement();</span>
+<span class="nc bnc" id="L1965" title="All 2 branches missed.">                if (entity.isSalvage()) {</span>
+<span class="nc" id="L1966">                    destroyed.add(entity);</span>
                 }
-<span class="nc" id="L1965">            }</span>
-<span class="nc bnc" id="L1966" title="All 2 branches missed.">            if (destroyed.size() &gt; 0) {</span>
-<span class="nc" id="L1967">                String sLogDir = PreferenceManager.getClientPreferences().getLogDirectory();</span>
-<span class="nc" id="L1968">                File logDir = new File(sLogDir);</span>
-<span class="nc bnc" id="L1969" title="All 2 branches missed.">                if (!logDir.exists()) {</span>
-<span class="nc" id="L1970">                    logDir.mkdir();</span>
+<span class="nc" id="L1968">            }</span>
+<span class="nc bnc" id="L1969" title="All 2 branches missed.">            if (destroyed.size() &gt; 0) {</span>
+<span class="nc" id="L1970">                String sLogDir = PreferenceManager.getClientPreferences().getLogDirectory();</span>
+<span class="nc" id="L1971">                File logDir = new File(sLogDir);</span>
+<span class="nc bnc" id="L1972" title="All 2 branches missed.">                if (!logDir.exists()) {</span>
+<span class="nc" id="L1973">                    logDir.mkdir();</span>
                 }
-<span class="nc" id="L1972">                String fileName = &quot;salvage.mul&quot;;</span>
-<span class="nc bnc" id="L1973" title="All 2 branches missed.">                if (PreferenceManager.getClientPreferences().stampFilenames()) {</span>
-<span class="nc" id="L1974">                    fileName = StringUtil.addDateTimeStamp(fileName);</span>
+<span class="nc" id="L1975">                String fileName = &quot;salvage.mul&quot;;</span>
+<span class="nc bnc" id="L1976" title="All 2 branches missed.">                if (PreferenceManager.getClientPreferences().stampFilenames()) {</span>
+<span class="nc" id="L1977">                    fileName = StringUtil.addDateTimeStamp(fileName);</span>
                 }
-<span class="nc" id="L1976">                File unitFile = new File(sLogDir + File.separator + fileName);</span>
+<span class="nc" id="L1979">                File unitFile = new File(sLogDir + File.separator + fileName);</span>
                 try {
                     // Save the destroyed entities to the file.
-<span class="nc" id="L1979">                    EntityListFile.saveTo(unitFile, destroyed);</span>
-<span class="nc" id="L1980">                } catch (IOException ex) {</span>
-<span class="nc" id="L1981">                    MegaMek.getLogger().error(ex);</span>
-<span class="nc" id="L1982">                    doAlertDialog(Messages.getString(&quot;ClientGUI.errorSavingFile&quot;), ex.getMessage());</span>
-<span class="nc" id="L1983">                }</span>
+<span class="nc" id="L1982">                    EntityListFile.saveTo(unitFile, destroyed);</span>
+<span class="nc" id="L1983">                } catch (IOException ex) {</span>
+<span class="nc" id="L1984">                    MegaMek.getLogger().error(ex);</span>
+<span class="nc" id="L1985">                    doAlertDialog(Messages.getString(&quot;ClientGUI.errorSavingFile&quot;), ex.getMessage());</span>
+<span class="nc" id="L1986">                }</span>
             }
 
-<span class="nc" id="L1986">        }</span>
+<span class="nc" id="L1989">        }</span>
 
         @Override
         public void gameSettingsChange(GameSettingsChangeEvent e) {
-<span class="nc bnc" id="L1990" title="All 4 branches missed.">            if ((gameOptionsDialog != null) &amp;&amp; gameOptionsDialog.isVisible() &amp;&amp;</span>
-<span class="nc bnc" id="L1991" title="All 2 branches missed.">                    !e.isMapSettingsOnlyChange()) {</span>
-<span class="nc" id="L1992">                gameOptionsDialog.update(getClient().getGame().getOptions());</span>
+<span class="nc bnc" id="L1993" title="All 4 branches missed.">            if ((gameOptionsDialog != null) &amp;&amp; gameOptionsDialog.isVisible() &amp;&amp;</span>
+<span class="nc bnc" id="L1994" title="All 2 branches missed.">                    !e.isMapSettingsOnlyChange()) {</span>
+<span class="nc" id="L1995">                gameOptionsDialog.update(getClient().getGame().getOptions());</span>
             }
-<span class="nc bnc" id="L1994" title="All 2 branches missed.">            if (curPanel instanceof ChatLounge) {</span>
-<span class="nc" id="L1995">                ChatLounge cl = (ChatLounge) curPanel;</span>
-<span class="nc" id="L1996">                cl.updateMapSettings(getClient().getMapSettings());</span>
+<span class="nc bnc" id="L1997" title="All 2 branches missed.">            if (curPanel instanceof ChatLounge) {</span>
+<span class="nc" id="L1998">                ChatLounge cl = (ChatLounge) curPanel;</span>
+<span class="nc" id="L1999">                cl.updateMapSettings(getClient().getMapSettings());</span>
             }
-<span class="nc" id="L1998">        }</span>
+<span class="nc" id="L2001">        }</span>
 
         @Override
         public void gameMapQuery(GameMapQueryEvent e) {
 
-<span class="nc" id="L2003">        }</span>
+<span class="nc" id="L2006">        }</span>
         
         @Override
         public void gameClientFeedbackRequest(GameCFREvent evt) {
-<span class="nc" id="L2007">            Entity e = client.getGame().getEntity(evt.getEntityId());</span>
+<span class="nc" id="L2010">            Entity e = client.getGame().getEntity(evt.getEntityId());</span>
             Object result;
-<span class="nc bnc" id="L2009" title="All 7 branches missed.">            switch (evt.getCFRType()){</span>
+<span class="nc bnc" id="L2012" title="All 7 branches missed.">            switch (evt.getCFRType()){</span>
                 case Packet.COMMAND_CFR_DOMINO_EFFECT:                    
                     // If the client connects to a game as a bot, it's possible
                     // to have the bot respond AND have the client ask the
                     // player. This is bad, ignore this if the client is a bot
-<span class="nc bnc" id="L2014" title="All 2 branches missed.">                    if (client instanceof BotClient){</span>
-<span class="nc" id="L2015">                        return;</span>
+<span class="nc bnc" id="L2017" title="All 2 branches missed.">                    if (client instanceof BotClient){</span>
+<span class="nc" id="L2018">                        return;</span>
                     }
-<span class="nc" id="L2017">                    MovePath stepForward = new MovePath(client.getGame(), e);</span>
-<span class="nc" id="L2018">                    MovePath stepBackward = new MovePath(client.getGame(), e);</span>
-<span class="nc" id="L2019">                    stepForward.addStep(MoveStepType.FORWARDS);</span>
-<span class="nc" id="L2020">                    stepBackward.addStep(MoveStepType.BACKWARDS);</span>
-<span class="nc" id="L2021">                    stepForward.compile(client.getGame(), e, false);</span>
-<span class="nc" id="L2022">                    stepBackward.compile(client.getGame(), e, false);</span>
+<span class="nc" id="L2020">                    MovePath stepForward = new MovePath(client.getGame(), e);</span>
+<span class="nc" id="L2021">                    MovePath stepBackward = new MovePath(client.getGame(), e);</span>
+<span class="nc" id="L2022">                    stepForward.addStep(MoveStepType.FORWARDS);</span>
+<span class="nc" id="L2023">                    stepBackward.addStep(MoveStepType.BACKWARDS);</span>
+<span class="nc" id="L2024">                    stepForward.compile(client.getGame(), e, false);</span>
+<span class="nc" id="L2025">                    stepBackward.compile(client.getGame(), e, false);</span>
                     
-<span class="nc" id="L2024">                    String title = Messages.getString(&quot;CFRDomino.Title&quot;);</span>
-<span class="nc" id="L2025">                    String msg = Messages.getString(&quot;CFRDomino.Message&quot;, e.getDisplayName());</span>
+<span class="nc" id="L2027">                    String title = Messages.getString(&quot;CFRDomino.Title&quot;);</span>
+<span class="nc" id="L2028">                    String msg = Messages.getString(&quot;CFRDomino.Message&quot;, e.getDisplayName());</span>
                     int choice;
                     Object[] options;
                     MovePath[] paths;
                     int optionType;
-<span class="nc bnc" id="L2030" title="All 2 branches missed.">                    if (stepForward.isMoveLegal() </span>
-<span class="nc bnc" id="L2031" title="All 2 branches missed.">                            &amp;&amp; stepBackward.isMoveLegal()){</span>
-<span class="nc" id="L2032">                        options = new Object[3];</span>
-<span class="nc" id="L2033">                        paths = new MovePath[3];</span>
-<span class="nc" id="L2034">                        options[0] = Messages.getString(&quot;CFRDomino.Forward&quot;, stepForward.getMpUsed());</span>
-<span class="nc" id="L2035">                        options[1] = Messages.getString(&quot;CFRDomino.Backward&quot;, stepForward.getMpUsed());</span>
-<span class="nc" id="L2036">                        options[2] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
-<span class="nc" id="L2037">                        paths[0] = stepForward;</span>
-<span class="nc" id="L2038">                        paths[1] = stepBackward;</span>
-<span class="nc" id="L2039">                        paths[2] = null;</span>
-<span class="nc" id="L2040">                        optionType = JOptionPane.YES_NO_CANCEL_OPTION;</span>
-<span class="nc bnc" id="L2041" title="All 2 branches missed.">                    } else if (stepForward.isMoveLegal()){</span>
-<span class="nc" id="L2042">                        options = new Object[2];</span>
-<span class="nc" id="L2043">                        paths = new MovePath[2];</span>
-<span class="nc" id="L2044">                        options[0] = Messages.getString(&quot;CFRDomino.Forward&quot;,</span>
-<span class="nc" id="L2045">                                new Object[] { stepForward.getMpUsed() });</span>
-<span class="nc" id="L2046">                        options[1] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
-<span class="nc" id="L2047">                        paths[0] = stepForward;</span>
-<span class="nc" id="L2048">                        paths[1] = null;</span>
-<span class="nc" id="L2049">                        optionType = JOptionPane.YES_NO_OPTION;</span>
+<span class="nc bnc" id="L2033" title="All 2 branches missed.">                    if (stepForward.isMoveLegal() </span>
+<span class="nc bnc" id="L2034" title="All 2 branches missed.">                            &amp;&amp; stepBackward.isMoveLegal()){</span>
+<span class="nc" id="L2035">                        options = new Object[3];</span>
+<span class="nc" id="L2036">                        paths = new MovePath[3];</span>
+<span class="nc" id="L2037">                        options[0] = Messages.getString(&quot;CFRDomino.Forward&quot;, stepForward.getMpUsed());</span>
+<span class="nc" id="L2038">                        options[1] = Messages.getString(&quot;CFRDomino.Backward&quot;, stepForward.getMpUsed());</span>
+<span class="nc" id="L2039">                        options[2] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
+<span class="nc" id="L2040">                        paths[0] = stepForward;</span>
+<span class="nc" id="L2041">                        paths[1] = stepBackward;</span>
+<span class="nc" id="L2042">                        paths[2] = null;</span>
+<span class="nc" id="L2043">                        optionType = JOptionPane.YES_NO_CANCEL_OPTION;</span>
+<span class="nc bnc" id="L2044" title="All 2 branches missed.">                    } else if (stepForward.isMoveLegal()){</span>
+<span class="nc" id="L2045">                        options = new Object[2];</span>
+<span class="nc" id="L2046">                        paths = new MovePath[2];</span>
+<span class="nc" id="L2047">                        options[0] = Messages.getString(&quot;CFRDomino.Forward&quot;,</span>
+<span class="nc" id="L2048">                                new Object[] { stepForward.getMpUsed() });</span>
+<span class="nc" id="L2049">                        options[1] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
+<span class="nc" id="L2050">                        paths[0] = stepForward;</span>
+<span class="nc" id="L2051">                        paths[1] = null;</span>
+<span class="nc" id="L2052">                        optionType = JOptionPane.YES_NO_OPTION;</span>
                     } else { // No request is sent if both moves are illegal
-<span class="nc" id="L2051">                        options = new Object[2];</span>
-<span class="nc" id="L2052">                        paths = new MovePath[2];</span>
-<span class="nc" id="L2053">                        options[0] = Messages.getString(&quot;CFRDomino.Backward&quot;,</span>
-<span class="nc" id="L2054">                                new Object[] { stepForward.getMpUsed() });</span>
-<span class="nc" id="L2055">                        options[1] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
-<span class="nc" id="L2056">                        paths[0] = stepBackward;</span>
-<span class="nc" id="L2057">                        paths[1] = null;</span>
-<span class="nc" id="L2058">                        optionType = JOptionPane.YES_NO_OPTION;</span>
+<span class="nc" id="L2054">                        options = new Object[2];</span>
+<span class="nc" id="L2055">                        paths = new MovePath[2];</span>
+<span class="nc" id="L2056">                        options[0] = Messages.getString(&quot;CFRDomino.Backward&quot;,</span>
+<span class="nc" id="L2057">                                new Object[] { stepForward.getMpUsed() });</span>
+<span class="nc" id="L2058">                        options[1] = Messages.getString(&quot;CFRDomino.NoAction&quot;);</span>
+<span class="nc" id="L2059">                        paths[0] = stepBackward;</span>
+<span class="nc" id="L2060">                        paths[1] = null;</span>
+<span class="nc" id="L2061">                        optionType = JOptionPane.YES_NO_OPTION;</span>
                     }            
-<span class="nc" id="L2060">                    choice = JOptionPane.showOptionDialog(frame, msg, title, </span>
+<span class="nc" id="L2063">                    choice = JOptionPane.showOptionDialog(frame, msg, title, </span>
                             optionType, JOptionPane.QUESTION_MESSAGE, null, 
                             options, options[0]);
                     // If they closed it, assume no action
-<span class="nc bnc" id="L2064" title="All 2 branches missed.">                    if (choice == JOptionPane.CLOSED_OPTION){</span>
-<span class="nc" id="L2065">                        choice = options.length - 1;</span>
+<span class="nc bnc" id="L2067" title="All 2 branches missed.">                    if (choice == JOptionPane.CLOSED_OPTION){</span>
+<span class="nc" id="L2068">                        choice = options.length - 1;</span>
                     }
-<span class="nc" id="L2067">                    client.sendDominoCFRResponse(paths[choice]);</span>
-<span class="nc" id="L2068">                    break;</span>
+<span class="nc" id="L2070">                    client.sendDominoCFRResponse(paths[choice]);</span>
+<span class="nc" id="L2071">                    break;</span>
                 case Packet.COMMAND_CFR_AMS_ASSIGN:
-<span class="nc" id="L2070">                    ArrayList&lt;String&gt; amsOptions = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L2071">                    amsOptions.add(&quot;None&quot;);</span>
-<span class="nc bnc" id="L2072" title="All 2 branches missed.">                    for (WeaponAttackAction waa : evt.getWAAs()) {</span>
-<span class="nc" id="L2073">                        Entity ae = waa.getEntity(client.getGame());</span>
+<span class="nc" id="L2073">                    ArrayList&lt;String&gt; amsOptions = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L2074">                    amsOptions.add(&quot;None&quot;);</span>
+<span class="nc bnc" id="L2075" title="All 2 branches missed.">                    for (WeaponAttackAction waa : evt.getWAAs()) {</span>
+<span class="nc" id="L2076">                        Entity ae = waa.getEntity(client.getGame());</span>
                         String waaMsg;
-<span class="nc bnc" id="L2075" title="All 2 branches missed.">                        if (ae != null) {</span>
-<span class="nc" id="L2076">                            Mounted weapon = ae.getEquipment(waa.getWeaponId());</span>
-<span class="nc" id="L2077">                            waaMsg = weapon.getDesc() + &quot; from &quot;</span>
-<span class="nc" id="L2078">                                    + ae.getDisplayName();</span>
-<span class="nc" id="L2079">                        } else {</span>
-<span class="nc" id="L2080">                            waaMsg = &quot;Missiles from unknown attacker&quot;;</span>
+<span class="nc bnc" id="L2078" title="All 2 branches missed.">                        if (ae != null) {</span>
+<span class="nc" id="L2079">                            Mounted weapon = ae.getEquipment(waa.getWeaponId());</span>
+<span class="nc" id="L2080">                            waaMsg = weapon.getDesc() + &quot; from &quot;</span>
+<span class="nc" id="L2081">                                    + ae.getDisplayName();</span>
+<span class="nc" id="L2082">                        } else {</span>
+<span class="nc" id="L2083">                            waaMsg = &quot;Missiles from unknown attacker&quot;;</span>
                         }
-<span class="nc" id="L2082">                        amsOptions.add(waaMsg);</span>
-<span class="nc" id="L2083">                    }</span>
+<span class="nc" id="L2085">                        amsOptions.add(waaMsg);</span>
+<span class="nc" id="L2086">                    }</span>
                     
-<span class="nc" id="L2085">                    optionType = JOptionPane.OK_CANCEL_OPTION;</span>
-<span class="nc" id="L2086">                    title = Messages.getString(&quot;CFRAMSAssign.Title&quot;,</span>
-<span class="nc" id="L2087">                            new Object[] { e.getDisplayName() });</span>
-<span class="nc" id="L2088">                    msg = Messages.getString(&quot;CFRAMSAssign.Message&quot;,</span>
-<span class="nc" id="L2089">                            new Object[] { e.getDisplayName() });</span>
-<span class="nc" id="L2090">                    result = JOptionPane.showInputDialog(frame, msg, title,</span>
+<span class="nc" id="L2088">                    optionType = JOptionPane.OK_CANCEL_OPTION;</span>
+<span class="nc" id="L2089">                    title = Messages.getString(&quot;CFRAMSAssign.Title&quot;,</span>
+<span class="nc" id="L2090">                            new Object[] { e.getDisplayName() });</span>
+<span class="nc" id="L2091">                    msg = Messages.getString(&quot;CFRAMSAssign.Message&quot;,</span>
+<span class="nc" id="L2092">                            new Object[] { e.getDisplayName() });</span>
+<span class="nc" id="L2093">                    result = JOptionPane.showInputDialog(frame, msg, title,</span>
                             JOptionPane.QUESTION_MESSAGE, null, 
-<span class="nc" id="L2092">                           amsOptions.toArray(), null);</span>
+<span class="nc" id="L2095">                           amsOptions.toArray(), null);</span>
                     // If they closed it, assume no action
-<span class="nc bnc" id="L2094" title="All 4 branches missed.">                    if ((result == null) || result.equals(&quot;None&quot;)) {</span>
-<span class="nc" id="L2095">                        client.sendAMSAssignCFRResponse(null);</span>
+<span class="nc bnc" id="L2097" title="All 4 branches missed.">                    if ((result == null) || result.equals(&quot;None&quot;)) {</span>
+<span class="nc" id="L2098">                        client.sendAMSAssignCFRResponse(null);</span>
                     } else {
-<span class="nc" id="L2097">                        client.sendAMSAssignCFRResponse(</span>
-<span class="nc" id="L2098">                                amsOptions.indexOf(result) - 1);                 </span>
+<span class="nc" id="L2100">                        client.sendAMSAssignCFRResponse(</span>
+<span class="nc" id="L2101">                                amsOptions.indexOf(result) - 1);                 </span>
                     }
-<span class="nc" id="L2100">                    break;</span>
+<span class="nc" id="L2103">                    break;</span>
                 case Packet.COMMAND_CFR_APDS_ASSIGN:
-<span class="nc" id="L2102">                    ArrayList&lt;String&gt; apdsOptions = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L2103">                    apdsOptions.add(&quot;None&quot;);</span>
-<span class="nc" id="L2104">                    Iterator&lt;Integer&gt; distIt = evt.getApdsDists().iterator();</span>
-<span class="nc bnc" id="L2105" title="All 2 branches missed.">                    for (WeaponAttackAction waa : evt.getWAAs()) {</span>
-<span class="nc" id="L2106">                        Entity ae = waa.getEntity(client.getGame());</span>
-<span class="nc" id="L2107">                        int dist = distIt.next();</span>
+<span class="nc" id="L2105">                    ArrayList&lt;String&gt; apdsOptions = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L2106">                    apdsOptions.add(&quot;None&quot;);</span>
+<span class="nc" id="L2107">                    Iterator&lt;Integer&gt; distIt = evt.getApdsDists().iterator();</span>
+<span class="nc bnc" id="L2108" title="All 2 branches missed.">                    for (WeaponAttackAction waa : evt.getWAAs()) {</span>
+<span class="nc" id="L2109">                        Entity ae = waa.getEntity(client.getGame());</span>
+<span class="nc" id="L2110">                        int dist = distIt.next();</span>
                         String waaMsg;
-<span class="nc bnc" id="L2109" title="All 2 branches missed.">                        if (ae != null) {</span>
-<span class="nc" id="L2110">                            Mounted weapon = ae.getEquipment(waa.getWeaponId());</span>
-<span class="nc" id="L2111">                            waaMsg = weapon.getDesc() + &quot; from &quot;</span>
-<span class="nc" id="L2112">                                    + ae.getDisplayName() + &quot; (distance: &quot;</span>
+<span class="nc bnc" id="L2112" title="All 2 branches missed.">                        if (ae != null) {</span>
+<span class="nc" id="L2113">                            Mounted weapon = ae.getEquipment(waa.getWeaponId());</span>
+<span class="nc" id="L2114">                            waaMsg = weapon.getDesc() + &quot; from &quot;</span>
+<span class="nc" id="L2115">                                    + ae.getDisplayName() + &quot; (distance: &quot;</span>
                                     + dist + &quot;)&quot;;
-<span class="nc" id="L2114">                        } else {</span>
-<span class="nc" id="L2115">                            waaMsg = &quot;Missiles from unknown attacker&quot;;</span>
+<span class="nc" id="L2117">                        } else {</span>
+<span class="nc" id="L2118">                            waaMsg = &quot;Missiles from unknown attacker&quot;;</span>
                         }
-<span class="nc" id="L2117">                        apdsOptions.add(waaMsg);</span>
-<span class="nc" id="L2118">                    }</span>
+<span class="nc" id="L2120">                        apdsOptions.add(waaMsg);</span>
+<span class="nc" id="L2121">                    }</span>
 
-<span class="nc" id="L2120">                    optionType = JOptionPane.OK_CANCEL_OPTION;</span>
-<span class="nc" id="L2121">                    title = Messages.getString(&quot;CFRAPDSAssign.Title&quot;,</span>
-<span class="nc" id="L2122">                            new Object[] { e.getDisplayName() });</span>
-<span class="nc" id="L2123">                    msg = Messages.getString(&quot;CFRAPDSAssign.Message&quot;,</span>
-<span class="nc" id="L2124">                            new Object[] { e.getDisplayName() });</span>
-<span class="nc" id="L2125">                    result = JOptionPane.showInputDialog(frame, msg, title,</span>
+<span class="nc" id="L2123">                    optionType = JOptionPane.OK_CANCEL_OPTION;</span>
+<span class="nc" id="L2124">                    title = Messages.getString(&quot;CFRAPDSAssign.Title&quot;,</span>
+<span class="nc" id="L2125">                            new Object[] { e.getDisplayName() });</span>
+<span class="nc" id="L2126">                    msg = Messages.getString(&quot;CFRAPDSAssign.Message&quot;,</span>
+<span class="nc" id="L2127">                            new Object[] { e.getDisplayName() });</span>
+<span class="nc" id="L2128">                    result = JOptionPane.showInputDialog(frame, msg, title,</span>
                             JOptionPane.QUESTION_MESSAGE, null,
-<span class="nc" id="L2127">                            apdsOptions.toArray(), null);</span>
+<span class="nc" id="L2130">                            apdsOptions.toArray(), null);</span>
                     // If they closed it, assume no action
-<span class="nc bnc" id="L2129" title="All 4 branches missed.">                    if ((result == null) || result.equals(&quot;None&quot;)) {</span>
-<span class="nc" id="L2130">                        client.sendAPDSAssignCFRResponse(null);</span>
+<span class="nc bnc" id="L2132" title="All 4 branches missed.">                    if ((result == null) || result.equals(&quot;None&quot;)) {</span>
+<span class="nc" id="L2133">                        client.sendAPDSAssignCFRResponse(null);</span>
                     } else {
-<span class="nc" id="L2132">                        client.sendAPDSAssignCFRResponse(</span>
-<span class="nc" id="L2133">                                apdsOptions.indexOf(result) - 1);</span>
+<span class="nc" id="L2135">                        client.sendAPDSAssignCFRResponse(</span>
+<span class="nc" id="L2136">                                apdsOptions.indexOf(result) - 1);</span>
                     }
-<span class="nc" id="L2135">                    break;</span>
+<span class="nc" id="L2138">                    break;</span>
                 case Packet.COMMAND_CFR_HIDDEN_PBS:
-<span class="nc" id="L2137">                    Entity attacker = client.getGame().getEntity(</span>
-<span class="nc" id="L2138">                            evt.getEntityId());</span>
-<span class="nc" id="L2139">                    Entity target = client.getGame().getEntity(</span>
-<span class="nc" id="L2140">                            evt.getTargetId());</span>
+<span class="nc" id="L2140">                    Entity attacker = client.getGame().getEntity(</span>
+<span class="nc" id="L2141">                            evt.getEntityId());</span>
+<span class="nc" id="L2142">                    Entity target = client.getGame().getEntity(</span>
+<span class="nc" id="L2143">                            evt.getTargetId());</span>
                     // Are we not the client handling the PBS?
-<span class="nc bnc" id="L2142" title="All 4 branches missed.">                    if ((attacker == null) || (target == null)) {</span>
-<span class="nc bnc" id="L2143" title="All 2 branches missed.">                        if (curPanel instanceof StatusBarPhaseDisplay) {</span>
-<span class="nc" id="L2144">                            ((StatusBarPhaseDisplay) curPanel)</span>
-<span class="nc" id="L2145">                                    .setStatusBarText(Messages</span>
-<span class="nc" id="L2146">                                            .getString(&quot;StatusBarPhaseDisplay.pointblankShot&quot;));</span>
+<span class="nc bnc" id="L2145" title="All 4 branches missed.">                    if ((attacker == null) || (target == null)) {</span>
+<span class="nc bnc" id="L2146" title="All 2 branches missed.">                        if (curPanel instanceof StatusBarPhaseDisplay) {</span>
+<span class="nc" id="L2147">                            ((StatusBarPhaseDisplay) curPanel)</span>
+<span class="nc" id="L2148">                                    .setStatusBarText(Messages</span>
+<span class="nc" id="L2149">                                            .getString(&quot;StatusBarPhaseDisplay.pointblankShot&quot;));</span>
                         }
-<span class="nc" id="L2148">                        return;</span>
+<span class="nc" id="L2151">                        return;</span>
                     }
                     // If this is the client to handle the PBS, take care of it
-<span class="nc" id="L2151">                    bv.centerOnHex(attacker.getPosition());</span>
-<span class="nc" id="L2152">                    bv.highlight(attacker.getPosition());</span>
-<span class="nc" id="L2153">                    bv.select(target.getPosition());</span>
-<span class="nc" id="L2154">                    bv.cursor(target.getPosition());</span>
-<span class="nc" id="L2155">                    msg = Messages.getString(&quot;ClientGUI.PointBlankShot.Message&quot;,</span>
-<span class="nc" id="L2156">                            target.getShortName(), attacker.getShortName());</span>
-<span class="nc" id="L2157">                    title = Messages.getString(&quot;ClientGUI.PointBlankShot.Title&quot;);</span>
+<span class="nc" id="L2154">                    bv.centerOnHex(attacker.getPosition());</span>
+<span class="nc" id="L2155">                    bv.highlight(attacker.getPosition());</span>
+<span class="nc" id="L2156">                    bv.select(target.getPosition());</span>
+<span class="nc" id="L2157">                    bv.cursor(target.getPosition());</span>
+<span class="nc" id="L2158">                    msg = Messages.getString(&quot;ClientGUI.PointBlankShot.Message&quot;,</span>
+<span class="nc" id="L2159">                            target.getShortName(), attacker.getShortName());</span>
+<span class="nc" id="L2160">                    title = Messages.getString(&quot;ClientGUI.PointBlankShot.Title&quot;);</span>
                     // Ask whether the player wants to take a PBS or not
-<span class="nc" id="L2159">                    int pbsChoice = JOptionPane.showConfirmDialog(frame, msg,</span>
+<span class="nc" id="L2162">                    int pbsChoice = JOptionPane.showConfirmDialog(frame, msg,</span>
                             title, JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
                     // Process the PBS - switch to PointblankShotDisplay
-<span class="nc bnc" id="L2163" title="All 2 branches missed.">                    if (pbsChoice == JOptionPane.YES_OPTION) {</span>
+<span class="nc bnc" id="L2166" title="All 2 branches missed.">                    if (pbsChoice == JOptionPane.YES_OPTION) {</span>
                         // Send a non-null response to indicate PBS is accepted
                         // This allows the servers to notify the clients,
                         // as they may be in for a wait
-<span class="nc" id="L2167">                        client.sendHiddenPBSCFRResponse(new Vector&lt;&gt;());</span>
+<span class="nc" id="L2170">                        client.sendHiddenPBSCFRResponse(new Vector&lt;&gt;());</span>
                         // Used to indicate it's this player's turn
-<span class="nc" id="L2169">                        setPointblankEID(evt.getEntityId());</span>
+<span class="nc" id="L2172">                        setPointblankEID(evt.getEntityId());</span>
                         // Switch to the right display
-<span class="nc" id="L2171">                        switchPanel(IGame.Phase.PHASE_POINTBLANK_SHOT);</span>
-<span class="nc" id="L2172">                        PointblankShotDisplay curDisp = ((PointblankShotDisplay) curPanel);</span>
+<span class="nc" id="L2174">                        switchPanel(IGame.Phase.PHASE_POINTBLANK_SHOT);</span>
+<span class="nc" id="L2175">                        PointblankShotDisplay curDisp = ((PointblankShotDisplay) curPanel);</span>
                         // Set targeting info
-<span class="nc" id="L2174">                        curDisp.beginMyTurn();</span>
-<span class="nc" id="L2175">                        curDisp.selectEntity(evt.getEntityId());</span>
-<span class="nc" id="L2176">                        curDisp.target(target);</span>
-<span class="nc" id="L2177">                        bv.select(target.getPosition());</span>
-<span class="nc" id="L2178">                    } else { // PBS declined</span>
-<span class="nc" id="L2179">                        client.sendHiddenPBSCFRResponse(null);</span>
+<span class="nc" id="L2177">                        curDisp.beginMyTurn();</span>
+<span class="nc" id="L2178">                        curDisp.selectEntity(evt.getEntityId());</span>
+<span class="nc" id="L2179">                        curDisp.target(target);</span>
+<span class="nc" id="L2180">                        bv.select(target.getPosition());</span>
+<span class="nc" id="L2181">                    } else { // PBS declined</span>
+<span class="nc" id="L2182">                        client.sendHiddenPBSCFRResponse(null);</span>
                     }
-<span class="nc" id="L2181">                    break;</span>
+<span class="nc" id="L2184">                    break;</span>
                 case Packet.COMMAND_CFR_TELEGUIDED_TARGET:
-<span class="nc" id="L2183">                    List&lt;Integer&gt; targetIds = evt.getTelemissileTargetIds();</span>
-<span class="nc" id="L2184">                    List&lt;Integer&gt; toHitValues = evt.getTmToHitValues();</span>
-<span class="nc" id="L2185">                    List&lt;String&gt; targetDescriptions = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L2186" title="All 2 branches missed.">                    for (int i = 0; i &lt; targetIds.size(); i++) {</span>
-<span class="nc" id="L2187">                        int id = targetIds.get(i);</span>
-<span class="nc" id="L2188">                        int th = toHitValues.get(i);</span>
-<span class="nc" id="L2189">                        Entity tgt = client.getGame().getEntity(id);</span>
-<span class="nc bnc" id="L2190" title="All 2 branches missed.">                        if (tgt != null) {</span>
-<span class="nc" id="L2191">                            targetDescriptions.add(String.format(Messages.getString(&quot;TeleMissileTargetDialog.target&quot;), tgt.getDisplayName(), th));</span>
+<span class="nc" id="L2186">                    List&lt;Integer&gt; targetIds = evt.getTelemissileTargetIds();</span>
+<span class="nc" id="L2187">                    List&lt;Integer&gt; toHitValues = evt.getTmToHitValues();</span>
+<span class="nc" id="L2188">                    List&lt;String&gt; targetDescriptions = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L2189" title="All 2 branches missed.">                    for (int i = 0; i &lt; targetIds.size(); i++) {</span>
+<span class="nc" id="L2190">                        int id = targetIds.get(i);</span>
+<span class="nc" id="L2191">                        int th = toHitValues.get(i);</span>
+<span class="nc" id="L2192">                        Entity tgt = client.getGame().getEntity(id);</span>
+<span class="nc bnc" id="L2193" title="All 2 branches missed.">                        if (tgt != null) {</span>
+<span class="nc" id="L2194">                            targetDescriptions.add(String.format(Messages.getString(&quot;TeleMissileTargetDialog.target&quot;), tgt.getDisplayName(), th));</span>
                         }
                     }
                     //Set up the selection pane
-<span class="nc" id="L2195">                    String i18nString = &quot;TeleMissileTargetDialog.message&quot;; //$NON-NLS-1$;</span>
-<span class="nc" id="L2196">                    msg = Messages.getString(i18nString);</span>
-<span class="nc" id="L2197">                    i18nString = &quot;TeleMissileTargetDialog.title&quot;; //$NON-NLS-1$</span>
-<span class="nc" id="L2198">                    title = Messages.getString(i18nString);</span>
-<span class="nc" id="L2199">                    String input = (String) JOptionPane.showInputDialog(frame, msg,</span>
+<span class="nc" id="L2198">                    String i18nString = &quot;TeleMissileTargetDialog.message&quot;; //$NON-NLS-1$;</span>
+<span class="nc" id="L2199">                    msg = Messages.getString(i18nString);</span>
+<span class="nc" id="L2200">                    i18nString = &quot;TeleMissileTargetDialog.title&quot;; //$NON-NLS-1$</span>
+<span class="nc" id="L2201">                    title = Messages.getString(i18nString);</span>
+<span class="nc" id="L2202">                    String input = (String) JOptionPane.showInputDialog(frame, msg,</span>
                             title, JOptionPane.QUESTION_MESSAGE, null,
-<span class="nc" id="L2201">                            targetDescriptions.toArray(), targetDescriptions.get(0));</span>
-<span class="nc bnc" id="L2202" title="All 2 branches missed.">                    if (input != null) {</span>
-<span class="nc bnc" id="L2203" title="All 2 branches missed.">                        for (int i = 0; i &lt; targetDescriptions.size(); i++) {</span>
-<span class="nc bnc" id="L2204" title="All 2 branches missed.">                            if (input.equals(targetDescriptions.get(i))) {</span>
-<span class="nc" id="L2205">                                client.sendTelemissileTargetCFRResponse(i);</span>
-<span class="nc" id="L2206">                                break;</span>
+<span class="nc" id="L2204">                            targetDescriptions.toArray(), targetDescriptions.get(0));</span>
+<span class="nc bnc" id="L2205" title="All 2 branches missed.">                    if (input != null) {</span>
+<span class="nc bnc" id="L2206" title="All 2 branches missed.">                        for (int i = 0; i &lt; targetDescriptions.size(); i++) {</span>
+<span class="nc bnc" id="L2207" title="All 2 branches missed.">                            if (input.equals(targetDescriptions.get(i))) {</span>
+<span class="nc" id="L2208">                                client.sendTelemissileTargetCFRResponse(i);</span>
+<span class="nc" id="L2209">                                break;</span>
                             }
                         }
                     } else {
                         //If input IS null, as in the case of pressing the close or cancel buttons...
                         //Just pick the first target in the list, or server will be left waiting indefinitely.
-<span class="nc" id="L2212">                        client.sendTelemissileTargetCFRResponse(0);</span>
+<span class="nc" id="L2215">                        client.sendTelemissileTargetCFRResponse(0);</span>
                     }
                 case Packet.COMMAND_CFR_TAG_TARGET:
-<span class="nc" id="L2215">                    List&lt;Integer&gt; TAGTargets = evt.getTAGTargets();</span>
-<span class="nc" id="L2216">                    List&lt;Integer&gt; TAGTargetTypes = evt.getTAGTargetTypes();</span>
-<span class="nc" id="L2217">                    List&lt;String&gt; TAGTargetDescriptions = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L2218" title="All 2 branches missed.">                    for (int i = 0; i &lt; TAGTargets.size(); i++) {</span>
-<span class="nc" id="L2219">                        int id = TAGTargets.get(i);</span>
-<span class="nc" id="L2220">                        int nType = TAGTargetTypes.get(i);</span>
-<span class="nc" id="L2221">                        Targetable tgt = client.getGame().getTarget(nType, id);</span>
-<span class="nc bnc" id="L2222" title="All 2 branches missed.">                        if (tgt != null) {</span>
-<span class="nc" id="L2223">                            TAGTargetDescriptions.add(tgt.getDisplayName());</span>
+<span class="nc" id="L2218">                    List&lt;Integer&gt; TAGTargets = evt.getTAGTargets();</span>
+<span class="nc" id="L2219">                    List&lt;Integer&gt; TAGTargetTypes = evt.getTAGTargetTypes();</span>
+<span class="nc" id="L2220">                    List&lt;String&gt; TAGTargetDescriptions = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L2221" title="All 2 branches missed.">                    for (int i = 0; i &lt; TAGTargets.size(); i++) {</span>
+<span class="nc" id="L2222">                        int id = TAGTargets.get(i);</span>
+<span class="nc" id="L2223">                        int nType = TAGTargetTypes.get(i);</span>
+<span class="nc" id="L2224">                        Targetable tgt = client.getGame().getTarget(nType, id);</span>
+<span class="nc bnc" id="L2225" title="All 2 branches missed.">                        if (tgt != null) {</span>
+<span class="nc" id="L2226">                            TAGTargetDescriptions.add(tgt.getDisplayName());</span>
                         }
                     }
                     //Set up the selection pane
-<span class="nc" id="L2227">                    i18nString = &quot;TAGTargetDialog.message&quot;; //$NON-NLS-1$;</span>
-<span class="nc" id="L2228">                    msg = Messages.getString(i18nString);</span>
-<span class="nc" id="L2229">                    i18nString = &quot;TAGTargetDialog.title&quot;; //$NON-NLS-1$</span>
-<span class="nc" id="L2230">                    title = Messages.getString(i18nString);</span>
-<span class="nc" id="L2231">                    input = (String) JOptionPane.showInputDialog(frame, msg,</span>
+<span class="nc" id="L2230">                    i18nString = &quot;TAGTargetDialog.message&quot;; //$NON-NLS-1$;</span>
+<span class="nc" id="L2231">                    msg = Messages.getString(i18nString);</span>
+<span class="nc" id="L2232">                    i18nString = &quot;TAGTargetDialog.title&quot;; //$NON-NLS-1$</span>
+<span class="nc" id="L2233">                    title = Messages.getString(i18nString);</span>
+<span class="nc" id="L2234">                    input = (String) JOptionPane.showInputDialog(frame, msg,</span>
                             title, JOptionPane.QUESTION_MESSAGE, null,
-<span class="nc" id="L2233">                            TAGTargetDescriptions.toArray(), TAGTargetDescriptions.get(0));</span>
-<span class="nc bnc" id="L2234" title="All 2 branches missed.">                    if (input != null) {</span>
-<span class="nc bnc" id="L2235" title="All 2 branches missed.">                        for (int i = 0; i &lt; TAGTargetDescriptions.size(); i++) {</span>
-<span class="nc bnc" id="L2236" title="All 2 branches missed.">                            if (input.equals(TAGTargetDescriptions.get(i))) {</span>
-<span class="nc" id="L2237">                                client.sendTAGTargetCFRResponse(i);</span>
-<span class="nc" id="L2238">                                break;</span>
+<span class="nc" id="L2236">                            TAGTargetDescriptions.toArray(), TAGTargetDescriptions.get(0));</span>
+<span class="nc bnc" id="L2237" title="All 2 branches missed.">                    if (input != null) {</span>
+<span class="nc bnc" id="L2238" title="All 2 branches missed.">                        for (int i = 0; i &lt; TAGTargetDescriptions.size(); i++) {</span>
+<span class="nc bnc" id="L2239" title="All 2 branches missed.">                            if (input.equals(TAGTargetDescriptions.get(i))) {</span>
+<span class="nc" id="L2240">                                client.sendTAGTargetCFRResponse(i);</span>
+<span class="nc" id="L2241">                                break;</span>
                             }
                         }
                     } else {
                         //If input IS null, as in the case of pressing the close or cancel buttons...
                         //Just pick the first target in the list, or server will be left waiting indefinitely.
-<span class="nc" id="L2244">                        client.sendTAGTargetCFRResponse(0);</span>
+<span class="nc" id="L2247">                        client.sendTAGTargetCFRResponse(0);</span>
                     }
             }
-<span class="nc" id="L2247">        }</span>
+<span class="nc" id="L2250">        }</span>
     };
 
     public Client getClient() {
-<span class="nc" id="L2251">        return client;</span>
+<span class="nc" id="L2254">        return client;</span>
     }
 
     public Map&lt;String, Client&gt; getBots() {
-<span class="nc" id="L2255">        return client.bots;</span>
+<span class="nc" id="L2258">        return client.bots;</span>
     }
 
     /**
      * @return Returns the selectedEntityNum.
      */
     public int getSelectedEntityNum() {
-<span class="nc" id="L2262">        return selectedEntityNum;</span>
+<span class="nc" id="L2265">        return selectedEntityNum;</span>
     }
 
     /**
      * @param selectedEntityNum The selectedEntityNum to set.
      */
     public void setSelectedEntityNum(int selectedEntityNum) {
-<span class="nc" id="L2269">        this.selectedEntityNum = selectedEntityNum;</span>
-<span class="nc" id="L2270">        bv.selectEntity(client.getGame().getEntity(selectedEntityNum));</span>
-<span class="nc" id="L2271">    }</span>
+<span class="nc" id="L2272">        this.selectedEntityNum = selectedEntityNum;</span>
+<span class="nc" id="L2273">        bv.selectEntity(client.getGame().getEntity(selectedEntityNum));</span>
+<span class="nc" id="L2274">    }</span>
 
     public RandomArmyDialog getRandomArmyDialog() {
-<span class="nc" id="L2274">        return randomArmyDialog;</span>
+<span class="nc" id="L2277">        return randomArmyDialog;</span>
     }
 
     public RandomSkillDialog getRandomSkillDialog() {
-<span class="nc" id="L2278">        return randomSkillDialog;</span>
+<span class="nc" id="L2281">        return randomSkillDialog;</span>
     }
 
     public RandomNameDialog getRandomNameDialog() {
-<span class="nc" id="L2282">        return new RandomNameDialog(this);</span>
+<span class="nc" id="L2285">        return new RandomNameDialog(this);</span>
     }
 
     /**
@@ -2287,154 +2290,154 @@ public class ClientGUI extends JPanel implements WindowListener, BoardViewListen
      * &quot;save as&quot;; otherwise, saves the board to the specified file.
      */
     private void boardSave() {
-<span class="nc bnc" id="L2290" title="All 2 branches missed.">        if (curfileBoard == null) {</span>
-<span class="nc" id="L2291">            boardSaveAs();</span>
-<span class="nc" id="L2292">            return;</span>
+<span class="nc bnc" id="L2293" title="All 2 branches missed.">        if (curfileBoard == null) {</span>
+<span class="nc" id="L2294">            boardSaveAs();</span>
+<span class="nc" id="L2295">            return;</span>
         }
         // save!
-<span class="nc" id="L2295">        try (OutputStream os = new FileOutputStream(curfileBoard)) {</span>
-<span class="nc" id="L2296">            client.getGame().getBoard().save(os);</span>
-<span class="nc" id="L2297">        } catch (IOException e) {</span>
-<span class="nc" id="L2298">            MegaMek.getLogger().error(&quot;Error opening file to save!&quot;, e);</span>
-<span class="nc" id="L2299">        }</span>
-<span class="nc" id="L2300">    }</span>
+<span class="nc" id="L2298">        try (OutputStream os = new FileOutputStream(curfileBoard)) {</span>
+<span class="nc" id="L2299">            client.getGame().getBoard().save(os);</span>
+<span class="nc" id="L2300">        } catch (IOException e) {</span>
+<span class="nc" id="L2301">            MegaMek.getLogger().error(&quot;Error opening file to save!&quot;, e);</span>
+<span class="nc" id="L2302">        }</span>
+<span class="nc" id="L2303">    }</span>
 
     /**
      * Saves the board in PNG image format.
      */
     private void boardSaveImage(boolean ignoreUnits) {
-<span class="nc bnc" id="L2306" title="All 2 branches missed.">        if (curfileBoardImage == null) {</span>
-<span class="nc" id="L2307">            boardSaveAsImage(ignoreUnits);</span>
-<span class="nc" id="L2308">            return;</span>
+<span class="nc bnc" id="L2309" title="All 2 branches missed.">        if (curfileBoardImage == null) {</span>
+<span class="nc" id="L2310">            boardSaveAsImage(ignoreUnits);</span>
+<span class="nc" id="L2311">            return;</span>
         }
-<span class="nc" id="L2310">        JDialog waitD = new JDialog(frame, Messages.getString(&quot;BoardEditor.waitDialog.title&quot;));</span>
-<span class="nc" id="L2311">        waitD.add(new JLabel(Messages.getString(&quot;BoardEditor.waitDialog.message&quot;)));</span>
-<span class="nc" id="L2312">        waitD.setSize(250, 130);</span>
+<span class="nc" id="L2313">        JDialog waitD = new JDialog(frame, Messages.getString(&quot;BoardEditor.waitDialog.title&quot;));</span>
+<span class="nc" id="L2314">        waitD.add(new JLabel(Messages.getString(&quot;BoardEditor.waitDialog.message&quot;)));</span>
+<span class="nc" id="L2315">        waitD.setSize(250, 130);</span>
         // move to middle of screen
-<span class="nc" id="L2314">        waitD.setLocation(</span>
-<span class="nc" id="L2315">                (frame.getSize().width / 2) - (waitD.getSize().width / 2), (frame</span>
-<span class="nc" id="L2316">                .getSize().height</span>
-<span class="nc" id="L2317">                / 2) - (waitD.getSize().height / 2));</span>
-<span class="nc" id="L2318">        waitD.setVisible(true);</span>
-<span class="nc" id="L2319">        frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));</span>
-<span class="nc" id="L2320">        waitD.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));</span>
+<span class="nc" id="L2317">        waitD.setLocation(</span>
+<span class="nc" id="L2318">                (frame.getSize().width / 2) - (waitD.getSize().width / 2), (frame</span>
+<span class="nc" id="L2319">                .getSize().height</span>
+<span class="nc" id="L2320">                / 2) - (waitD.getSize().height / 2));</span>
+<span class="nc" id="L2321">        waitD.setVisible(true);</span>
+<span class="nc" id="L2322">        frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));</span>
+<span class="nc" id="L2323">        waitD.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));</span>
         // save!
         try {
-<span class="nc" id="L2323">            ImageIO.write(bv.getEntireBoardImage(ignoreUnits), &quot;png&quot;, curfileBoardImage);</span>
-<span class="nc" id="L2324">        } catch (IOException e) {</span>
-<span class="nc" id="L2325">            e.printStackTrace();</span>
-<span class="nc" id="L2326">        }</span>
-<span class="nc" id="L2327">        waitD.setVisible(false);</span>
-<span class="nc" id="L2328">        frame.setCursor(Cursor.getDefaultCursor());</span>
-<span class="nc" id="L2329">    }</span>
+<span class="nc" id="L2326">            ImageIO.write(bv.getEntireBoardImage(ignoreUnits), &quot;png&quot;, curfileBoardImage);</span>
+<span class="nc" id="L2327">        } catch (IOException e) {</span>
+<span class="nc" id="L2328">            e.printStackTrace();</span>
+<span class="nc" id="L2329">        }</span>
+<span class="nc" id="L2330">        waitD.setVisible(false);</span>
+<span class="nc" id="L2331">        frame.setCursor(Cursor.getDefaultCursor());</span>
+<span class="nc" id="L2332">    }</span>
 
     /**
      * Opens a file dialog box to select a file to save as; saves the board to
      * the file.
      */
     private void boardSaveAs() {
-<span class="nc" id="L2336">        JFileChooser fc = new JFileChooser(&quot;data&quot; + File.separator + &quot;boards&quot;);</span>
-<span class="nc" id="L2337">        fc.setLocation(frame.getLocation().x + 150, frame.getLocation().y + 100);</span>
-<span class="nc" id="L2338">        fc.setDialogTitle(Messages.getString(&quot;BoardEditor.saveBoardAs&quot;));</span>
-<span class="nc" id="L2339">        fc.setFileFilter(new BoardFileFilter());</span>
-<span class="nc" id="L2340">        int returnVal = fc.showSaveDialog(frame);</span>
-<span class="nc bnc" id="L2341" title="All 4 branches missed.">        if ((returnVal != JFileChooser.APPROVE_OPTION) || (fc.getSelectedFile() == null)) {</span>
+<span class="nc" id="L2339">        JFileChooser fc = new JFileChooser(&quot;data&quot; + File.separator + &quot;boards&quot;);</span>
+<span class="nc" id="L2340">        fc.setLocation(frame.getLocation().x + 150, frame.getLocation().y + 100);</span>
+<span class="nc" id="L2341">        fc.setDialogTitle(Messages.getString(&quot;BoardEditor.saveBoardAs&quot;));</span>
+<span class="nc" id="L2342">        fc.setFileFilter(new BoardFileFilter());</span>
+<span class="nc" id="L2343">        int returnVal = fc.showSaveDialog(frame);</span>
+<span class="nc bnc" id="L2344" title="All 4 branches missed.">        if ((returnVal != JFileChooser.APPROVE_OPTION) || (fc.getSelectedFile() == null)) {</span>
             // I want a file, y'know!
-<span class="nc" id="L2343">            return;</span>
+<span class="nc" id="L2346">            return;</span>
         }
-<span class="nc" id="L2345">        curfileBoard = fc.getSelectedFile();</span>
+<span class="nc" id="L2348">        curfileBoard = fc.getSelectedFile();</span>
 
         // make sure the file ends in board
-<span class="nc bnc" id="L2348" title="All 2 branches missed.">        if (!curfileBoard.getName().toLowerCase(Locale.ENGLISH).endsWith(&quot;.board&quot;)) {</span>
+<span class="nc bnc" id="L2351" title="All 2 branches missed.">        if (!curfileBoard.getName().toLowerCase(Locale.ENGLISH).endsWith(&quot;.board&quot;)) {</span>
             try {
-<span class="nc" id="L2350">                curfileBoard = new File(curfileBoard.getCanonicalPath() + &quot;.board&quot;);</span>
-<span class="nc" id="L2351">            } catch (IOException ie) {</span>
+<span class="nc" id="L2353">                curfileBoard = new File(curfileBoard.getCanonicalPath() + &quot;.board&quot;);</span>
+<span class="nc" id="L2354">            } catch (IOException ie) {</span>
                 // failure!
-<span class="nc" id="L2353">                return;</span>
-<span class="nc" id="L2354">            }</span>
+<span class="nc" id="L2356">                return;</span>
+<span class="nc" id="L2357">            }</span>
         }
-<span class="nc" id="L2356">        boardSave();</span>
-<span class="nc" id="L2357">    }</span>
+<span class="nc" id="L2359">        boardSave();</span>
+<span class="nc" id="L2360">    }</span>
 
     /**
      * Opens a file dialog box to select a file to save as; saves the board to
      * the file as an image. Useful for printing boards.
      */
     private void boardSaveAsImage(boolean ignoreUnits) {
-<span class="nc" id="L2364">        JFileChooser fc = new JFileChooser(&quot;.&quot;);</span>
-<span class="nc" id="L2365">        fc.setLocation(frame.getLocation().x + 150, frame.getLocation().y + 100);</span>
-<span class="nc" id="L2366">        fc.setDialogTitle(Messages.getString(&quot;BoardEditor.saveAsImage&quot;));</span>
-<span class="nc" id="L2367">        fc.setFileFilter(new FileFilter() {</span>
+<span class="nc" id="L2367">        JFileChooser fc = new JFileChooser(&quot;.&quot;);</span>
+<span class="nc" id="L2368">        fc.setLocation(frame.getLocation().x + 150, frame.getLocation().y + 100);</span>
+<span class="nc" id="L2369">        fc.setDialogTitle(Messages.getString(&quot;BoardEditor.saveAsImage&quot;));</span>
+<span class="nc" id="L2370">        fc.setFileFilter(new FileFilter() {</span>
             @Override
             public boolean accept(File dir) {
-<span class="nc bnc" id="L2370" title="All 4 branches missed.">                return (dir.getName().endsWith(&quot;.png&quot;) || dir.isDirectory());</span>
+<span class="nc bnc" id="L2373" title="All 4 branches missed.">                return (dir.getName().endsWith(&quot;.png&quot;) || dir.isDirectory());</span>
             }
 
             @Override
             public String getDescription() {
-<span class="nc" id="L2375">                return &quot;.png&quot;;</span>
+<span class="nc" id="L2378">                return &quot;.png&quot;;</span>
             }
         });
-<span class="nc" id="L2378">        int returnVal = fc.showSaveDialog(frame);</span>
-<span class="nc bnc" id="L2379" title="All 4 branches missed.">        if ((returnVal != JFileChooser.APPROVE_OPTION) || (fc.getSelectedFile() == null)) {</span>
+<span class="nc" id="L2381">        int returnVal = fc.showSaveDialog(frame);</span>
+<span class="nc bnc" id="L2382" title="All 4 branches missed.">        if ((returnVal != JFileChooser.APPROVE_OPTION) || (fc.getSelectedFile() == null)) {</span>
             // I want a file, y'know!
-<span class="nc" id="L2381">            return;</span>
+<span class="nc" id="L2384">            return;</span>
         }
-<span class="nc" id="L2383">        curfileBoardImage = fc.getSelectedFile();</span>
+<span class="nc" id="L2386">        curfileBoardImage = fc.getSelectedFile();</span>
 
         // make sure the file ends in png
-<span class="nc bnc" id="L2386" title="All 2 branches missed.">        if (!curfileBoardImage.getName().toLowerCase(Locale.ENGLISH).endsWith(&quot;.png&quot;)) {</span>
+<span class="nc bnc" id="L2389" title="All 2 branches missed.">        if (!curfileBoardImage.getName().toLowerCase(Locale.ENGLISH).endsWith(&quot;.png&quot;)) {</span>
             try {
-<span class="nc" id="L2388">                curfileBoardImage = new File(curfileBoardImage.getCanonicalPath() + &quot;.png&quot;);</span>
-<span class="nc" id="L2389">            } catch (IOException ie) {</span>
+<span class="nc" id="L2391">                curfileBoardImage = new File(curfileBoardImage.getCanonicalPath() + &quot;.png&quot;);</span>
+<span class="nc" id="L2392">            } catch (IOException ie) {</span>
                 // failure!
-<span class="nc" id="L2391">                return;</span>
-<span class="nc" id="L2392">            }</span>
+<span class="nc" id="L2394">                return;</span>
+<span class="nc" id="L2395">            }</span>
         }
-<span class="nc" id="L2394">        boardSaveImage(ignoreUnits);</span>
-<span class="nc" id="L2395">    }</span>
+<span class="nc" id="L2397">        boardSaveImage(ignoreUnits);</span>
+<span class="nc" id="L2398">    }</span>
 
     @Override
     public void hexMoused(BoardViewEvent b) {
-<span class="nc bnc" id="L2399" title="All 2 branches missed.">        if (b.getType() == BoardViewEvent.BOARD_HEX_POPUP) {</span>
-<span class="nc" id="L2400">            showBoardPopup(b.getCoords());</span>
+<span class="nc bnc" id="L2402" title="All 2 branches missed.">        if (b.getType() == BoardViewEvent.BOARD_HEX_POPUP) {</span>
+<span class="nc" id="L2403">            showBoardPopup(b.getCoords());</span>
         }
-<span class="nc" id="L2402">    }</span>
+<span class="nc" id="L2405">    }</span>
 
     @Override
     public void hexCursor(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2407">    }</span>
+<span class="nc" id="L2410">    }</span>
 
     @Override
     public void boardHexHighlighted(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2412">    }</span>
+<span class="nc" id="L2415">    }</span>
 
     @Override
     public void hexSelected(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2417">    }</span>
+<span class="nc" id="L2420">    }</span>
 
     @Override
     public void firstLOSHex(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2422">    }</span>
+<span class="nc" id="L2425">    }</span>
 
     @Override
     public void secondLOSHex(BoardViewEvent b, Coords c) {
         // ignored
-<span class="nc" id="L2427">    }</span>
+<span class="nc" id="L2430">    }</span>
 
     @Override
     public void finishedMovingUnits(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2432">    }</span>
+<span class="nc" id="L2435">    }</span>
 
     @Override
     public void unitSelected(BoardViewEvent b) {
         // ignored
-<span class="nc" id="L2437">    }</span>
+<span class="nc" id="L2440">    }</span>
     
     /**
      * Returns true if a dialog is visible on top of the &lt;code&gt;ClientGUI&lt;/code&gt;.
@@ -2443,83 +2446,83 @@ public class ClientGUI extends JPanel implements WindowListener, BoardViewListen
      * @return
      */
     public boolean shouldIgnoreHotKeys(){
-<span class="nc bnc" id="L2446" title="All 4 branches missed.">        return ignoreHotKeys </span>
-<span class="nc bnc" id="L2447" title="All 4 branches missed.">                || ((gameOptionsDialog != null) &amp;&amp; gameOptionsDialog.isVisible())</span>
-<span class="nc bnc" id="L2448" title="All 4 branches missed.">                || ((about != null) &amp;&amp; about.isVisible())</span>
-<span class="nc bnc" id="L2449" title="All 4 branches missed.">                || ((help != null) &amp;&amp; help.isVisible())</span>
-<span class="nc bnc" id="L2450" title="All 4 branches missed.">                || ((setdlg != null) &amp;&amp; setdlg.isVisible())</span>
-<span class="nc bnc" id="L2451" title="All 2 branches missed.">                || ((aw != null) &amp;&amp; aw.isVisible());</span>
+<span class="nc bnc" id="L2449" title="All 4 branches missed.">        return ignoreHotKeys </span>
+<span class="nc bnc" id="L2450" title="All 4 branches missed.">                || ((gameOptionsDialog != null) &amp;&amp; gameOptionsDialog.isVisible())</span>
+<span class="nc bnc" id="L2451" title="All 4 branches missed.">                || ((about != null) &amp;&amp; about.isVisible())</span>
+<span class="nc bnc" id="L2452" title="All 4 branches missed.">                || ((help != null) &amp;&amp; help.isVisible())</span>
+<span class="nc bnc" id="L2453" title="All 4 branches missed.">                || ((setdlg != null) &amp;&amp; setdlg.isVisible())</span>
+<span class="nc bnc" id="L2454" title="All 2 branches missed.">                || ((aw != null) &amp;&amp; aw.isVisible());</span>
     }
 
     @Override
     public void componentHidden(ComponentEvent arg0) {
 
-<span class="nc" id="L2457">    }</span>
+<span class="nc" id="L2460">    }</span>
 
     @Override
     public void componentMoved(ComponentEvent arg0) {
 
-<span class="nc" id="L2462">    }</span>
+<span class="nc" id="L2465">    }</span>
 
     @Override
     public void componentResized(ComponentEvent arg0) {
-<span class="nc" id="L2466">        bv.setPreferredSize(getSize());        </span>
-<span class="nc" id="L2467">    }</span>
+<span class="nc" id="L2469">        bv.setPreferredSize(getSize());        </span>
+<span class="nc" id="L2470">    }</span>
 
     @Override
     public void componentShown(ComponentEvent arg0) {
 
-<span class="nc" id="L2472">    }</span>
+<span class="nc" id="L2475">    }</span>
 
     void replacePlayer() {
-<span class="nc" id="L2475">        Set&lt;IPlayer&gt; ghostPlayers = new HashSet&lt;&gt;();</span>
-<span class="nc bnc" id="L2476" title="All 2 branches missed.">        for (IPlayer p : client.getGame().getPlayersVector()) {</span>
-<span class="nc bnc" id="L2477" title="All 2 branches missed.">            if (p.isGhost()) {</span>
-<span class="nc" id="L2478">                ghostPlayers.add(p);</span>
+<span class="nc" id="L2478">        Set&lt;IPlayer&gt; ghostPlayers = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L2479" title="All 2 branches missed.">        for (IPlayer p : client.getGame().getPlayersVector()) {</span>
+<span class="nc bnc" id="L2480" title="All 2 branches missed.">            if (p.isGhost()) {</span>
+<span class="nc" id="L2481">                ghostPlayers.add(p);</span>
             }
-<span class="nc" id="L2480">        }</span>
-<span class="nc bnc" id="L2481" title="All 2 branches missed.">        if (ghostPlayers.isEmpty()) {</span>
-<span class="nc" id="L2482">            JOptionPane.showMessageDialog(this, &quot;No ghost players to replace.&quot;, &quot;No Ghosts&quot;,</span>
+<span class="nc" id="L2483">        }</span>
+<span class="nc bnc" id="L2484" title="All 2 branches missed.">        if (ghostPlayers.isEmpty()) {</span>
+<span class="nc" id="L2485">            JOptionPane.showMessageDialog(this, &quot;No ghost players to replace.&quot;, &quot;No Ghosts&quot;,</span>
                                           JOptionPane.INFORMATION_MESSAGE);
-<span class="nc" id="L2484">            return;</span>
+<span class="nc" id="L2487">            return;</span>
         }
 
-<span class="nc" id="L2487">        BotConfigDialog botConfigDialog = new BotConfigDialog(this.frame, ghostPlayers);</span>
-<span class="nc" id="L2488">        botConfigDialog.setModal(true);</span>
-<span class="nc" id="L2489">        botConfigDialog.setVisible(true);</span>
-<span class="nc bnc" id="L2490" title="All 2 branches missed.">        if (botConfigDialog.dialogAborted) {</span>
-<span class="nc" id="L2491">            return;</span>
+<span class="nc" id="L2490">        BotConfigDialog botConfigDialog = new BotConfigDialog(this.frame, ghostPlayers);</span>
+<span class="nc" id="L2491">        botConfigDialog.setModal(true);</span>
+<span class="nc" id="L2492">        botConfigDialog.setVisible(true);</span>
+<span class="nc bnc" id="L2493" title="All 2 branches missed.">        if (botConfigDialog.dialogAborted) {</span>
+<span class="nc" id="L2494">            return;</span>
         }
-<span class="nc" id="L2493">        AddBotUtil util = new AddBotUtil();</span>
-<span class="nc" id="L2494">        BotClient botClient = botConfigDialog.getSelectedBot(client.getHost(), client.getPort());</span>
+<span class="nc" id="L2496">        AddBotUtil util = new AddBotUtil();</span>
+<span class="nc" id="L2497">        BotClient botClient = botConfigDialog.getSelectedBot(client.getHost(), client.getPort());</span>
         String[] args;
-<span class="nc" id="L2496">        Collection&lt;String&gt; playersToReplace = botConfigDialog.getPlayerToReplace();</span>
-<span class="nc" id="L2497">        Collection&lt;String[]&gt; replaceCommands = new HashSet&lt;&gt;(playersToReplace.size());</span>
-<span class="nc bnc" id="L2498" title="All 2 branches missed.">        if (botClient instanceof Princess) {</span>
-<span class="nc bnc" id="L2499" title="All 2 branches missed.">            for (String player : playersToReplace) {</span>
-<span class="nc" id="L2500">                args = new String[]{</span>
+<span class="nc" id="L2499">        Collection&lt;String&gt; playersToReplace = botConfigDialog.getPlayerToReplace();</span>
+<span class="nc" id="L2500">        Collection&lt;String[]&gt; replaceCommands = new HashSet&lt;&gt;(playersToReplace.size());</span>
+<span class="nc bnc" id="L2501" title="All 2 branches missed.">        if (botClient instanceof Princess) {</span>
+<span class="nc bnc" id="L2502" title="All 2 branches missed.">            for (String player : playersToReplace) {</span>
+<span class="nc" id="L2503">                args = new String[]{</span>
                         &quot;/replacePlayer&quot;,
                         &quot;-b:Princess&quot;,
-<span class="nc" id="L2503">                        &quot;-c:&quot; + ((Princess) botClient).getBehaviorSettings().getDescription(),</span>
-<span class="nc" id="L2504">                        &quot;-v:&quot; + ((Princess) botClient).getVerbosity(),</span>
+<span class="nc" id="L2506">                        &quot;-c:&quot; + ((Princess) botClient).getBehaviorSettings().getDescription(),</span>
+<span class="nc" id="L2507">                        &quot;-v:&quot; + ((Princess) botClient).getVerbosity(),</span>
                         &quot;-p:&quot; + player
                 };
-<span class="nc" id="L2507">                replaceCommands.add(args);</span>
-<span class="nc" id="L2508">            }</span>
+<span class="nc" id="L2510">                replaceCommands.add(args);</span>
+<span class="nc" id="L2511">            }</span>
         } else {
-<span class="nc bnc" id="L2510" title="All 2 branches missed.">            for (String player : playersToReplace) {</span>
-<span class="nc" id="L2511">                args = new String[]{</span>
+<span class="nc bnc" id="L2513" title="All 2 branches missed.">            for (String player : playersToReplace) {</span>
+<span class="nc" id="L2514">                args = new String[]{</span>
                         &quot;/replacePlayer&quot;,
                         player
                 };
-<span class="nc" id="L2515">                replaceCommands.add(args);</span>
-<span class="nc" id="L2516">            }</span>
+<span class="nc" id="L2518">                replaceCommands.add(args);</span>
+<span class="nc" id="L2519">            }</span>
         }
-<span class="nc" id="L2518">        botClient.die();</span>
-<span class="nc bnc" id="L2519" title="All 2 branches missed.">        for (String[] cmd : replaceCommands) {</span>
-<span class="nc" id="L2520">            util.addBot(cmd, client.getGame(), client.getHost(), client.getPort());</span>
-<span class="nc" id="L2521">        }</span>
-<span class="nc" id="L2522">    }</span>
+<span class="nc" id="L2521">        botClient.die();</span>
+<span class="nc bnc" id="L2522" title="All 2 branches missed.">        for (String[] cmd : replaceCommands) {</span>
+<span class="nc" id="L2523">            util.addBot(cmd, client.getGame(), client.getHost(), client.getPort());</span>
+<span class="nc" id="L2524">        }</span>
+<span class="nc" id="L2525">    }</span>
     
     /**
      * Returns the panel for the current phase.  The ClientGUI is split into
@@ -2530,19 +2533,19 @@ public class ClientGUI extends JPanel implements WindowListener, BoardViewListen
      * @return
      */
     public JComponent getCurrentPanel() {
-<span class="nc" id="L2533">        return curPanel;</span>
+<span class="nc" id="L2536">        return curPanel;</span>
     }
 
     public boolean isProcessingPointblankShot() {
-<span class="nc bnc" id="L2537" title="All 2 branches missed.">        return pointblankEID != Entity.NONE;</span>
+<span class="nc bnc" id="L2540" title="All 2 branches missed.">        return pointblankEID != Entity.NONE;</span>
     }
 
     public void setPointblankEID(int eid) {
-<span class="nc" id="L2541">        this.pointblankEID = eid;</span>
-<span class="nc" id="L2542">    }</span>
+<span class="nc" id="L2544">        this.pointblankEID = eid;</span>
+<span class="nc" id="L2545">    }</span>
 
     public int getPointblankEID() {
-<span class="nc" id="L2545">        return pointblankEID;</span>
+<span class="nc" id="L2548">        return pointblankEID;</span>
     }
 
 }

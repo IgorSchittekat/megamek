@@ -39,20 +39,20 @@ public class LAMPilot extends Crew {
     private int pilotingAero;
 
     public LAMPilot(LandAirMech lam) {
-<span class="fc" id="L42">        this(lam, RandomNameGenerator.UNNAMED_FULL_NAME, 4, 5,</span>
+<span class="nc" id="L42">        this(lam, RandomNameGenerator.UNNAMED_FULL_NAME, 4, 5,</span>
                 4, 5, Gender.RANDOMIZE, null);
-<span class="fc" id="L44">    }</span>
+<span class="nc" id="L44">    }</span>
 
     public LAMPilot(LandAirMech lam, String name, int gunneryMech, int pilotingMech, int gunneryAero,
             int pilotingAero, Gender gender, Map&lt;Integer, Map&lt;String, String&gt;&gt; extraData) {
-<span class="fc" id="L48">        super(CrewType.SINGLE, name, 1, gunneryMech, pilotingMech, gender, extraData);</span>
-<span class="fc" id="L49">        this.lam = lam;</span>
-<span class="fc" id="L50">        this.gunneryAero = gunneryAero;</span>
-<span class="fc" id="L51">        this.pilotingAero = pilotingAero;</span>
-<span class="fc" id="L52">        this.gunneryAeroB = gunneryAero;</span>
-<span class="fc" id="L53">        this.gunneryAeroL = gunneryAero;</span>
-<span class="fc" id="L54">        this.gunneryAeroM = gunneryAero;</span>
-<span class="fc" id="L55">    }</span>
+<span class="nc" id="L48">        super(CrewType.SINGLE, name, 1, gunneryMech, pilotingMech, gender, extraData);</span>
+<span class="nc" id="L49">        this.lam = lam;</span>
+<span class="nc" id="L50">        this.gunneryAero = gunneryAero;</span>
+<span class="nc" id="L51">        this.pilotingAero = pilotingAero;</span>
+<span class="nc" id="L52">        this.gunneryAeroB = gunneryAero;</span>
+<span class="nc" id="L53">        this.gunneryAeroL = gunneryAero;</span>
+<span class="nc" id="L54">        this.gunneryAeroM = gunneryAero;</span>
+<span class="nc" id="L55">    }</span>
 
     /**
      * Used by LandAirMech.setCrew to convert a &lt;code&gt;Crew&lt;/code&gt; instance into

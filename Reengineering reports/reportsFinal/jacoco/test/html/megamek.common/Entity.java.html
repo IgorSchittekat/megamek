@@ -1517,8 +1517,8 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
     }
 
     public void setCrew(Crew crew) {
-<span class="fc" id="L1520">        this.crew = crew;</span>
-<span class="fc" id="L1521">    }</span>
+<span class="nc" id="L1520">        this.crew = crew;</span>
+<span class="nc" id="L1521">    }</span>
     
     /**
      * @return The total number of crew available to supplement marines on boarding actions.
@@ -3585,7 +3585,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
     public Mounted addEquipment(EquipmentType etype, int loc,
                                 boolean rearMounted, int baMountLoc, boolean isArmored,
                                 boolean isTurreted) throws LocationFullException {
-<span class="fc" id="L3588">        return addEquipment(etype, loc, rearMounted, baMountLoc, isArmored,</span>
+<span class="nc" id="L3588">        return addEquipment(etype, loc, rearMounted, baMountLoc, isArmored,</span>
                             isTurreted, false, false, false);
     }
 
@@ -3808,7 +3808,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      */
     public Mounted getEquipment(int index) {
         try {
-<span class="fc" id="L3811">            return equipmentList.get(index);</span>
+<span class="nc" id="L3811">            return equipmentList.get(index);</span>
 <span class="nc" id="L3812">        } catch (IndexOutOfBoundsException ex) {</span>
 <span class="nc" id="L3813">            return null;</span>
         }
@@ -4625,9 +4625,9 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * @return true if the crit was succesfully added to any slot
      */
     public boolean addCritical(int loc, int slot, CriticalSlot cs) {
-<span class="pc bpc" id="L4628" title="1 of 2 branches missed.">        if (getCritical(loc, slot) == null) {</span>
-<span class="fc" id="L4629">            setCritical(loc, slot, cs);</span>
-<span class="fc" id="L4630">            return true;</span>
+<span class="nc bnc" id="L4628" title="All 2 branches missed.">        if (getCritical(loc, slot) == null) {</span>
+<span class="nc" id="L4629">            setCritical(loc, slot, cs);</span>
+<span class="nc" id="L4630">            return true;</span>
         }
 <span class="nc" id="L4632">        return addCritical(loc, cs);</span>
     }
@@ -4825,22 +4825,22 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * Number of slots doomed, missing or destroyed in a location
      */
     public int getHitCriticals(int type, int index, int loc) {
-<span class="fc" id="L4828">        int hits = 0;</span>
-<span class="fc" id="L4829">        Mounted m = null;</span>
-<span class="pc bpc" id="L4830" title="1 of 2 branches missed.">        if (type == CriticalSlot.TYPE_EQUIPMENT) {</span>
+<span class="nc" id="L4828">        int hits = 0;</span>
+<span class="nc" id="L4829">        Mounted m = null;</span>
+<span class="nc bnc" id="L4830" title="All 2 branches missed.">        if (type == CriticalSlot.TYPE_EQUIPMENT) {</span>
 <span class="nc" id="L4831">            m = getEquipment(index);</span>
         }
 
-<span class="fc" id="L4834">        int numberOfCriticals = getNumberOfCriticals(loc);</span>
-<span class="fc bfc" id="L4835" title="All 2 branches covered.">        for (int i = 0; i &lt; numberOfCriticals; i++) {</span>
-<span class="fc" id="L4836">            CriticalSlot ccs = getCritical(loc, i);</span>
+<span class="nc" id="L4834">        int numberOfCriticals = getNumberOfCriticals(loc);</span>
+<span class="nc bnc" id="L4835" title="All 2 branches missed.">        for (int i = 0; i &lt; numberOfCriticals; i++) {</span>
+<span class="nc" id="L4836">            CriticalSlot ccs = getCritical(loc, i);</span>
 
             //  Check to see if this crit mounts the supplied item
             //  For systems, we can compare the index, but for equipment we
             //  need to get the Mounted that is mounted in that index and
             //  compare types.  Superheavies may have two Mounted in each crit
-<span class="pc bpc" id="L4842" title="1 of 4 branches missed.">            if ((ccs != null) &amp;&amp; (ccs.getType() == type)) {</span>
-<span class="pc bpc" id="L4843" title="3 of 6 branches missed.">                if (ccs.isDamaged() || ccs.isBreached() || ccs.isMissing()) {</span>
+<span class="nc bnc" id="L4842" title="All 4 branches missed.">            if ((ccs != null) &amp;&amp; (ccs.getType() == type)) {</span>
+<span class="nc bnc" id="L4843" title="All 6 branches missed.">                if (ccs.isDamaged() || ccs.isBreached() || ccs.isMissing()) {</span>
 <span class="nc bnc" id="L4844" title="All 4 branches missed.">                    if ((type == CriticalSlot.TYPE_SYSTEM) &amp;&amp; (ccs.getIndex() == index)) {</span>
 <span class="nc" id="L4845">                        hits++;</span>
 <span class="nc bnc" id="L4846" title="All 6 branches missed.">                    } else if ((type == CriticalSlot.TYPE_EQUIPMENT) &amp;&amp; (m.equals(ccs.getMount()) || m.equals(ccs</span>
@@ -4850,7 +4850,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
                 }
             }
         }
-<span class="fc" id="L4853">        return hits;</span>
+<span class="nc" id="L4853">        return hits;</span>
     }
 
     protected abstract int[] getNoOfSlots();
@@ -4995,11 +4995,11 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * destroyed or not
      */
     public boolean hasSystem(int system, int loc) {
-<span class="pc bpc" id="L4998" title="1 of 2 branches missed.">        for (int i = 0; i &lt; getNumberOfCriticals(loc); i++) {</span>
-<span class="fc" id="L4999">            CriticalSlot ccs = getCritical(loc, i);</span>
-<span class="pc bpc" id="L5000" title="2 of 4 branches missed.">            if ((ccs != null) &amp;&amp; (ccs.getType() == CriticalSlot.TYPE_SYSTEM)</span>
-<span class="fc bfc" id="L5001" title="All 2 branches covered.">                &amp;&amp; (ccs.getIndex() == system)) {</span>
-<span class="fc" id="L5002">                return true;</span>
+<span class="nc bnc" id="L4998" title="All 2 branches missed.">        for (int i = 0; i &lt; getNumberOfCriticals(loc); i++) {</span>
+<span class="nc" id="L4999">            CriticalSlot ccs = getCritical(loc, i);</span>
+<span class="nc bnc" id="L5000" title="All 4 branches missed.">            if ((ccs != null) &amp;&amp; (ccs.getType() == CriticalSlot.TYPE_SYSTEM)</span>
+<span class="nc bnc" id="L5001" title="All 2 branches missed.">                &amp;&amp; (ccs.getIndex() == system)) {</span>
+<span class="nc" id="L5002">                return true;</span>
             }
         }
 <span class="nc" id="L5005">        return false;</span>
@@ -5037,7 +5037,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * else &lt;code&gt;false&lt;/code&gt;
      */
     public boolean hasShield() {
-<span class="fc" id="L5040">        return false;</span>
+<span class="nc" id="L5040">        return false;</span>
     }
 
     /**
@@ -5047,7 +5047,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * the number shields of that size.
      */
     public int getNumberOfShields(long size) {
-<span class="fc" id="L5050">        return 0;</span>
+<span class="nc" id="L5050">        return 0;</span>
     }
 
     /**
@@ -5104,18 +5104,18 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * @return number &lt;code&gt;int&lt;/code&gt;of useable UMU's
      */
     public int getActiveUMUCount() {
-<span class="pc bpc" id="L5107" title="3 of 4 branches missed.">        if (hasShield() &amp;&amp; (getNumberOfShields(MiscType.S_SHIELD_LARGE) &gt; 0)) {</span>
+<span class="nc bnc" id="L5107" title="All 4 branches missed.">        if (hasShield() &amp;&amp; (getNumberOfShields(MiscType.S_SHIELD_LARGE) &gt; 0)) {</span>
 <span class="nc" id="L5108">            return 0;</span>
         }
-<span class="fc" id="L5110">        int count = 0;</span>
-<span class="pc bpc" id="L5111" title="1 of 2 branches missed.">        for (Mounted m : getMisc()) {</span>
+<span class="nc" id="L5110">        int count = 0;</span>
+<span class="nc bnc" id="L5111" title="All 2 branches missed.">        for (Mounted m : getMisc()) {</span>
 <span class="nc" id="L5112">            EquipmentType type = m.getType();</span>
 <span class="nc bnc" id="L5113" title="All 4 branches missed.">            if ((type instanceof MiscType) &amp;&amp; type.hasFlag(MiscType.F_UMU)</span>
 <span class="nc bnc" id="L5114" title="All 6 branches missed.">                &amp;&amp; !(m.isDestroyed() || m.isMissing() || m.isBreached())) {</span>
 <span class="nc" id="L5115">                count++;</span>
             }
 <span class="nc" id="L5117">        }</span>
-<span class="fc" id="L5118">        return count;</span>
+<span class="nc" id="L5118">        return count;</span>
     }
 
     /**
@@ -13043,7 +13043,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
     }
 
     public boolean hasQuirk(String name) {
-<span class="fc bfc" id="L13046" title="All 2 branches covered.">        if ((null == game)</span>
+<span class="pc bpc" id="L13046" title="1 of 2 branches missed.">        if ((null == game)</span>
 <span class="pc bpc" id="L13047" title="1 of 2 branches missed.">            || !game.getOptions().booleanOption(OptionsConstants.ADVANCED_STRATOPS_QUIRKS)) {</span>
 <span class="fc" id="L13048">            return false;</span>
         }
@@ -14651,7 +14651,7 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
     }
 
     public int getConversionMode() {
-<span class="fc" id="L14654">        return conversionMode;</span>
+<span class="nc" id="L14654">        return conversionMode;</span>
     }
 
     /**
@@ -14659,8 +14659,8 @@ public abstract class Entity extends TurnOrdered implements Transporter, Targeta
      * @param mode
      */
     public void setConversionMode(int mode) {
-<span class="fc" id="L14662">        conversionMode = mode;</span>
-<span class="fc" id="L14663">    }</span>
+<span class="nc" id="L14662">        conversionMode = mode;</span>
+<span class="nc" id="L14663">    }</span>
 
     /**
      * Entities that can convert movement modes (LAMs, QuadVees) report the next mode to assume

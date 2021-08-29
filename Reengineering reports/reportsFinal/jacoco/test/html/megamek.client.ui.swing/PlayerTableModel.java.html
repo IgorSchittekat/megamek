@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerTableModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">megamek</a> &gt; <a href="index.source.html" class="el_package">megamek.client.ui.swing</a> &gt; <span class="el_source">PlayerTableModel.java</span></div><h1>PlayerTableModel.java</h1><pre class="source lang-java linenums">package megamek.client.ui.swing;
+
+import megamek.client.ui.Messages;
+import megamek.common.Entity;
+import megamek.common.IPlayer;
+import megamek.common.IStartingPositions;
+import megamek.common.options.OptionsConstants;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+
+public class PlayerTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = -1372393680232901923L;
+
+    public static final int COL_PLAYER = 0;
+    public static final int COL_RATING = 1;
+    public static final int COL_START = 2;
+    public static final int COL_TEAM = 3;
+    public static final int COL_BV = 4;
+    public static final int COL_TON = 5;
+    public static final int COL_COST = 6;
+    public static final int N_COL = 7;
+
+    private final ChatLounge chatLounge;
+    private ArrayList&lt;IPlayer&gt; players;
+    private ArrayList&lt;Integer&gt; bvs;
+    private ArrayList&lt;Integer&gt; costs;
+    private ArrayList&lt;Double&gt; tons;
+
+<span class="fc" id="L33">    public PlayerTableModel(ChatLounge lounge) {</span>
+<span class="fc" id="L34">        chatLounge = lounge;</span>
+<span class="fc" id="L35">        players = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L36">        bvs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L37">        costs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L38">        tons = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L39">    }</span>
+
+    @Override
+    public int getRowCount() {
+<span class="fc" id="L43">        return players.size();</span>
+    }
+
+    public void clearData() {
+<span class="fc" id="L47">        players = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L48">        bvs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L49">        costs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L50">        tons = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L51">    }</span>
+
+    @Override
+    public int getColumnCount() {
+<span class="fc" id="L55">        return N_COL;</span>
+    }
+
+    public void addPlayer(IPlayer player) {
+<span class="fc" id="L59">        players.add(player);</span>
+<span class="fc" id="L60">        int bv = 0;</span>
+<span class="fc" id="L61">        int cost = 0;</span>
+<span class="fc" id="L62">        double ton = 0;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (Entity entity : chatLounge.getClientgui().getClient().getEntitiesVector()) {</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">            if (entity.getOwner().equals(player)) {</span>
+<span class="fc" id="L65">                bv += entity.calculateBattleValue();</span>
+<span class="fc" id="L66">                cost += entity.getCost(false);</span>
+<span class="fc" id="L67">                ton += entity.getWeight();</span>
+            }
+<span class="fc" id="L69">        }</span>
+<span class="fc" id="L70">        bvs.add(bv);</span>
+<span class="fc" id="L71">        costs.add(cost);</span>
+<span class="fc" id="L72">        tons.add(ton);</span>
+<span class="fc" id="L73">        fireTableDataChanged();</span>
+<span class="fc" id="L74">    }</span>
+
+    @Override
+    public String getColumnName(int column) {
+<span class="fc bfc" id="L78" title="All 8 branches covered.">        switch (column) {</span>
+            case COL_PLAYER:
+<span class="fc" id="L80">                return Messages.getString(&quot;ChatLounge.colPlayer&quot;);</span>
+            case COL_RATING:
+<span class="fc" id="L82">                return &quot;Rating&quot;;</span>
+            case COL_START:
+<span class="fc" id="L84">                return &quot;Start&quot;;</span>
+            case COL_TEAM:
+<span class="fc" id="L86">                return &quot;Team&quot;;</span>
+            case COL_TON:
+<span class="fc" id="L88">                return Messages.getString(&quot;ChatLounge.colTon&quot;);</span>
+            case COL_BV:
+<span class="fc" id="L90">                return Messages.getString(&quot;ChatLounge.colBV&quot;);</span>
+            case COL_COST:
+<span class="fc" id="L92">                return Messages.getString(&quot;ChatLounge.colCost&quot;);</span>
+            default:
+<span class="fc" id="L94">                return &quot;??&quot;;</span>
+        }
+    }
+
+    @Override
+    public Class&lt;?&gt; getColumnClass(int c) {
+<span class="nc" id="L100">        return getValueAt(0, c).getClass();</span>
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int col) {
+<span class="fc" id="L105">        return false;</span>
+    }
+
+    @Override
+    public Object getValueAt(int row, int col) {
+<span class="fc" id="L110">        IPlayer player = getPlayerAt(row);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        boolean blindDrop = !player.equals(chatLounge.getClientgui().getClient().getLocalPlayer()) &amp;&amp;</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">                chatLounge.getClientgui().getClient().getGame().getOptions().booleanOption(OptionsConstants.BASE_REAL_BLIND_DROP);</span>
+<span class="pc bpc" id="L113" title="1 of 8 branches missed.">        switch (col) {</span>
+            case COL_PLAYER:
+<span class="fc" id="L115">                return player.getName();</span>
+            case COL_RATING:
+<span class="fc" id="L117">                return player.getRating();</span>
+            case COL_START:
+<span class="fc" id="L119">                return IStartingPositions.START_LOCATION_NAMES[player.getStartingPos()];</span>
+            case COL_TEAM:
+<span class="fc" id="L121">                return player.getTeam();</span>
+            case COL_BV:
+<span class="fc" id="L123">                int bv = bvs.get(row);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                if (blindDrop) {</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                    bv = bv &gt; 0 ? 9999 : 0;</span>
+                }
+<span class="fc" id="L127">                return bv;</span>
+            case COL_TON:
+<span class="fc" id="L129">                double ton = tons.get(row);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                if (blindDrop) {</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">                    ton = ton &gt; 0 ? 9999 : 0;</span>
+                }
+<span class="fc" id="L133">                return ton;</span>
+            case COL_COST:
+<span class="fc" id="L135">                int cost = costs.get(row);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">                if (blindDrop) {</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">                    cost = cost &gt; 0 ? 9999 : 0;</span>
+                }
+<span class="fc" id="L139">                return cost;</span>
+            default:
+<span class="nc" id="L141">                throw new IndexOutOfBoundsException();</span>
+        }
+    }
+
+    public IPlayer getPlayerAt(int row) {
+<span class="fc" id="L146">        return players.get(row);</span>
+    }
+
+    protected int getBvAt(int row) {
+<span class="fc" id="L150">        return bvs.get(row);</span>
+    }
+
+    protected int getCostAt(int row) {
+<span class="fc" id="L154">        return costs.get(row);</span>
+    }
+
+    protected Double getTonAt(int row) {
+<span class="fc" id="L158">        return tons.get(row);</span>
+    }
+
+    public JTable createPlayersTable() {
+<span class="nc" id="L162">        return new JTable(this) {</span>
+            private static final long serialVersionUID = 6252953920509362407L;
+
+            @Override
+            public String getToolTipText(MouseEvent e) {
+<span class="nc" id="L167">                java.awt.Point p = e.getPoint();</span>
+<span class="nc" id="L168">                int rowIndex = rowAtPoint(p);</span>
+<span class="nc" id="L169">                int colIndex = columnAtPoint(p);</span>
+<span class="nc" id="L170">                int realColIndex = convertColumnIndexToModel(colIndex);</span>
+<span class="nc" id="L171">                IPlayer player = getPlayerAt(rowIndex);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                if (player == null) {</span>
+<span class="nc" id="L173">                    return null;</span>
+                }
+<span class="nc" id="L175">                int mines = player.getNbrMFConventional() + player.getNbrMFActive() + player.getNbrMFInferno()</span>
+<span class="nc" id="L176">                        + player.getNbrMFVibra();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                if (realColIndex == COL_PLAYER) {</span>
+<span class="nc" id="L178">                    return Messages.getString(&quot;ChatLounge.tipPlayer&quot;,</span>
+<span class="nc" id="L179">                            getValueAt(rowIndex, colIndex), player.getConstantInitBonus(), mines);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                } else if (realColIndex == COL_RATING) {</span>
+<span class="nc" id="L181">                    return getValueAt(rowIndex, colIndex).toString();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                } else if (realColIndex == COL_TON) {</span>
+<span class="nc" id="L183">                    return getValueAt(rowIndex, colIndex).toString();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                } else if (realColIndex == COL_COST) {</span>
+<span class="nc" id="L185">                    return Messages.getString(&quot;ChatLounge.tipCost&quot;,</span>
+<span class="nc" id="L186">                            getValueAt(rowIndex, colIndex));</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                } else if (realColIndex == COL_START) {</span>
+<span class="nc" id="L188">                    return (String) getValueAt(rowIndex, colIndex);</span>
+                } else {
+<span class="nc" id="L190">                    return Integer.toString((Integer) getValueAt(rowIndex, colIndex));</span>
+                }
+            }
+        };
+    }
+
+    public void setupColumnWidths(JTable playersTable) {
+        TableColumn column;
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        for (int i = 0; i &lt; N_COL; i++) {</span>
+<span class="nc" id="L199">            column = playersTable.getColumnModel().getColumn(i);</span>
+<span class="nc bnc" id="L200" title="All 4 branches missed.">            switch (i) {</span>
+                case COL_PLAYER:
+<span class="nc" id="L202">                    column.setPreferredWidth(75);</span>
+<span class="nc" id="L203">                    break;</span>
+                case COL_RATING:
+                case COL_START:
+<span class="nc" id="L206">                    column.setPreferredWidth(50);</span>
+<span class="nc" id="L207">                    break;</span>
+                case COL_COST:
+<span class="nc" id="L209">                    column.setPreferredWidth(55);</span>
+<span class="nc" id="L210">                    break;</span>
+                default:
+<span class="nc" id="L212">                    column.setPreferredWidth(35);</span>
+            }
+        }
+<span class="nc" id="L215">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

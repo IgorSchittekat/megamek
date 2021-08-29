@@ -25,16 +25,16 @@ public class EquipmentMessages {
 
     private static final String BUNDLE_NAME = &quot;megamek.common.equipmentmessages&quot;;//$NON-NLS-1$
 
-<span class="fc" id="L28">    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle</span>
-<span class="fc" id="L29">            .getBundle(BUNDLE_NAME, PreferenceManager.getClientPreferences()</span>
-<span class="fc" id="L30">                    .getLocale(), new EncodeControl());</span>
+<span class="nc" id="L28">    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle</span>
+<span class="nc" id="L29">            .getBundle(BUNDLE_NAME, PreferenceManager.getClientPreferences()</span>
+<span class="nc" id="L30">                    .getLocale(), new EncodeControl());</span>
 
     private EquipmentMessages() {
     }
 
     public static String getString(String key) {
         try {
-<span class="fc" id="L37">            return RESOURCE_BUNDLE.getString(key);</span>
+<span class="nc" id="L37">            return RESOURCE_BUNDLE.getString(key);</span>
 <span class="nc" id="L38">        } catch (MissingResourceException e) {</span>
 <span class="nc" id="L39">            return null;</span>
         }

@@ -174,7 +174,7 @@ public class TechAdvancement implements ITechnology {
      * @return A list of F_* constants that indicate which factions started prototype development.
      */
     public int[] getPrototypeFactions() {
-<span class="fc" id="L177">        return prototypeFactions;</span>
+<span class="nc" id="L177">        return prototypeFactions;</span>
     }
 
     /**
@@ -194,7 +194,7 @@ public class TechAdvancement implements ITechnology {
      * before the technology was commonly available.
      */
     public int[] getProductionFactions() {
-<span class="fc" id="L197">        return productionFactions;</span>
+<span class="nc" id="L197">        return productionFactions;</span>
     }
 
     /**
@@ -214,7 +214,7 @@ public class TechAdvancement implements ITechnology {
      * became extinct.
      */
     public int[] getExtinctionFactions() {
-<span class="fc" id="L217">        return extinctionFactions;</span>
+<span class="nc" id="L217">        return extinctionFactions;</span>
     }
 
     /**
@@ -234,7 +234,7 @@ public class TechAdvancement implements ITechnology {
      * became extinct.
      */
     public int[] getReintroductionFactions() {
-<span class="fc" id="L237">        return reintroductionFactions;</span>
+<span class="nc" id="L237">        return reintroductionFactions;</span>
     }
 
     /**
@@ -508,22 +508,22 @@ public class TechAdvancement implements ITechnology {
      * @return
      */
     private String formatDate(int index, boolean clan, int[] factions) {
-<span class="fc bfc" id="L511" title="All 2 branches covered.">        int date = clan? clanAdvancement[index] : isAdvancement[index];</span>
-<span class="fc bfc" id="L512" title="All 2 branches covered.">        if (date == DATE_NONE) {</span>
-<span class="fc" id="L513">            return &quot;-&quot;;</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">        int date = clan? clanAdvancement[index] : isAdvancement[index];</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">        if (date == DATE_NONE) {</span>
+<span class="nc" id="L513">            return &quot;-&quot;;</span>
         }
-<span class="fc" id="L515">        StringBuilder sb = new StringBuilder();</span>
-<span class="pc bpc" id="L516" title="4 of 6 branches missed.">        if (clan? clanApproximate[index] : isApproximate[index]) {</span>
+<span class="nc" id="L515">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L516" title="All 6 branches missed.">        if (clan? clanApproximate[index] : isApproximate[index]) {</span>
 <span class="nc" id="L517">            sb.append(&quot;~&quot;);</span>
         }
-<span class="pc bpc" id="L519" title="1 of 2 branches missed.">        if (date == DATE_PS) {</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">        if (date == DATE_PS) {</span>
 <span class="nc" id="L520">            sb.append(&quot;PS&quot;);</span>
-<span class="pc bpc" id="L521" title="1 of 2 branches missed.">        } else if (date == DATE_ES) {</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">        } else if (date == DATE_ES) {</span>
 <span class="nc" id="L522">            sb.append(&quot;ES&quot;);</span>
         } else {
-<span class="fc" id="L524">            sb.append(date);</span>
+<span class="nc" id="L524">            sb.append(date);</span>
         }
-<span class="pc bpc" id="L526" title="3 of 4 branches missed.">        if (factions != null &amp;&amp; factions.length &gt; 0) {</span>
+<span class="nc bnc" id="L526" title="All 4 branches missed.">        if (factions != null &amp;&amp; factions.length &gt; 0) {</span>
 <span class="nc" id="L527">            StringJoiner sj = new StringJoiner(&quot;,&quot;);</span>
 <span class="nc bnc" id="L528" title="All 2 branches missed.">            for (int f : factions) {</span>
 <span class="nc bnc" id="L529" title="All 8 branches missed.">                if ((clan &amp;&amp; f &gt;= F_CLAN) || (!clan &amp;&amp; f &lt; F_CLAN)) {</span>
@@ -534,7 +534,7 @@ public class TechAdvancement implements ITechnology {
 <span class="nc" id="L534">                sb.append(&quot;(&quot;).append(sj.toString()).append(&quot;)&quot;);</span>
             }
         }
-<span class="fc" id="L537">        return sb.toString();</span>
+<span class="nc" id="L537">        return sb.toString();</span>
     }
 
     /**
@@ -598,9 +598,9 @@ public class TechAdvancement implements ITechnology {
      * Formats earliest of Clan or IS common date indicating approximate when appropriate for mixed tech.
      */
     public String getCommonDateName() {
-<span class="pc bpc" id="L601" title="3 of 6 branches missed.">        boolean useClanDate = isAdvancement[COMMON] == DATE_NONE</span>
+<span class="nc bnc" id="L601" title="All 6 branches missed.">        boolean useClanDate = isAdvancement[COMMON] == DATE_NONE</span>
                 || (clanAdvancement[COMMON] != DATE_NONE &amp;&amp; clanAdvancement[COMMON] &lt; isAdvancement[COMMON]);
-<span class="fc" id="L603">        return formatDate(COMMON, useClanDate, null);</span>
+<span class="nc" id="L603">        return formatDate(COMMON, useClanDate, null);</span>
     }
 
     /**
@@ -608,7 +608,7 @@ public class TechAdvancement implements ITechnology {
      * for either IS or Clan use tech base.
      */
     public String getExtinctionDateName(boolean clan) {
-<span class="fc" id="L611">        return formatDate(EXTINCT, clan, extinctionFactions);</span>
+<span class="nc" id="L611">        return formatDate(EXTINCT, clan, extinctionFactions);</span>
     }
 
     /**
@@ -616,7 +616,7 @@ public class TechAdvancement implements ITechnology {
      * and extinction faction if any for mixed tech.
      */
     public String getExtinctionDateName() {
-<span class="pc bpc" id="L619" title="1 of 2 branches missed.">        if (techBase == TECH_BASE_ALL) {</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">        if (techBase == TECH_BASE_ALL) {</span>
 <span class="nc bnc" id="L620" title="All 2 branches missed.">            if (isAdvancement[EXTINCT] == DATE_NONE) {</span>
                 // If there is no IS date, choose the Clan date
 <span class="nc" id="L622">                return getExtinctionDateName(true);</span>
@@ -627,7 +627,7 @@ public class TechAdvancement implements ITechnology {
 <span class="nc bnc" id="L627" title="All 2 branches missed.">                return formatDate(EXTINCT, clanAdvancement[EXTINCT] &gt; isAdvancement[EXTINCT], extinctionFactions);</span>
             }
         } else {
-<span class="pc bpc" id="L630" title="1 of 2 branches missed.">            return getExtinctionDateName(techBase == TECH_BASE_CLAN);</span>
+<span class="nc bnc" id="L630" title="All 2 branches missed.">            return getExtinctionDateName(techBase == TECH_BASE_CLAN);</span>
         }
     }
 
@@ -644,9 +644,9 @@ public class TechAdvancement implements ITechnology {
      * and reintroduction faction if any for mixed tech.
      */
     public String getReintroductionDateName() {
-<span class="pc bpc" id="L647" title="5 of 6 branches missed.">        boolean useClanDate = isAdvancement[REINTRODUCED] == DATE_NONE</span>
+<span class="nc bnc" id="L647" title="All 6 branches missed.">        boolean useClanDate = isAdvancement[REINTRODUCED] == DATE_NONE</span>
                 || (clanAdvancement[REINTRODUCED] != DATE_NONE &amp;&amp; clanAdvancement[REINTRODUCED] &lt; isAdvancement[REINTRODUCED]);
-<span class="fc" id="L649">        return formatDate(REINTRODUCED, useClanDate, reintroductionFactions);</span>
+<span class="nc" id="L649">        return formatDate(REINTRODUCED, useClanDate, reintroductionFactions);</span>
     }
 
     /**
@@ -735,7 +735,7 @@ public class TechAdvancement implements ITechnology {
 
     @Override
     public boolean isMixedTech() {
-<span class="fc bfc" id="L738" title="All 2 branches covered.">        return techBase == TECH_BASE_ALL;</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">        return techBase == TECH_BASE_ALL;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
