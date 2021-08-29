@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.internal.util.MockUtil;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -205,5 +206,41 @@ public class GameTest {
         game.setTurnVector(turnVector);
         game.removeTurnFor(e2);
         TestCase.assertEquals(new Vector<>(), game.getTurnVector());
+    }
+
+    @Test
+    public void testResetPSRs() {
+        Game game = new Game();
+        Entity entity = Mockito.mock(Entity.class);
+        PilotingRollData data = Mockito.mock(PilotingRollData.class);
+        game.addPSR(data);
+        Mockito.when(entity.getId()).thenReturn(5);
+        Mockito.when(data.getEntityId()).thenReturn(5);
+        game.resetPSRs(entity);
+        TestCase.assertFalse(game.getPSRs().hasMoreElements());
+    }
+
+    @Test
+    public void testResetExtremeGravityPSRs() {
+        Game game = new Game();
+        Entity entity = Mockito.mock(Entity.class);
+        PilotingRollData data = Mockito.mock(PilotingRollData.class);
+        game.addExtremeGravityPSR(data);
+        Mockito.when(entity.getId()).thenReturn(5);
+        Mockito.when(data.getEntityId()).thenReturn(5);
+        game.resetExtremeGravityPSRs(entity);
+        TestCase.assertFalse(game.getExtremeGravityPSRs().hasMoreElements());
+    }
+
+    @Test
+    public void testResetControlRolls() {
+        Game game = new Game();
+        Entity entity = Mockito.mock(Entity.class);
+        PilotingRollData data = Mockito.mock(PilotingRollData.class);
+        game.addControlRoll(data);
+        Mockito.when(entity.getId()).thenReturn(5);
+        Mockito.when(data.getEntityId()).thenReturn(5);
+        game.resetControlRolls(entity);
+        TestCase.assertFalse(game.getControlRolls().hasMoreElements());
     }
 }
