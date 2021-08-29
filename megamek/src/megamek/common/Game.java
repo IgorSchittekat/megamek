@@ -2116,6 +2116,23 @@ public class Game implements Serializable, IGame {
         return null;
     }
 
+    private boolean removeTurnFor(String boolOption, int entitiesLeft, String intOption, int classCode) {
+        if (getOptions().booleanOption(boolOption) && phase == Phase.PHASE_MOVEMENT) {
+            if ((entitiesLeft % getOptions().intOption(intOption)) != 1
+                && hasMoreTurns()) {
+                GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);
+                if (nextTurn instanceof GameTurn.EntityClassTurn) {
+                    GameTurn.EntityClassTurn ect = (GameTurn.EntityClassTurn) nextTurn;
+                    if (ect.isValidClass(classCode) && !ect.isValidClass(~classCode)) {
+                        turnVector.removeElementAt(turnIndex + 1);
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Removes the last, next turn found that the specified entity can move in.
      * Used when, say, an entity dies mid-phase.
@@ -2128,100 +2145,31 @@ public class Game implements Serializable, IGame {
         // then we might not need to remove a turn at all.
         // A turn only needs to be removed when going from 4 inf (2 turns) to
         // 3 inf (1 turn)
-        if (getOptions().booleanOption(OptionsConstants.INIT_INF_MOVE_MULTI)
-            && (entity instanceof Infantry)
-            && (phase == Phase.PHASE_MOVEMENT)) {
-            if ((getInfantryLeft(entity.getOwnerId()) % getOptions().intOption(
-                    OptionsConstants.INIT_INF_PROTO_MOVE_MULTI)) != 1) {
-                // exception, if the _next_ turn is an infantry turn, remove
-                // that
-                // contrived, but may come up e.g. one inf accidently kills
-                // another
-                if (hasMoreTurns()) {
-                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);
-                    if (nextTurn instanceof GameTurn.EntityClassTurn) {
-                        GameTurn.EntityClassTurn ect =
-                                (GameTurn.EntityClassTurn) nextTurn;
-                        if (ect.isValidClass(GameTurn.CLASS_INFANTRY)
-                            && !ect.isValidClass(~GameTurn.CLASS_INFANTRY)) {
-                            turnVector.removeElementAt(turnIndex + 1);
-                        }
-                    }
-                }
-                return;
-            }
+        boolean removed = false;
+        if (entity instanceof Infantry) {
+            removed = removeTurnFor(OptionsConstants.INIT_INF_MOVE_MULTI,
+                    getInfantryLeft(entity.getOwnerId()),
+                    OptionsConstants.INIT_INF_PROTO_MOVE_MULTI,
+                    GameTurn.CLASS_INFANTRY);
+        } else if (entity instanceof Protomech) {
+            removed = removeTurnFor(OptionsConstants.INIT_PROTOS_MOVE_MULTI,
+                    getProtomechsLeft(entity.getOwnerId()),
+                    OptionsConstants.INIT_INF_PROTO_MOVE_MULTI,
+                    GameTurn.CLASS_PROTOMECH);
+        } else if (entity instanceof Tank) {
+            removed = removeTurnFor(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT,
+                    getVehiclesLeft(entity.getOwnerId()),
+                    OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT_NUMBER,
+                    GameTurn.CLASS_TANK);
+        } else if (entity instanceof Mech) {
+            removed = removeTurnFor(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT,
+                    getMechsLeft(entity.getOwnerId()),
+                    OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT_NUMBER,
+                    GameTurn.CLASS_MECH);
         }
-        // Same thing but for protos
-        if (getOptions().booleanOption(OptionsConstants.INIT_PROTOS_MOVE_MULTI)
-            && (entity instanceof Protomech)
-            && (phase == Phase.PHASE_MOVEMENT)) {
-            if ((getProtomechsLeft(entity.getOwnerId()) % getOptions()
-                    .intOption(OptionsConstants.INIT_INF_PROTO_MOVE_MULTI)) != 1) {
-                // exception, if the _next_ turn is an protomek turn, remove
-                // that
-                // contrived, but may come up e.g. one inf accidently kills
-                // another
-                if (hasMoreTurns()) {
-                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);
-                    if (nextTurn instanceof GameTurn.EntityClassTurn) {
-                        GameTurn.EntityClassTurn ect =
-                                (GameTurn.EntityClassTurn) nextTurn;
-                        if (ect.isValidClass(GameTurn.CLASS_PROTOMECH)
-                            && !ect.isValidClass(~GameTurn.CLASS_PROTOMECH)) {
-                            turnVector.removeElementAt(turnIndex + 1);
-                        }
-                    }
-                }
-                return;
-            }
+        if (removed) {
+            return;
         }
-
-        // Same thing but for vehicles
-        if (getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT)
-            && (entity instanceof Tank) && (phase == Phase.PHASE_MOVEMENT)) {
-            if ((getVehiclesLeft(entity.getOwnerId()) % getOptions()
-                    .intOption(OptionsConstants.ADVGRNDMOV_VEHICLE_LANCE_MOVEMENT_NUMBER)) != 1) {
-                // exception, if the _next_ turn is a tank turn, remove that
-                // contrived, but may come up e.g. one tank accidently kills
-                // another
-                if (hasMoreTurns()) {
-                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);
-                    if (nextTurn instanceof GameTurn.EntityClassTurn) {
-                        GameTurn.EntityClassTurn ect =
-                                (GameTurn.EntityClassTurn) nextTurn;
-                        if (ect.isValidClass(GameTurn.CLASS_TANK)
-                            && !ect.isValidClass(~GameTurn.CLASS_TANK)) {
-                            turnVector.removeElementAt(turnIndex + 1);
-                        }
-                    }
-                }
-                return;
-            }
-        }
-
-        // Same thing but for meks
-        if (getOptions().booleanOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT)
-            && (entity instanceof Mech) && (phase == Phase.PHASE_MOVEMENT)) {
-            if ((getMechsLeft(entity.getOwnerId()) % getOptions()
-                    .intOption(OptionsConstants.ADVGRNDMOV_MEK_LANCE_MOVEMENT_NUMBER)) != 1) {
-                // exception, if the _next_ turn is a mech turn, remove that
-                // contrived, but may come up e.g. one mech accidently kills
-                // another
-                if (hasMoreTurns()) {
-                    GameTurn nextTurn = turnVector.elementAt(turnIndex + 1);
-                    if (nextTurn instanceof GameTurn.EntityClassTurn) {
-                        GameTurn.EntityClassTurn ect =
-                                (GameTurn.EntityClassTurn) nextTurn;
-                        if (ect.isValidClass(GameTurn.CLASS_MECH)
-                            && !ect.isValidClass(~GameTurn.CLASS_MECH)) {
-                            turnVector.removeElementAt(turnIndex + 1);
-                        }
-                    }
-                }
-                return;
-            }
-        }
-
 
         boolean useInfantryMoveLaterCheck = true;
         // If we have the "infantry move later" or "protos move later" optional
