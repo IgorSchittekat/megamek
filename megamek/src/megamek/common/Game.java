@@ -2518,22 +2518,7 @@ public class Game implements Serializable, IGame {
      * Resets the PSR list for a given entity.
      */
     public void resetPSRs(Entity entity) {
-        PilotingRollData roll;
-        Vector<Integer> rollsToRemove = new Vector<Integer>();
-        int i = 0;
-
-        // first, find all the rolls belonging to the target entity
-        for (i = 0; i < pilotRolls.size(); i++) {
-            roll = pilotRolls.elementAt(i);
-            if (roll.getEntityId() == entity.getId()) {
-                rollsToRemove.addElement(Integer.valueOf(i));
-            }
-        }
-
-        // now, clear them out
-        for (i = rollsToRemove.size() - 1; i > -1; i--) {
-            pilotRolls.removeElementAt(rollsToRemove.elementAt(i).intValue());
-        }
+        pilotRolls.removeIf(roll -> roll.getEntityId() == entity.getId());
     }
 
     /**
@@ -2547,23 +2532,7 @@ public class Game implements Serializable, IGame {
      * Resets the extreme Gravity PSR list for a given entity.
      */
     public void resetExtremeGravityPSRs(Entity entity) {
-        PilotingRollData roll;
-        Vector<Integer> rollsToRemove = new Vector<Integer>();
-        int i = 0;
-
-        // first, find all the rolls belonging to the target entity
-        for (i = 0; i < extremeGravityRolls.size(); i++) {
-            roll = extremeGravityRolls.elementAt(i);
-            if (roll.getEntityId() == entity.getId()) {
-                rollsToRemove.addElement(Integer.valueOf(i));
-            }
-        }
-
-        // now, clear them out
-        for (i = rollsToRemove.size() - 1; i > -1; i--) {
-            extremeGravityRolls.removeElementAt(rollsToRemove.elementAt(i)
-                    .intValue());
-        }
+        extremeGravityRolls.removeIf(roll -> roll.getEntityId() == entity.getId());
     }
 
     /**
@@ -3330,22 +3299,7 @@ public class Game implements Serializable, IGame {
      * Resets the Control Roll list for a given entity.
      */
     public void resetControlRolls(Entity entity) {
-        PilotingRollData roll;
-        Vector<Integer> rollsToRemove = new Vector<Integer>();
-        int i = 0;
-
-        // first, find all the rolls belonging to the target entity
-        for (i = 0; i < controlRolls.size(); i++) {
-            roll = controlRolls.elementAt(i);
-            if (roll.getEntityId() == entity.getId()) {
-                rollsToRemove.addElement(Integer.valueOf(i));
-            }
-        }
-
-        // now, clear them out
-        for (i = rollsToRemove.size() - 1; i > -1; i--) {
-            controlRolls.removeElementAt(rollsToRemove.elementAt(i).intValue());
-        }
+        controlRolls.removeIf(roll -> roll.getEntityId() == entity.getId());
     }
 
     /**
